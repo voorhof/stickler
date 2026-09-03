@@ -1,0 +1,3 @@
+# Stickler
+
+> Starter kit for Laravel

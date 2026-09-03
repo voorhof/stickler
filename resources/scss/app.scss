@@ -1,0 +1,86 @@
+/**
+ * Import Bootstrap styles
+ */
+@import "bootstrap/bootstrap";
+
+/**
+ * Import Bootstrap icons
+ */
+@import "bootstrap/icons";
+
+/**
+ * App master div
+ */
+#app {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+}
+
+/**
+ * Components
+ */
+
+// Navbar top
+.c-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+    overflow: hidden;
+}
+
+// Offcanvas navigation
+.c-offcanvas {
+
+    // Theme switcher
+    .stickler-theme-icon {
+        width: 1em;
+        height: 1em;
+        margin-bottom: .1em;
+        fill: currentcolor;
+    }
+    .active .stickler-theme-icon {
+        display: block;
+    }
+}
+
+// Header
+.c-header {
+
+}
+
+// Footer
+.c-footer {
+
+}
+
+
+// Contact page
+
+
+// Terms & Conditions
+.c-terms {
+    h2, h3 {
+        margin-bottom: 1rem;
+    }
+    h3, h4 {
+        font-weight: 500;
+    }
+    h3 {
+        margin-top: 1.5rem;
+    }
+}
+
+// Print
+@media print {
+    .c-navbar,
+    .c-offcanvas,
+    .c-footer a {
+        display: none !important;
+    }
+}
+
+/**
+ * Import ark theme style
+ */
+@import "dark-app";

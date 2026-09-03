@@ -47,6 +47,26 @@ return [
             'report' => false,
         ],
 
+        // Spatie media library
+        'media' => [
+            'driver' => env('MEDIA_DISK_DRIVER', 'local'),
+            'root' => storage_path(env('MEDIA_DISK_ROOT_PATH', 'app/public/media')),
+            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/'.env('MEDIA_DISK_URL_PATH', 'storage/media'),
+            'visibility' => env('MEDIA_DISK_VISIBILITY', 'public'),
+            'throw' => env('MEDIA_DISK_THROW', false),
+            'report' => env('MEDIA_DISK_REPORT', false),
+        ],
+
+        // Spatie backups
+        'backups' => [
+            'driver' => env('BACKUP_DISK_DRIVER', 'local'),
+            'root' => storage_path(env('BACKUP_DISK_ROOT_PATH', 'app/private/backups')),
+            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/'.env('BACKUP_DISK_URL_PATH', 'storage/backups'),
+            'visibility' => env('BACKUP_DISK_VISIBILITY', 'private'),
+            'throw' => env('BACKUP_DISK_THROW', false),
+            'report' => env('BACKUP_DISK_REPORT', false),
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

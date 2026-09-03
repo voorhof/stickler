@@ -1,3 +1,4 @@
+# Laravel default exclude paths
 *.log
 .DS_Store
 .env
@@ -26,6 +27,8 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 
+# Project exclude paths
 /.ai/mcp/mcp.json
 /.info/
 /.junie/mcp/mcp.json
+/storage/media-library/

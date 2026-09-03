@@ -24,12 +24,18 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $name = fake()->name();
+
         return [
-            'name' => fake()->name(),
+            'slug' => Str::limit(Str::slug($name, '-', 'nl'), 48, ''),
+            'name' => $name,
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
+            'locale' => 'nl_BE',
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'created_by_user_id' => 1,
+            'updated_by_user_id' => 1,
         ];
     }
 
@@ -41,5 +47,26 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
+    }
+
+    /**
+     * Indicate that the model is soft-deleted.
+     */
+    public function softDeleted(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'deleted_at' => now(),
+        ]);
+    }
+
+    /**
+     * Configure the model factory.
+     */
+    public function configure(): static
+    {
+        return $this->afterCreating(function (User $model) {
+            $model->order_column = $model->id;
+            $model->saveQuietly();
+        });
     }
 }
