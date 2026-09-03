@@ -30,7 +30,7 @@
             <div>
                 <x-filament::link
                     color="secondary"
-                    href="https://github.com/voorhof/pietjeprecies"
+                    href="https://github.com/voorhof"
                     :icon="Heroicon::ArrowTopRightOnSquare"
                     :icon-position="IconPosition::After"
                     target="_blank"

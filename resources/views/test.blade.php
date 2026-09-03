@@ -1,8 +1,7 @@
-@php use App\Settings\GeneralSettings; @endphp
 <x-layouts.app>
     <x-slot:headTitle>{{ $headTitle }}</x-slot>
 
-    <section class="container-lg">
+    <section class="container-xl">
         <div class="row">
             <div class="col mb-4">
                 <h2>TEST</h2>

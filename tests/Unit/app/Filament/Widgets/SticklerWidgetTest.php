@@ -2,7 +2,7 @@
 
 /** @noinspection PhpUndefinedMethodInspection */
 
-use App\Filament\Widgets\PietjePreciesWidget;
+use App\Filament\Widgets\SticklerWidget;
 use App\Models\Permission;
 use App\Models\User;
 use Filament\Facades\Filament;
@@ -21,13 +21,13 @@ it('can be viewed when authenticated', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
-    expect(PietjePreciesWidget::canView())->toBeTrue();
+    expect(SticklerWidget::canView())->toBeTrue();
 
-    livewire(PietjePreciesWidget::class)->assertOk();
+    livewire(SticklerWidget::class)->assertOk();
 });
 
 it('cannot be viewed when unauthenticated', function () {
-    expect(PietjePreciesWidget::canView())->toBeFalse();
+    expect(SticklerWidget::canView())->toBeFalse();
 });
 
 it('show the sitemap generator when permitted', function () {
@@ -36,12 +36,12 @@ it('show the sitemap generator when permitted', function () {
     $user->permissions()->attach($permission);
     $this->actingAs($user);
 
-    livewire(PietjePreciesWidget::class)->assertSee(__('Generate sitemap'));
+    livewire(SticklerWidget::class)->assertSee(__('Generate sitemap'));
 });
 
 it('hides the sitemap generator when not permitted', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
-    livewire(PietjePreciesWidget::class)->assertDontSee(__('Generate sitemap'));
+    livewire(SticklerWidget::class)->assertDontSee(__('Generate sitemap'));
 });

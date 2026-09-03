@@ -3,7 +3,7 @@
     <x-slot:headTitle>{{ $headTitle }}</x-slot>
 
     <section class="c-contact-section py-5">
-        <div class="container-lg">
+        <div class="container-xl">
             <div class="row">
                 <div class="col-md ps-4 ps-xl-5 mb-5 mb-md-0">
                     <h2 class="mb-3">Contact details</h2>
@@ -145,39 +145,6 @@
                             <button class="btn btn-dark" type="submit">Versturen</button>
                         </form>
                     @endif
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="py-5">
-        <div class="container-lg">
-            <div class="row align-items-end">
-                <div class="col-md-6 px-4 px-xl-5 mb-4 mb-md-0">
-                    <h2 class="mb-3">Kennismaking</h2>
-                    <p>
-                        Voordat je beslist of een nieuwe website van <span class="d-inline-block">Pietje Precies</span> de ideale oplossing voor je is,
-                        gaan we natuurlijk altijd eerst even met elkaar om de tafel zitten.
-                    </p>
-                    <p>
-                        Een gratis en vrijblijvend adviesgesprek waarin je informatie krijgt over onze aanpak
-                        en de werking van het standaard CMS-systeem, aangevuld met een live-demo.
-                    </p>
-                    <p>
-                        Neem contact op via het formulier, bel of stuur ons een e-mail en we plannen samen iets in.
-                    </p>
-                    <p class="mb-0">
-                        Uiteraard onder het genot van een lekker kopje koffie.
-                    </p>
-                </div>
-
-                <div class="col-md-6 ps-4 ps-xl-5">
-                    <div class="c-coffee">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="22.95 15.31 155.1 88.38" role="img">
-                            <path class="c-coffee__smoke" d="M42.95,68.06v-16.4s0,0,0,0h0c0-3.91,3.17-7.07,7.07-7.07h.19s12.32,0,12.32,0c3.91,0,7.07-3.17,7.07-7.07h0c0-3.91-3.17-7.07-7.07-7.07h.28s-12.79,0-12.79,0c-3.91,0-7.07-3.17-7.07-7.07h0c0-3.91,3.17-7.07,7.07-7.07h127.03"/>
-                            <path class="c-coffee__cup" d="M67.54,70.92h-4.59v-7.23H22.95v40h40v-7.23h4.59c7.05,0,12.77-5.72,12.77-12.77s-5.72-12.77-12.77-12.77ZM67.54,88.47h-4.59v-9.55h4.59c2.63,0,4.77,2.14,4.77,4.77s-2.14,4.77-4.77,4.77Z"/>
-                        </svg>
-                    </div>
                 </div>
             </div>
         </div>

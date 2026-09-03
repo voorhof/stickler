@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 469.7 128.8" class="c-logo img-fluid" fill="#000000" aria-label="Pietje Precies Logo">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 469.7 128.8" class="c-logo img-fluid" fill="#000000" aria-label="Stickler Logo">
     <path class="c-logo__face" d="M0 0h128v128H0z"/>
     <rect class="c-logo__socket" fill="#fafafa" x="16" y="32" width="32" height="32"/>
     <rect class="c-logo__socket" fill="#fafafa" x="80" y="32" width="32" height="32"/>

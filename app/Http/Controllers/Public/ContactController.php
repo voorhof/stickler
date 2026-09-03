@@ -35,7 +35,7 @@ class ContactController extends Controller
         Mail::queue(new ContactMessageReceived($message));
 
         return redirect()
-            ->route('contact.index', '#bedankt')
+            ->route('contact.index')
             ->with('success', __('Thank you for your message! We’ll get back to you as soon as possible.'));
     }
 }

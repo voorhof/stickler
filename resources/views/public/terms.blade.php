@@ -2,7 +2,7 @@
 <x-layouts.app>
     <x-slot:headTitle>{{ $headTitle }}</x-slot>
 
-    <section class="container-md">
+    <section class="container-xl">
         <div class="row justify-content-center">
             <div class="col-md-11 col-lg-9 col-xxl-8 mb-4">
                 <div class="c-terms">

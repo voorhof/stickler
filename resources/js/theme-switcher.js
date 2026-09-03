@@ -2,8 +2,8 @@
 (() => {
     'use strict'
 
-    const getStoredTheme = () => localStorage.getItem('stickler-theme')
-    const setStoredTheme = theme => localStorage.setItem('stickler-theme', theme)
+    const getStoredTheme = () => localStorage.getItem('color-scheme-theme')
+    const setStoredTheme = theme => localStorage.setItem('color-scheme-theme', theme)
 
     const getPreferredTheme = () => {
         const storedTheme = getStoredTheme()
@@ -25,14 +25,14 @@
     setTheme(getPreferredTheme())
 
     const showActiveTheme = (theme, focus = false) => {
-        const themeSwitcher = document.querySelector('#stickler-theme-switcher')
+        const themeSwitcher = document.querySelector('#color-scheme-theme-switcher')
 
         if (!themeSwitcher) {
             return
         }
 
-        const themeSwitcherText = document.querySelector('#stickler-theme-switcher-text')
-        const activeThemeIcon = document.querySelector('.stickler-theme-icon-active use')
+        const themeSwitcherText = document.querySelector('#color-scheme-theme-switcher-text')
+        const activeThemeIcon = document.querySelector('.color-scheme-theme-icon-active use')
         const btnToActive = document.querySelector(`[data-theme-value="${theme}"]`)
         const svgOfActiveBtn = btnToActive.querySelector('svg use').getAttribute('href')
 

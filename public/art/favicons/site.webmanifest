@@ -1,6 +1,6 @@
 {
-    "name": "Pietje Precies",
-    "short_name": "Pietje Precies",
+    "name": "Stickler",
+    "short_name": "Stickler",
     "start_url": "/",
     "scope": "/",
     "display": "standalone",
@@ -8,7 +8,7 @@
     "orientation": "any",
     "theme_color": "#c8ffff",
     "background_color": "#ffffff",
-    "description": "Full-Stack Web Development",
+    "description": "Stickler website",
     "icons": [
         {
             "src": "/art/favicons/web-app-manifest-48x48.png",

@@ -9,18 +9,20 @@ export default defineConfig({
             input: ['resources/scss/app.scss', 'resources/js/app.js'],
             assets: ['resources/images/**'],
             fonts: [
-                google('Inter', {
-                    alias: 'sans',
-                    weights: [400, 600, 900],
-                    styles: ['normal', 'italic'],
-                    subsets: ['latin'],
-                    display: 'swap',
-                    preload: [
-                        { weight: 400, style: 'normal' },
-                        { weight: 600, style: 'normal' },
-                    ],
-                    fallbacks: ['system-ui', 'sans-serif'],
-                }),
+                /*
+                    google('Inter', {
+                        alias: 'sans',
+                        weights: [400, 600, 900],
+                        styles: ['normal', 'italic'],
+                        subsets: ['latin'],
+                        display: 'swap',
+                        preload: [
+                            { weight: 400, style: 'normal' },
+                            { weight: 600, style: 'normal' },
+                        ],
+                        fallbacks: ['system-ui', 'sans-serif'],
+                    }),
+                */
             ],
         }),
     ],

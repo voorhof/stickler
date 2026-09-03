@@ -6,7 +6,11 @@
 /**
  * Import Bootstrap icons
  */
-@import "bootstrap/icons";
+// Update the import directory to point to it‘s location within node_modules
+//$bootstrap-icons-font-dir: "bootstrap-icons/font/fonts";
+// Import the Sass files
+//@import "bootstrap-icons/font/bootstrap-icons";
+
 
 /**
  * App master div
@@ -17,30 +21,31 @@
     flex-direction: column;
 }
 
+
 /**
  * Components
  */
 
 // Navbar top
 .c-navbar {
-    position: sticky;
-    top: 0;
-    z-index: 1020;
-    overflow: hidden;
+    //position: sticky;
+    //top: 0;
+    //z-index: 1020;
+    //overflow: hidden;
 }
 
 // Offcanvas navigation
 .c-offcanvas {
 
     // Theme switcher
-    .stickler-theme-icon {
-        width: 1em;
-        height: 1em;
-        margin-bottom: .1em;
-        fill: currentcolor;
+    .color-scheme-theme-icon {
+        //width: 1em;
+        //height: 1em;
+        //margin-bottom: .1em;
+        //fill: currentcolor;
     }
-    .active .stickler-theme-icon {
-        display: block;
+    .active .color-scheme-theme-icon {
+        //display: block;
     }
 }
 
@@ -55,32 +60,39 @@
 }
 
 
+/**
+ * Pages
+ */
+
 // Contact page
 
 
 // Terms & Conditions
 .c-terms {
     h2, h3 {
-        margin-bottom: 1rem;
+        //margin-bottom: 1rem;
     }
     h3, h4 {
-        font-weight: 500;
+        //font-weight: 500;
     }
     h3 {
-        margin-top: 1.5rem;
+        //margin-top: 1.5rem;
     }
 }
 
-// Print
+
+/**
+ * Print
+ */
 @media print {
     .c-navbar,
     .c-offcanvas,
     .c-footer a {
-        display: none !important;
+        //display: none !important;
     }
 }
 
 /**
- * Import ark theme style
+ * Import dark theme style
  */
 @import "dark-app";
