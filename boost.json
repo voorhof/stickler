@@ -1,17 +1,9 @@
 {
     "agents": [
-        "claude_code",
         "junie"
     ],
-    "cloud": true,
     "guidelines": true,
-    "mcp": true,
-    "nightwatch": false,
-    "sail": false,
-    "skills": [
-        "infer-conventions",
-        "laravel-best-practices",
-        "testing-best-practices",
-        "deploying-laravel-cloud"
+    "packages": [
+        "spatie/laravel-permission"
     ]
 }
