@@ -30,7 +30,7 @@
             <div>
                 <x-filament::link
                     color="secondary"
-                    href="https://github.com/voorhof"
+                    href="https://github.com/voorhof/stickler"
                     :icon="Heroicon::ArrowTopRightOnSquare"
                     :icon-position="IconPosition::After"
                     target="_blank"

@@ -114,11 +114,9 @@ img {
 
 .logo {
     display: block;
-    height: auto;
     margin: 10px auto;
-    max-height: 70px;
-    width: 53px;
     max-width: 100%;
+    height: auto;
 }
 
 /* Body */

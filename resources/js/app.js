@@ -1,9 +1,9 @@
 /**
  * Import Bootstrap JavaScript
  */
-// import './bootstrap/bootstrap.js';
+import './bootstrap/bootstrap.js';
 
 /**
  * Import Theme switcher JavaScript
  */
-// import './theme-switcher.js';
+import './theme-switcher.js';

@@ -10,7 +10,7 @@
                         {{ __('Too Many Requests') }}
                     </p>
                     <a href="{{ route('welcome.index') }}" class="btn btn-sm btn-outline-dark">
-                        <i class="ppi ppi-skip-backward"></i>
+                        <i class="bi bi-skip-backward"></i>
                         Terug naar de homepage
                     </a>
                 </div>

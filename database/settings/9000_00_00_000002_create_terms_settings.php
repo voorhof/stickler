@@ -11,9 +11,9 @@ return new class extends SettingsMigration
      */
     public function up(): void
     {
-        $this->migrator->add('terms.terms_and_conditions', '<h2>Algemene Voorwaarden</h2>');
-        $this->migrator->add('terms.privacy_policy', '<h2>Privacy policy</h2>');
-        $this->migrator->add('terms.cookie_policy', '<h2>Cookie policy</h2>');
+        $this->migrator->add('terms.terms_and_conditions', '<h1>Algemene Voorwaarden</h1>');
+        $this->migrator->add('terms.privacy_policy', '<h1>Privacy policy</h1>');
+        $this->migrator->add('terms.cookie_policy', '<h1>Cookie policy</h1>');
     }
 
     /**

@@ -2,32 +2,40 @@
 <x-layouts.app>
     <x-slot:headTitle>{{ $headTitle }}</x-slot>
 
-    <section class="c-contact-section py-5">
+    <section class="py-5">
         <div class="container-xl">
-            <div class="row">
+            <div class="row justify-content-center mb-5">
+                <div class="col-auto">
+                    <h1>
+                        CONTACT
+                    </h1>
+                </div>
+            </div>
+
+            <div class="row justify-content-center">
                 <div class="col-md ps-4 ps-xl-5 mb-5 mb-md-0">
                     <h2 class="mb-3">Contact details</h2>
                     <address class="lead">
                         <strong class="d-block fw-medium mb-1">
-                            <i class="ppi ppi-person"></i>
+                            <i class="bi bi-person"></i>
                             {{ app(GeneralSettings::class)->contact_name }}
                         </strong>
 
                         <div class="mb-4">
                             <a href="mailto:{{ app(GeneralSettings::class)->contact_email }}"
-                               class="text-dark text-decoration-none">
+                               class="link-body-emphasis text-decoration-none">
                                 {{ app(GeneralSettings::class)->contact_email }}
                             </a>
                             <br>
                             <a href="tel:{{ str_replace(' ', '', app(GeneralSettings::class)->contact_phone) }}"
-                               class="text-dark text-decoration-none">
-                                {{ str_replace('23', '2 3', str_replace('42', '4 2', str_replace('+32', '0', app(GeneralSettings::class)->contact_phone))) }}
+                               class="link-body-emphasis text-decoration-none">
+                                {{ str_replace(' ', '', app(GeneralSettings::class)->contact_phone) }}
                             </a>
                         </div>
 
                         <div class="mb-4">
                             <strong class="d-block fw-medium mb-1">
-                                <i class="ppi ppi-building"></i>
+                                <i class="bi bi-building"></i>
                                 {{ app(GeneralSettings::class)->contact_company_name }}
                             </strong>
 
@@ -39,14 +47,19 @@
                         </div>
 
                         <div class="d-flex align-items-center gap-4">
+                            <a href="{{ app(GeneralSettings::class)->social_facebook }}" target="_blank"
+                               class="h3 m-0 link-body-emphasis text-decoration-none" aria-label="Facebook">
+                                <i class="bi bi-facebook"></i>
+                            </a>
+
                             <a href="{{ app(GeneralSettings::class)->social_instagram }}" target="_blank"
-                               class="h3 m-0 text-dark text-decoration-none" aria-label="Instagram">
-                                <i class="ppi ppi-instagram"></i>
+                               class="h3 m-0 link-body-emphasis text-decoration-none" aria-label="Instagram">
+                                <i class="bi bi-instagram"></i>
                             </a>
 
                             <a href="{{ app(GeneralSettings::class)->social_linkedin }}" target="_blank"
-                               class="h4 m-0 text-dark text-decoration-none" aria-label="LinkedIn">
-                                <i class="ppi ppi-linkedin"></i>
+                               class="h4 m-0 link-body-emphasis text-decoration-none" aria-label="LinkedIn">
+                                <i class="bi bi-linkedin"></i>
                             </a>
                         </div>
                     </address>
@@ -76,7 +89,7 @@
                                        autocomplete="name"
                                        required
                                        maxlength="250">
-                                <label for="nameInput">@lang('Name')<span class="opacity-60">*</span></label>
+                                <label for="nameInput">@lang('Name')<span class="opacity-50">*</span></label>
                                 @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -92,7 +105,7 @@
                                        autocomplete="email"
                                        required
                                        maxlength="250">
-                                <label for="emailInput">@lang('Email')<span class="opacity-60">*</span></label>
+                                <label for="emailInput">@lang('Email')<span class="opacity-50">*</span></label>
                                 @error('email')
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -122,7 +135,7 @@
                                        placeholder="Onderwerp"
                                        required
                                        maxlength="250">
-                                <label for="subjectInput">@lang('Subject')<span class="opacity-60">*</span></label>
+                                <label for="subjectInput">@lang('Subject')<span class="opacity-50">*</span></label>
                                 @error('subject')
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -136,13 +149,13 @@
                                       required
                                       maxlength="2500"
                             >{{ old('message') }}</textarea>
-                                <label for="messageInput">@lang('Message')<span class="opacity-60">*</span></label>
+                                <label for="messageInput">@lang('Message')<span class="opacity-50">*</span></label>
                                 @error('message')
                                 <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            <button class="btn btn-dark" type="submit">Versturen</button>
+                            <button class="btn btn-primary" type="submit">@lang('Submit')</button>
                         </form>
                     @endif
                 </div>

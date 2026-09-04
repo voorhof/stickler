@@ -15,7 +15,7 @@ test('it can view the general terms page', function () {
 
         // These assertions are the same values on all terms pages, so we only test them once here
         ->assertSeeText('Contactgegevens')
-        ->assertSeeText('David Carton')
+        ->assertSeeText(app(GeneralSettings::class)->contact_name)
         ->assertSeeText(app(GeneralSettings::class)->contact_email)
         ->assertSeeText(app(GeneralSettings::class)->contact_phone)
         ->assertSeeText(app(GeneralSettings::class)->contact_address)
