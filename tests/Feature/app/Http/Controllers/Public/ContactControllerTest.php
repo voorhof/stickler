@@ -94,7 +94,7 @@ test('rejects request with honeypot', function () {
     config()->set('honeypot.enabled', true);
 
     $data = [
-        'first_name' => 'Jane', // This is the honeypot field and triggers spam detection when filled
+        'my_first_name' => 'Jane', // This is the honeypot field and triggers spam detection when filled
         'name' => 'Jane Doe',
         'email' => 'jane@example.com',
         'subject' => 'Inquiry',

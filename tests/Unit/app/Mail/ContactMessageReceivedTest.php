@@ -16,7 +16,7 @@ test('mailable content', function () {
 
     $mailable
         ->assertFrom(config('mail.from.address'))
-        ->assertTo(config('pietjeprecies.contact_details.email'))
+        ->assertTo(config('stickler.contact_details.email'))
         ->assertHasSubject(__('mail/contact-message-received.subject'))
 
         ->assertSeeInHtml(__('Hello!'))

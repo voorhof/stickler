@@ -31,7 +31,6 @@ class GeneralSettings extends Settings
 
     public ?string $social_linkedin = '';
 
-
     /** The group the settings belong to */
     public static function group(): string
     {

@@ -38,7 +38,6 @@ class AdminUserAndRoleSeeder extends Seeder
             'locale' => config('app.locale'),
         ]);
 
-
         // Create permissions
         Permission::create(['name' => 'access admin']);
         Permission::create(['name' => 'access telescope']);

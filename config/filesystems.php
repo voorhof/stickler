@@ -41,7 +41,7 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            'url' => mb_rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
@@ -51,7 +51,7 @@ return [
         'media' => [
             'driver' => env('MEDIA_DISK_DRIVER', 'local'),
             'root' => storage_path(env('MEDIA_DISK_ROOT_PATH', 'app/public/media')),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/'.env('MEDIA_DISK_URL_PATH', 'storage/media'),
+            'url' => mb_rtrim(env('APP_URL', 'http://localhost'), '/').'/'.env('MEDIA_DISK_URL_PATH', 'storage/media'),
             'visibility' => env('MEDIA_DISK_VISIBILITY', 'public'),
             'throw' => env('MEDIA_DISK_THROW', false),
             'report' => env('MEDIA_DISK_REPORT', false),
@@ -61,7 +61,7 @@ return [
         'backups' => [
             'driver' => env('BACKUP_DISK_DRIVER', 'local'),
             'root' => storage_path(env('BACKUP_DISK_ROOT_PATH', 'app/private/backups')),
-            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/'.env('BACKUP_DISK_URL_PATH', 'storage/backups'),
+            'url' => mb_rtrim(env('APP_URL', 'http://localhost'), '/').'/'.env('BACKUP_DISK_URL_PATH', 'storage/backups'),
             'visibility' => env('BACKUP_DISK_VISIBILITY', 'private'),
             'throw' => env('BACKUP_DISK_THROW', false),
             'report' => env('BACKUP_DISK_REPORT', false),

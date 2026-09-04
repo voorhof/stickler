@@ -1,0 +1,27 @@
+# Install FFmpeg on Laravel Cloud (Build commands inside Settings > Deployments)
+
+
+## Build commands in Laravel Cloud:
+### Install & Setup FFmpeg
+bash ./.deploy/ffmpeg.sh
+### Composer installation
+composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+### NPM installation
+npm ci --audit false
+npm run build
+
+
+## Installing & Setup FFmpeg without the script, put this inside the build command:
+### Create a `bin` directory for custom binaries
+mkdir -p $HOME/bin
+cd $HOME/bin
+### Download the FFmpeg binaries
+curl -L -o ffmpeg.tar.xz https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-arm64-static.tar.xz
+### Extract the archive
+tar -xf ffmpeg.tar.xz
+### Rename the extracted directory
+mv ffmpeg-*-static ffmpeg
+### Grant execution permissions
+chmod +x $HOME/bin/ffmpeg/ffmpeg
+### Move back to the project root
+cd $HOME/html
