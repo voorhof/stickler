@@ -1,4 +1,4 @@
-<div class="c-cookie-banner js-cookie-banner bg-dark py-2" style="position:fixed;bottom:0;left:0;right:0;">
+<div class="c-cookie-banner js-cookie-banner bg-dark py-3" style="position:fixed;bottom:0;left:0;right:0;">
     <div class="container-xl">
         <div class="d-flex gap-2 flex-column flex-sm-row align-items-center px-md-3 px-xl-4 px-xxl-5">
             <div>

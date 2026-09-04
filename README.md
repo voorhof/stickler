@@ -681,7 +681,7 @@ A **controller** was created inside `app/Http/Controllers/Filament/SitemapContro
 for generating the sitemap from inside the Filament admin panel.
 
 The **route** to the controller was registered inside `routes/filament.php` 
-and a link to the route was added to the PietjePreciesWidget view `pp-widget.blade.php` used the admin dashboard.
+and a link to the route was added to the StickerWidget view `stickler-widget.blade.php` used the admin dashboard.
 
 A sitemap link is also added in the head section of the app layout:
 

@@ -7,9 +7,9 @@
  * Import Bootstrap icons
  */
 // Update the import directory to point to it‘s location within node_modules
-//$bootstrap-icons-font-dir: "bootstrap-icons/font/fonts";
+$bootstrap-icons-font-dir: "bootstrap-icons/font/fonts";
 // Import the Sass files
-//@import "bootstrap-icons/font/bootstrap-icons";
+@import "bootstrap-icons/font/bootstrap-icons";
 
 
 /**
@@ -28,35 +28,50 @@
 
 // Navbar top
 .c-navbar {
-    //position: sticky;
-    //top: 0;
-    //z-index: 1020;
-    //overflow: hidden;
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+
+    .navbar-brand {
+        width: 86px;
+    }
 }
 
 // Offcanvas navigation
 .c-offcanvas {
 
+    .c-offcanvas__logo {
+        width: 68px;
+    }
+
+    .c-offcanvas__footer {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-top: auto;
+        margin-bottom: .5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid $black;
+    }
+
     // Theme switcher
     .color-scheme-theme-icon {
-        //width: 1em;
-        //height: 1em;
-        //margin-bottom: .1em;
-        //fill: currentcolor;
+        width: 1em;
+        height: 1em;
+        margin-bottom: .1em;
+        fill: currentcolor;
     }
     .active .color-scheme-theme-icon {
-        //display: block;
+        display: block;
     }
 }
 
 // Header
-.c-header {
-
-}
+.c-header {}
 
 // Footer
 .c-footer {
-
+    margin-top: auto;
 }
 
 
@@ -64,21 +79,22 @@
  * Pages
  */
 
+// Welcome page
+
 // Contact page
+.c-contact-form {
 
-
-// Terms & Conditions
-.c-terms {
-    h2, h3 {
-        //margin-bottom: 1rem;
-    }
-    h3, h4 {
-        //font-weight: 500;
-    }
-    h3 {
-        //margin-top: 1.5rem;
+    .c-contact-form__textarea {
+        height: unset;
+        min-height: 153px;
+        max-height: 50svh;
+        field-sizing: content;
+        resize: vertical;
+        scrollbar-width: thin;
     }
 }
+
+// Terms & Conditions pages
 
 
 /**
@@ -87,8 +103,8 @@
 @media print {
     .c-navbar,
     .c-offcanvas,
-    .c-footer a {
-        //display: none !important;
+    .c-footer {
+        display: none !important;
     }
 }
 

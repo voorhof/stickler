@@ -3,16 +3,15 @@
      tabindex="-1"
      id="offcanvasNav"
      aria-labelledby="offcanvasNavLabel"
-     role="navigation"
-     data-theme="light">
+     role="navigation">
     <div class="offcanvas-header">
-        <div id="offcanvasNavLabel">
+        <div id="offcanvasNavLabel" class="c-offcanvas__logo">
             <a href="{{ route('welcome.index') }}" class="js-home-link">
                 <x-logo />
             </a>
         </div>
 
-        <button type="button" class="btn-close js-close-offcanvas" data-dismiss="offcanvas" aria-label="Close navigation"></button>
+        <button type="button" class="btn-close js-close-offcanvas" data-bs-dismiss="offcanvas" aria-label="Close navigation"></button>
     </div>
 
     <div class="offcanvas-body d-flex flex-column">
@@ -24,44 +23,44 @@
                href="{{ route('welcome.index') }}">HOME</a>
 
             <a @class([
-                'nav-link mb-1',
+                'nav-link',
                 'active' => request()->routeIs('contact.index'),
             ])
                href="{{ route('contact.index') }}">CONTACT</a>
 
             {{-- Theme switcher --}}
-            <div class="nav-item mt-1 mb-3 dropdown">
+            <div class="nav-link mb-3 dropdown">
                 <button class="nav-link dropdown-toggle d-flex align-items-center gap-2 px-0"
-                        id="pp-theme-switcher"
+                        id="color-scheme-theme-switcher"
                         type="button"
                         aria-expanded="false"
-                        data-toggle="dropdown"
+                        data-bs-toggle="dropdown"
                         aria-label="@lang("Toggle theme")">
-                    <svg class="pp-theme-icon pp-theme-icon-active" aria-hidden="true"><use href="#circle-half"></use></svg>
-                    <span id="pp-theme-switcher-text">@lang("Toggle theme")</span>
+                    <svg class="color-scheme-theme-icon color-scheme-theme-icon-active" aria-hidden="true"><use href="#circle-half"></use></svg>
+                    <span id="color-scheme-theme-switcher-text">@lang("Toggle theme")</span>
                 </button>
 
                 <ul class="dropdown-menu"
-                    aria-labelledby="pp-theme-switcher-text">
+                    aria-labelledby="color-scheme-theme-switcher-text">
                     <li>
-                        <button type="button" class="dropdown-item d-flex align-items-center" data-theme-value="light" aria-pressed="false">
-                            <svg class="pp-theme-icon me-2 opacity-50" aria-hidden="true"><use href="#sun-fill"></use></svg>
+                        <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="light" aria-pressed="false">
+                            <svg class="color-scheme-theme-icon me-2 opacity-50" aria-hidden="true"><use href="#sun-fill"></use></svg>
                             @lang("Light")
-                            <svg class="pp-theme-icon ms-auto d-none" aria-hidden="true"><use href="#check2"></use></svg>
+                            <svg class="color-scheme-theme-icon ms-auto d-none" aria-hidden="true"><use href="#check2"></use></svg>
                         </button>
                     </li>
                     <li>
-                        <button type="button" class="dropdown-item d-flex align-items-center" data-theme-value="dark" aria-pressed="false">
-                            <svg class="pp-theme-icon me-2 opacity-50" aria-hidden="true"><use href="#moon-stars-fill"></use></svg>
+                        <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
+                            <svg class="color-scheme-theme-icon me-2 opacity-50" aria-hidden="true"><use href="#moon-stars-fill"></use></svg>
                             @lang("Dark")
-                            <svg class="pp-theme-icon ms-auto d-none" aria-hidden="true"><use href="#check2"></use></svg>
+                            <svg class="color-scheme-theme-icon ms-auto d-none" aria-hidden="true"><use href="#check2"></use></svg>
                         </button>
                     </li>
                     <li>
-                        <button type="button" class="dropdown-item d-flex align-items-center active" data-theme-value="auto" aria-pressed="true">
-                            <svg class="pp-theme-icon me-2 opacity-50" aria-hidden="true"><use href="#circle-half"></use></svg>
+                        <button type="button" class="dropdown-item d-flex align-items-center active" data-bs-theme-value="auto" aria-pressed="true">
+                            <svg class="color-scheme-theme-icon me-2 opacity-50" aria-hidden="true"><use href="#circle-half"></use></svg>
                             @lang("System")
-                            <svg class="pp-theme-icon ms-auto d-none" aria-hidden="true"><use href="#check2"></use></svg>
+                            <svg class="color-scheme-theme-icon ms-auto d-none" aria-hidden="true"><use href="#check2"></use></svg>
                         </button>
                     </li>
                 </ul>
@@ -69,18 +68,23 @@
         </nav>
 
         <div class="c-offcanvas__footer">
+            <a href="{{ app(GeneralSettings::class)->social_facebook }}" target="_blank"
+               class="h2 m-0 link-body-emphasis text-decoration-none" aria-label="Facebook">
+                <i class="bi bi-facebook"></i>
+            </a>
+
             <a href="{{ app(GeneralSettings::class)->social_instagram }}" target="_blank"
-               class="h2 m-0 text-dark text-decoration-none" aria-label="Instagram">
-                <i class="ppi ppi-instagram"></i>
+               class="h2 m-0 link-body-emphasis text-decoration-none" aria-label="Instagram">
+                <i class="bi bi-instagram"></i>
             </a>
 
             <a href="{{ app(GeneralSettings::class)->social_linkedin }}" target="_blank"
-               class="h2 m-0 text-dark text-decoration-none" aria-label="LinkedIn">
-                <i class="ppi ppi-linkedin"></i>
+               class="h2 m-0 link-body-emphasis text-decoration-none" aria-label="LinkedIn">
+                <i class="bi bi-linkedin"></i>
             </a>
 
             @can('access admin')
-                <a class="ms-auto c-offcanvas__footer-admin-link"
+                <a class="ms-auto"
                    href="{{ route('filament.admin.pages.dashboard') }}">ADMIN</a>
             @endcan
         </div>

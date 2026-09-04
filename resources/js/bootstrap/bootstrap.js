@@ -28,7 +28,7 @@ export default {
     // Carousel,
     Collapse,
     Dropdown,
-    // Modal,s
+    // Modals,
     Offcanvas,
     // Popover,
     // ScrollSpy,
