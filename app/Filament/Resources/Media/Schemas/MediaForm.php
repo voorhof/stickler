@@ -1,0 +1,33 @@
+<?php
+
+namespace App\Filament\Resources\Media\Schemas;
+
+use App\Filament\Resources\Media\Schemas\Sections\DetailsSection;
+use App\Filament\Schemas\Sections\ActivityHistorySection;
+use App\Filament\Schemas\Sections\DatabaseInfoSection;
+use App\Filament\Schemas\Sections\SettingsSection;
+use App\Filament\Schemas\Sections\TagsSection;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Schema;
+
+class MediaForm
+{
+    public static function configure(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                Grid::make(1)
+                    ->columnSpanFull()
+                    ->schema([
+                        DetailsSection::make(),
+                        TagsSection::make(),
+                        SettingsSection::make(
+                            hasPublished: false,
+                            hasSlug: false,
+                        ),
+                        DatabaseInfoSection::make(),
+                        ActivityHistorySection::make(),
+                    ]),
+            ]);
+    }
+}

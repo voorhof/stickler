@@ -2,7 +2,7 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "voorhof/stickler",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "A starter kit for the Laravel framework.",
     "keywords": [
         "stickler",
         "laravel",
@@ -13,11 +13,44 @@
     "license": "MIT",
     "require": {
         "php": "^8.4",
+        "ext-dom": "*",
+        "ext-exif": "*",
+        "ext-fileinfo": "*",
+        "ext-imagick": "*",
+        "ext-json": "*",
+        "ext-libxml": "*",
+        "ext-zip": "*",
+        "asmit/resized-column": "^4.0",
+        "filament/filament": "^5.7",
+        "filament/spatie-laravel-media-library-plugin": "^5.7",
+        "filament/spatie-laravel-settings-plugin": "^5.7",
+        "filament/spatie-laravel-tags-plugin": "^5.7",
         "laravel/framework": "^13.30",
-        "laravel/tinker": "^3.0"
+        "laravel/telescope": "^5.23",
+        "laravel/tinker": "^3.0",
+        "league/flysystem-aws-s3-v3": "^3.35",
+        "opcodesio/log-viewer": "^3.24",
+        "php-ffmpeg/php-ffmpeg": "^1.4",
+        "spatie/eloquent-sortable": "^5.0",
+        "spatie/laravel-activitylog": "^5.1",
+        "spatie/laravel-backup": "^10.3",
+        "spatie/laravel-cookie-consent": "^3.5",
+        "spatie/laravel-health": "^1.40",
+        "spatie/laravel-honeypot": "^4.7",
+        "spatie/laravel-http-logger": "^1.12",
+        "spatie/laravel-medialibrary": "11.23",
+        "spatie/laravel-permission": "^8.3",
+        "spatie/laravel-responsecache": "^8.4",
+        "spatie/laravel-settings": "^3.9",
+        "spatie/laravel-sitemap": "^8.2",
+        "spatie/laravel-sluggable": "^4.0",
+        "spatie/laravel-tags": "^4.12",
+        "spatie/pdf-to-image": "^3.4",
+        "spatie/security-advisories-health-check": "^1.3"
     },
     "require-dev": {
         "fakerphp/faker": "^1.24",
+        "laravel-lang/lang": "^15.34",
         "laravel/boost": "^2.7",
         "laravel/pail": "^1.2.7",
         "laravel/pao": "^1.1.4",
@@ -25,7 +58,8 @@
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.9",
         "pestphp/pest": "^5.1",
-        "pestphp/pest-plugin-laravel": "^5.0"
+        "pestphp/pest-plugin-laravel": "^5.0",
+        "pestphp/pest-plugin-livewire": "^5.0"
     },
     "autoload": {
         "psr-4": {
@@ -58,7 +92,8 @@
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi",
+            "@php artisan filament:upgrade"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force",

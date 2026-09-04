@@ -1,0 +1,97 @@
+name: 🚀 Test Laravel Application
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  laravel-tests:
+    timeout-minutes: 10
+    name: 🎉 Test main suite
+    runs-on: ubuntu-latest
+
+    env:
+      APP_ENV: testing
+      DB_CONNECTION: sqlite
+      DB_DATABASE: ':memory:'
+      SETTINGS_CACHE_ENABLED: false
+
+    steps:
+      - name: 🚚 Get latest code
+        uses: actions/checkout@v7
+
+      - name: 🚚 Setup PHP, with composer and extensions
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: pdo_sqlite, mbstring, xml, gd, imagick, intl, zip, exif, bcmath, fileinfo, curl
+          coverage: none
+
+      - name: 📂 Create Database
+        run: |
+          mkdir -p database
+          touch database/database.sqlite
+
+      - name: 🚚 Get Composer Cache Directory
+        id: composer-cache
+        run: |
+          COMPOSER_CACHE_DIR=$(composer config cache-files-dir)
+          echo "dir=$COMPOSER_CACHE_DIR" >> $GITHUB_OUTPUT
+          mkdir -p "$COMPOSER_CACHE_DIR"
+
+      - name: 🚚 Restore Composer cache
+        uses: actions/cache/restore@v5
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: 📦 Install Dependencies
+        run: composer install -v --no-ansi --no-interaction --no-progress --prefer-dist --optimize-autoloader
+
+      - name: 📂 Copy .env
+        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+
+      - name: 📂  Directory Permissions
+        run: chmod -R 775 storage bootstrap/cache
+
+      - name: 📂 Generate key
+        run: php artisan key:generate --no-interaction
+
+      - name: 📦 Install Ghostscript
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ghostscript
+
+      - name: 🚚 Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: 📦 Install npm dependencies
+        run: npm ci
+
+      - name: 🏗️ Build frontend assets
+        run: npm run build
+
+      - name: 🚚 Execute tests (Unit and Feature tests) via PHPUnit/Pest
+        run: php artisan test --compact --parallel
+
+      - name: 🎨 Check code style
+        run: vendor/bin/pint --test
+
+      - name: 💾 Save Composer cache
+        if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
