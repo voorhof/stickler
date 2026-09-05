@@ -17,20 +17,20 @@
     <div class="offcanvas-body d-flex flex-column">
         <nav class="nav flex-column">
             <a @class([
-                'nav-link mb-1 js-home-link',
+                'nav-link link-body-emphasis mb-1 js-home-link',
                 'active' => request()->routeIs('welcome.index'),
             ])
                href="{{ route('welcome.index') }}">HOME</a>
 
             <a @class([
-                'nav-link',
+                'nav-link link-body-emphasis',
                 'active' => request()->routeIs('contact.index'),
             ])
                href="{{ route('contact.index') }}">CONTACT</a>
 
             {{-- Theme switcher --}}
-            <div class="nav-link mb-3 dropdown">
-                <button class="nav-link dropdown-toggle d-flex align-items-center gap-2 px-0"
+            <div class="dropdown-center">
+                <button class="dropdown-toggle nav-link link-body-emphasis d-flex align-items-center gap-2"
                         id="color-scheme-theme-switcher"
                         type="button"
                         aria-expanded="false"
@@ -59,7 +59,7 @@
                     <li>
                         <button type="button" class="dropdown-item d-flex align-items-center active" data-bs-theme-value="auto" aria-pressed="true">
                             <svg class="color-scheme-theme-icon me-2 opacity-50" aria-hidden="true"><use href="#circle-half"></use></svg>
-                            @lang("System")
+                            @lang("Auto")
                             <svg class="color-scheme-theme-icon ms-auto d-none" aria-hidden="true"><use href="#check2"></use></svg>
                         </button>
                     </li>

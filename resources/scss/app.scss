@@ -31,6 +31,7 @@ $bootstrap-icons-font-dir: "bootstrap-icons/font/fonts";
     position: sticky;
     top: 0;
     z-index: 1020;
+    box-shadow: 0 2px 2px -2px rgba(0,0,0,.3);
 
     .navbar-brand {
         width: 86px;
@@ -40,18 +41,18 @@ $bootstrap-icons-font-dir: "bootstrap-icons/font/fonts";
 // Offcanvas navigation
 .c-offcanvas {
 
-    .c-offcanvas__logo {
+    &__logo {
         width: 68px;
     }
 
-    .c-offcanvas__footer {
+    &__footer {
         display: flex;
         align-items: center;
         gap: 1.5rem;
         margin-top: auto;
         margin-bottom: .5rem;
         padding-top: 1.5rem;
-        border-top: 1px solid $black;
+        border-top: 1px solid $gray-700;
     }
 
     // Theme switcher
@@ -69,32 +70,27 @@ $bootstrap-icons-font-dir: "bootstrap-icons/font/fonts";
 // Header
 .c-header {}
 
+// Logo
+.c-logo {}
+
 // Footer
 .c-footer {
     margin-top: auto;
+    border-top: 1px solid $gray-700;
 }
 
-
-/**
- * Pages
- */
-
-// Welcome page
-
-// Contact page
+// Contact form
 .c-contact-form {
 
-    .c-contact-form__textarea {
+    & &__textarea {
         height: unset;
-        min-height: 153px;
+        min-height: 150px;
         max-height: 50svh;
         field-sizing: content;
         resize: vertical;
         scrollbar-width: thin;
     }
 }
-
-// Terms & Conditions pages
 
 
 /**
