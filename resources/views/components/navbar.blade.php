@@ -7,8 +7,8 @@
 
         <button class="navbar-toggler"
                 type="button"
-                data-bs-toggle="offcanvas"
-                data-bs-target="#offcanvasNav"
+                data-toggle="offcanvas"
+                data-target="#offcanvasNav"
                 aria-controls="offcanvasNav"
                 aria-label="Toggle offcanvas navigation">
             <span class="navbar-toggler-icon"></span>

@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import { google } from 'laravel-vite-plugin/fonts';
+import replace from '@rollup/plugin-replace';
 
 export default defineConfig({
     plugins: [
@@ -24,6 +25,13 @@ export default defineConfig({
                     }),
                 */
             ],
+        }),
+        replace({
+            // Replace all 'data-bs' with 'data' in the build output
+            preventAssignment: true,
+            values: {
+                'data-bs': 'data',
+            },
         }),
     ],
     server: {

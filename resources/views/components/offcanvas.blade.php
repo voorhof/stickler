@@ -11,7 +11,7 @@
             </a>
         </div>
 
-        <button type="button" class="btn-close js-close-offcanvas" data-bs-dismiss="offcanvas" aria-label="Close navigation"></button>
+        <button type="button" class="btn-close js-close-offcanvas" data-dismiss="offcanvas" aria-label="Close navigation"></button>
     </div>
 
     <div class="offcanvas-body d-flex flex-column">
@@ -34,7 +34,7 @@
                         id="color-scheme-theme-switcher"
                         type="button"
                         aria-expanded="false"
-                        data-bs-toggle="dropdown"
+                        data-toggle="dropdown"
                         aria-label="@lang("Toggle theme")">
                     <svg class="color-scheme-theme-icon color-scheme-theme-icon-active" aria-hidden="true"><use href="#circle-half"></use></svg>
                     <span id="color-scheme-theme-switcher-text">@lang("Toggle theme")</span>
@@ -43,21 +43,21 @@
                 <ul class="dropdown-menu"
                     aria-labelledby="color-scheme-theme-switcher-text">
                     <li>
-                        <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="light" aria-pressed="false">
+                        <button type="button" class="dropdown-item d-flex align-items-center" data-theme-value="light" aria-pressed="false">
                             <svg class="color-scheme-theme-icon me-2 opacity-50" aria-hidden="true"><use href="#sun-fill"></use></svg>
                             @lang("Light")
                             <svg class="color-scheme-theme-icon ms-auto d-none" aria-hidden="true"><use href="#check2"></use></svg>
                         </button>
                     </li>
                     <li>
-                        <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
+                        <button type="button" class="dropdown-item d-flex align-items-center" data-theme-value="dark" aria-pressed="false">
                             <svg class="color-scheme-theme-icon me-2 opacity-50" aria-hidden="true"><use href="#moon-stars-fill"></use></svg>
                             @lang("Dark")
                             <svg class="color-scheme-theme-icon ms-auto d-none" aria-hidden="true"><use href="#check2"></use></svg>
                         </button>
                     </li>
                     <li>
-                        <button type="button" class="dropdown-item d-flex align-items-center active" data-bs-theme-value="auto" aria-pressed="true">
+                        <button type="button" class="dropdown-item d-flex align-items-center active" data-theme-value="auto" aria-pressed="true">
                             <svg class="color-scheme-theme-icon me-2 opacity-50" aria-hidden="true"><use href="#circle-half"></use></svg>
                             @lang("Auto")
                             <svg class="color-scheme-theme-icon ms-auto d-none" aria-hidden="true"><use href="#check2"></use></svg>
