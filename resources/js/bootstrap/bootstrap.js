@@ -12,7 +12,7 @@ window.Popper = Popper;
 // import Alert from 'bootstrap/js/dist/alert.js'
 // import Button from 'bootstrap/js/dist/button.js'
 // import Carousel from 'bootstrap/js/dist/carousel.js'
-import Collapse from 'bootstrap/js/dist/collapse.js'
+// import Collapse from 'bootstrap/js/dist/collapse.js'
 import Dropdown from 'bootstrap/js/dist/dropdown.js'
 // import Modal from 'bootstrap/js/dist/modal.js'
 import Offcanvas from 'bootstrap/js/dist/offcanvas.js'
@@ -26,7 +26,7 @@ export default {
     // Alert,
     // Button,
     // Carousel,
-    Collapse,
+    // Collapse,
     Dropdown,
     // Modals,
     Offcanvas,

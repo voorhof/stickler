@@ -11,30 +11,30 @@
             </a>
         </div>
 
-        <button type="button" class="btn-close js-close-offcanvas" data-bs-dismiss="offcanvas" aria-label="Close navigation"></button>
+        <button type="button" class="btn-close js-close-offcanvas" data-dismiss="offcanvas" aria-label="Close navigation"></button>
     </div>
 
     <div class="offcanvas-body d-flex flex-column">
         <nav class="nav flex-column">
             <a @class([
-                'nav-link mb-1 js-home-link',
+                'nav-link link-body-emphasis mb-1 js-home-link',
                 'active' => request()->routeIs('welcome.index'),
             ])
                href="{{ route('welcome.index') }}">HOME</a>
 
             <a @class([
-                'nav-link',
+                'nav-link link-body-emphasis',
                 'active' => request()->routeIs('contact.index'),
             ])
                href="{{ route('contact.index') }}">CONTACT</a>
 
             {{-- Theme switcher --}}
-            <div class="nav-link mb-3 dropdown">
-                <button class="nav-link dropdown-toggle d-flex align-items-center gap-2 px-0"
+            <div class="dropdown-center">
+                <button class="dropdown-toggle nav-link link-body-emphasis d-flex align-items-center gap-2"
                         id="color-scheme-theme-switcher"
                         type="button"
                         aria-expanded="false"
-                        data-bs-toggle="dropdown"
+                        data-toggle="dropdown"
                         aria-label="@lang("Toggle theme")">
                     <svg class="color-scheme-theme-icon color-scheme-theme-icon-active" aria-hidden="true"><use href="#circle-half"></use></svg>
                     <span id="color-scheme-theme-switcher-text">@lang("Toggle theme")</span>
@@ -43,23 +43,23 @@
                 <ul class="dropdown-menu"
                     aria-labelledby="color-scheme-theme-switcher-text">
                     <li>
-                        <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="light" aria-pressed="false">
+                        <button type="button" class="dropdown-item d-flex align-items-center" data-theme-value="light" aria-pressed="false">
                             <svg class="color-scheme-theme-icon me-2 opacity-50" aria-hidden="true"><use href="#sun-fill"></use></svg>
                             @lang("Light")
                             <svg class="color-scheme-theme-icon ms-auto d-none" aria-hidden="true"><use href="#check2"></use></svg>
                         </button>
                     </li>
                     <li>
-                        <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
+                        <button type="button" class="dropdown-item d-flex align-items-center" data-theme-value="dark" aria-pressed="false">
                             <svg class="color-scheme-theme-icon me-2 opacity-50" aria-hidden="true"><use href="#moon-stars-fill"></use></svg>
                             @lang("Dark")
                             <svg class="color-scheme-theme-icon ms-auto d-none" aria-hidden="true"><use href="#check2"></use></svg>
                         </button>
                     </li>
                     <li>
-                        <button type="button" class="dropdown-item d-flex align-items-center active" data-bs-theme-value="auto" aria-pressed="true">
+                        <button type="button" class="dropdown-item d-flex align-items-center active" data-theme-value="auto" aria-pressed="true">
                             <svg class="color-scheme-theme-icon me-2 opacity-50" aria-hidden="true"><use href="#circle-half"></use></svg>
-                            @lang("System")
+                            @lang("Auto")
                             <svg class="color-scheme-theme-icon ms-auto d-none" aria-hidden="true"><use href="#check2"></use></svg>
                         </button>
                     </li>
@@ -70,17 +70,17 @@
         <div class="c-offcanvas__footer">
             <a href="{{ app(GeneralSettings::class)->social_facebook }}" target="_blank"
                class="h2 m-0 link-body-emphasis text-decoration-none" aria-label="Facebook">
-                <i class="bi bi-facebook"></i>
+                <x-icons.facebook />
             </a>
 
             <a href="{{ app(GeneralSettings::class)->social_instagram }}" target="_blank"
                class="h2 m-0 link-body-emphasis text-decoration-none" aria-label="Instagram">
-                <i class="bi bi-instagram"></i>
+                <x-icons.instagram />
             </a>
 
             <a href="{{ app(GeneralSettings::class)->social_linkedin }}" target="_blank"
                class="h2 m-0 link-body-emphasis text-decoration-none" aria-label="LinkedIn">
-                <i class="bi bi-linkedin"></i>
+                <x-icons.linkedin />
             </a>
 
             @can('access admin')

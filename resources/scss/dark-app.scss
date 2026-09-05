@@ -1,3 +1,45 @@
-[data-bs-theme=dark] {
+[data-theme=dark] {
 
+    /**
+     * Components
+     */
+
+    // Navbar top
+    .c-navbar {
+        box-shadow: 0 2px 2px -2px rgba(255,255,255,.5);
+    }
+
+    // Offcanvas navigation
+    .c-offcanvas {
+
+        &__footer {
+            border-top-color: $gray-600;
+        }
+    }
+
+    // Header
+    .c-header {}
+
+    // Logo
+    .c-logo {
+        fill: $white;
+
+        &__face,
+        &__eye {
+            fill: $black;
+        }
+
+        &__face {
+            stroke: $white;
+            stroke-width: 6px;
+        }
+    }
+
+    // Footer
+    .c-footer {
+        border-top-color: $gray-600;
+    }
+
+    // Contact form
+    .c-contact-form {}
 }

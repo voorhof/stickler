@@ -93,11 +93,14 @@ class General extends SettingsPage
                             ->persistCollapsed()
                             ->inlineLabel()
                             ->schema([
-                                TextInput::make('social_linkedin')
-                                    ->label(__('LinkedIn'))
+                                TextInput::make('social_facebook')
+                                    ->label(__('Finished at'))
                                     ->maxLength(250),
                                 TextInput::make('social_instagram')
                                     ->label(__('Instagram'))
+                                    ->maxLength(250),
+                                TextInput::make('social_linkedin')
+                                    ->label(__('LinkedIn'))
                                     ->maxLength(250),
                             ]),
                         ActivityHistorySection::make(

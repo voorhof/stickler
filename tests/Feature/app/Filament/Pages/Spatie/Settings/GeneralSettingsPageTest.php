@@ -81,6 +81,7 @@ it('pre-fills the form with current general settings values', function () {
     $settings->contact_phone = '+1234567890';
     $settings->contact_company_name = 'Company Inc';
     $settings->contact_company_number = '0123456789';
+    $settings->social_facebook = 'https://www.facebook.com/';
     $settings->social_instagram = 'https://www.instagram.com/';
     $settings->social_linkedin = 'https://www.linkedin.com/';
     $settings->save();
@@ -97,6 +98,7 @@ it('pre-fills the form with current general settings values', function () {
             'contact_phone' => '+1234567890',
             'contact_company_name' => 'Company Inc',
             'contact_company_number' => '0123456789',
+            'social_facebook' => 'https://www.facebook.com/',
             'social_instagram' => 'https://www.instagram.com/',
             'social_linkedin' => 'https://www.linkedin.com/',
         ]);
@@ -115,6 +117,7 @@ it('can save updated general settings values', function () {
             'contact_phone' => '+1234567890 Update',
             'contact_company_name' => 'Company Inc Update',
             'contact_company_number' => '0123456789 Update',
+            'social_facebook' => 'https://www.facebook.com/update',
             'social_instagram' => 'https://www.instagram.com/update',
             'social_linkedin' => 'https://www.linkedin.com/update',
         ])
@@ -132,6 +135,7 @@ it('can save updated general settings values', function () {
         ->and($settings->contact_phone)->toBe('+1234567890 Update')
         ->and($settings->contact_company_name)->toBe('Company Inc Update')
         ->and($settings->contact_company_number)->toBe('0123456789 Update')
+        ->and($settings->social_facebook)->toBe('https://www.facebook.com/update')
         ->and($settings->social_instagram)->toBe('https://www.instagram.com/update')
         ->and($settings->social_linkedin)->toBe('https://www.linkedin.com/update');
 });
@@ -149,6 +153,7 @@ it('allows social media fields to be saved as null', function () {
             'contact_phone' => '+1234567890',
             'contact_company_name' => 'Company Inc',
             'contact_company_number' => 'BE123456789',
+            'social_facebook' => null,
             'social_instagram' => null,
             'social_linkedin' => null,
         ])
@@ -203,6 +208,7 @@ it('validates max length on general settings fields', function () {
             'contact_phone' => $tooLong,
             'contact_company_name' => $tooLong,
             'contact_company_number' => $tooLong,
+            'social_facebook' => $tooLong,
             'social_instagram' => $tooLong,
             'social_linkedin' => $tooLong,
         ])
@@ -216,6 +222,7 @@ it('validates max length on general settings fields', function () {
             'contact_phone' => 'max',
             'contact_company_name' => 'max',
             'contact_company_number' => 'max',
+            'social_facebook' => 'max',
             'social_instagram' => 'max',
             'social_linkedin' => 'max',
         ]);

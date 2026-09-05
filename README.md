@@ -2,6 +2,8 @@
 
 A Laravel application starter kit.
 
+[![🚀 Test Laravel Application](https://github.com/voorhof/stickler/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/voorhof/stickler/actions/workflows/main.yml)
+
 ## About Stickler
 
 Stickler website and custom CMS built with Laravel and Filament.

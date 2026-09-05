@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-bs-theme="light">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
 <head>
     @stack('scripts-head-top')
     {{-- Required meta --}}
@@ -20,7 +20,7 @@
                 ? (prefersDark ? 'dark' : 'light')
                 : storedTheme
 
-            document.documentElement.setAttribute('data-bs-theme', theme)
+            document.documentElement.setAttribute('data-theme', theme)
         })()
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
