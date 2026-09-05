@@ -17,7 +17,7 @@
                     <h2 class="mb-3">Contact details</h2>
                     <address class="lead">
                         <strong class="d-block fw-medium mb-1">
-                            <i class="bi bi-person"></i>
+                            <x-icons.person />
                             {{ app(GeneralSettings::class)->contact_name }}
                         </strong>
 
@@ -35,7 +35,7 @@
 
                         <div class="mb-4">
                             <strong class="d-block fw-medium mb-1">
-                                <i class="bi bi-building"></i>
+                                <x-icons.building />
                                 {{ app(GeneralSettings::class)->contact_company_name }}
                             </strong>
 
@@ -48,18 +48,18 @@
 
                         <div class="d-flex align-items-center gap-4">
                             <a href="{{ app(GeneralSettings::class)->social_facebook }}" target="_blank"
-                               class="h3 m-0 link-body-emphasis text-decoration-none" aria-label="Facebook">
-                                <i class="bi bi-facebook"></i>
+                               class="h2 m-0 link-body-emphasis text-decoration-none" aria-label="Facebook">
+                                <x-icons.facebook />
                             </a>
 
                             <a href="{{ app(GeneralSettings::class)->social_instagram }}" target="_blank"
-                               class="h3 m-0 link-body-emphasis text-decoration-none" aria-label="Instagram">
-                                <i class="bi bi-instagram"></i>
+                               class="h2 m-0 link-body-emphasis text-decoration-none" aria-label="Instagram">
+                                <x-icons.instagram />
                             </a>
 
                             <a href="{{ app(GeneralSettings::class)->social_linkedin }}" target="_blank"
-                               class="h4 m-0 link-body-emphasis text-decoration-none" aria-label="LinkedIn">
-                                <i class="bi bi-linkedin"></i>
+                               class="h2 m-0 link-body-emphasis text-decoration-none" aria-label="LinkedIn">
+                                <x-icons.linkedin />
                             </a>
                         </div>
                     </address>

@@ -3,14 +3,6 @@
  */
 @import "bootstrap/bootstrap";
 
-/**
- * Import Bootstrap icons
- */
-// Update the import directory to point to it‘s location within node_modules
-$bootstrap-icons-font-dir: "bootstrap-icons/font/fonts";
-// Import the Sass files
-@import "bootstrap-icons/font/bootstrap-icons";
-
 
 /**
  * App master div
@@ -32,6 +24,7 @@ $bootstrap-icons-font-dir: "bootstrap-icons/font/fonts";
     top: 0;
     z-index: 1020;
     box-shadow: 0 2px 2px -2px rgba(0,0,0,.3);
+    background-color: var(--bs-body-bg);
 
     .navbar-brand {
         width: 86px;
@@ -92,6 +85,18 @@ $bootstrap-icons-font-dir: "bootstrap-icons/font/fonts";
     }
 }
 
+
+/**
+ * Icons
+ */
+.c-icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    vertical-align: -0.125em;
+    fill: currentcolor;
+    fill-rule: evenodd;
+}
 
 /**
  * Print

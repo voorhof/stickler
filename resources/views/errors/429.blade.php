@@ -9,8 +9,8 @@
                     <p>
                         {{ __('Too Many Requests') }}
                     </p>
-                    <a href="{{ route('welcome.index') }}" class="btn btn-sm btn-outline-dark">
-                        <i class="bi bi-skip-backward"></i>
+                    <a href="{{ route('welcome.index') }}" class="btn btn-sm btn-primary">
+                        <x-icons.chevron-double-left />
                         Terug naar de homepage
                     </a>
                 </div>

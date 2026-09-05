@@ -70,17 +70,17 @@
         <div class="c-offcanvas__footer">
             <a href="{{ app(GeneralSettings::class)->social_facebook }}" target="_blank"
                class="h2 m-0 link-body-emphasis text-decoration-none" aria-label="Facebook">
-                <i class="bi bi-facebook"></i>
+                <x-icons.facebook />
             </a>
 
             <a href="{{ app(GeneralSettings::class)->social_instagram }}" target="_blank"
                class="h2 m-0 link-body-emphasis text-decoration-none" aria-label="Instagram">
-                <i class="bi bi-instagram"></i>
+                <x-icons.instagram />
             </a>
 
             <a href="{{ app(GeneralSettings::class)->social_linkedin }}" target="_blank"
                class="h2 m-0 link-body-emphasis text-decoration-none" aria-label="LinkedIn">
-                <i class="bi bi-linkedin"></i>
+                <x-icons.linkedin />
             </a>
 
             @can('access admin')
