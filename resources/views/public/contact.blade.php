@@ -165,6 +165,17 @@
 
     @push('scripts-body-bottom')
         <script>
+            /* Disable submit button on form submit to prevent double submission */
+            const contactForm = document.querySelector('.c-contact-form');
+
+            if (contactForm) {
+                contactForm.addEventListener('submit', function() {
+                    const contactFormButton = contactForm.querySelector('button');
+                    contactFormButton.disabled = true;
+                });
+            }
+
+            /* Scroll to success message after form submit */
             const successAlert = document.getElementById('successAlert');
 
             if (successAlert) {

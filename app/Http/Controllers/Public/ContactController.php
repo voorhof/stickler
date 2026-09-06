@@ -15,7 +15,6 @@ class ContactController extends Controller
     /**
      * Show the contact page.
      */
-    #[NoCache]
     public function index(): View
     {
         return view('public.contact', [
@@ -26,7 +25,6 @@ class ContactController extends Controller
     /**
      * Store a newly created contact message in storage.
      */
-    #[NoCache]
     public function store(StoreMessageRequest $request)
     {
         $message = Message::create($request->validated());
