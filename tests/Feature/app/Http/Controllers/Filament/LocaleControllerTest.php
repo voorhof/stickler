@@ -3,6 +3,7 @@
 /** @noinspection PhpUndefinedMethodInspection */
 
 use App\Http\Controllers\Filament\LocaleController;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;

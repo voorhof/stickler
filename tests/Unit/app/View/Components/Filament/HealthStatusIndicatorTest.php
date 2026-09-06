@@ -28,7 +28,7 @@ test('it returns correct background colors for statuses', function () {
     $result = new StoredCheckResult('test', 'Test', 'Msg', 'Summary', Status::ok(), []);
     $component = new class($result) extends HealthStatusIndicator
     {
-        public function testGetBackgroundColor(string $status): string
+        function testGetBackgroundColor(string $status): string
         {
             return $this->getBackgroundColor($status);
         }
@@ -46,7 +46,7 @@ test('it returns correct icon colors for statuses', function () {
     $result = new StoredCheckResult('test', 'Test', 'Msg', 'Summary', Status::ok(), []);
     $component = new class($result) extends HealthStatusIndicator
     {
-        public function testGetIconColor(string $status): string
+        function testGetIconColor(string $status): string
         {
             return $this->getIconColor($status);
         }
@@ -64,7 +64,7 @@ test('it returns correct icons for statuses', function () {
     $result = new StoredCheckResult('test', 'Test', 'Msg', 'Summary', Status::ok(), []);
     $component = new class($result) extends HealthStatusIndicator
     {
-        public function testGetIcon(string $status): string
+        function testGetIcon(string $status): string
         {
             return $this->getIcon($status);
         }

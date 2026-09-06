@@ -3,6 +3,7 @@
 /** @noinspection LaravelUnknownRouteNameInspection */
 
 use App\Models\Message;
+use App\Mail\ContactMessageReceived;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);

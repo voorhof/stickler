@@ -3,6 +3,8 @@
 /** @noinspection PhpUnhandledExceptionInspection */
 
 use App\Models\Project;
+use App\Observers\ProjectObserver;
+use App\Models\Media;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 

@@ -3,6 +3,7 @@
 /** @noinspection PhpUndefinedFieldInspection */
 
 use App\Models\Media;
+use Spatie\Activitylog\Support\LogOptions;
 use App\Models\User;
 use App\Policies\MediaPolicy;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;

@@ -3,6 +3,7 @@
 /** @noinspection PhpPossiblePolymorphicInvocationInspection, PhpUndefinedFieldInspection */
 
 use App\Models\Permission;
+use Spatie\Activitylog\Support\LogOptions;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -1,6 +1,8 @@
 <?php
 
 use App\Services\Spatie\BackupService;
+use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumStorageInMegabytes;
+use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumAgeInDays;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 

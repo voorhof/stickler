@@ -3,6 +3,8 @@
 /** @noinspection PhpParamsInspection, PhpUndefinedMethodInspection, PhpPossiblePolymorphicInvocationInspection */
 
 use App\Filament\Actions\HardDeleteAction;
+use Spatie\Activitylog\Models\Activity;
+use App\Models\Tag;
 use App\Filament\Actions\RestoreDeletedAction;
 use App\Filament\Actions\SoftDeleteAction;
 use App\Filament\Resources\Posts\Pages\CreatePost;
