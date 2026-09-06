@@ -3,10 +3,10 @@
 /** @noinspection PhpPossiblePolymorphicInvocationInspection, PhpUnhandledExceptionInspection, PhpUndefinedMethodInspection */
 
 use App\Actions\RichContent\CopyRichContentMedia;
+use \Illuminate\Database\Eloquent\Model;
 use App\Models\Media;
 use App\Models\Post;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 

@@ -2,7 +2,6 @@
 
 use App\View\Components\Filament\HealthStatusIndicator;
 use Illuminate\Contracts\View\View;
-use ReflectionMethod;
 use Spatie\Health\Enums\Status;
 use Spatie\Health\ResultStores\StoredCheckResults\StoredCheckResult;
 
