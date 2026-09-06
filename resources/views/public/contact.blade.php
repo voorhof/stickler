@@ -67,7 +67,7 @@
 
                 <div class="col-md px-4 px-xl-5 order-md-first">
                     @if(session('success'))
-                        <div id="bedankt" class="pt-5">
+                        <div id="successAlert" class="pt-5">
                             <div class="alert alert-success text-center fw-medium mt-3">
                                 {{ session('success') }}
                             </div>
@@ -162,4 +162,25 @@
             </div>
         </div>
     </section>
+
+    @push('scripts-body-bottom')
+        <script>
+            /* Disable submit button on form submit to prevent double submission */
+            const contactForm = document.querySelector('.c-contact-form');
+
+            if (contactForm) {
+                contactForm.addEventListener('submit', function() {
+                    const contactFormButton = contactForm.querySelector('button');
+                    contactFormButton.disabled = true;
+                });
+            }
+
+            /* Scroll to success message after form submit */
+            const successAlert = document.getElementById('successAlert');
+
+            if (successAlert) {
+                successAlert.scrollIntoView();
+            }
+        </script>
+    @endpush
 </x-layouts.app>

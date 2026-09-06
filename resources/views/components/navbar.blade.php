@@ -1,6 +1,6 @@
 <nav class="c-navbar navbar">
     <div class="container-xl">
-        <a class="navbar-brand"
+        <a class="navbar-brand js-home-link"
            href="{{ route('welcome.index') }}">
             <x-logo />
         </a>
