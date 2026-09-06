@@ -3,12 +3,12 @@
 /** @noinspection PhpUndefinedFieldInspection */
 
 use App\Models\Post;
-use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
-use Illuminate\Support\Carbon;
-use Spatie\Activitylog\Support\LogOptions;
 use App\Models\User;
+use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Spatie\Activitylog\Support\LogOptions;
 
 uses(RefreshDatabase::class);
 
@@ -251,7 +251,7 @@ test('it configures activity log options correctly', function () {
     $post = new Post;
     $options = $post->getActivitylogOptions();
 
-    expect($options)->toBeInstanceOf(Spatie\Activitylog\Support\LogOptions::class);
+    expect($options)->toBeInstanceOf(LogOptions::class);
 });
 
 test('content can be stored and retrieved', function () {
@@ -279,13 +279,13 @@ test('published_at is cast to a datetime instance', function () {
     User::factory()->create();
     $post = Post::factory()->create(['published_at' => '2024-01-15 12:00:00']);
 
-    expect($post->published_at)->toBeInstanceOf(Illuminate\Support\Carbon::class);
+    expect($post->published_at)->toBeInstanceOf(Carbon::class);
 });
 
 test('post implements has rich content contract', function () {
     $post = new Post;
 
-    expect($post)->toBeInstanceOf(Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent::class);
+    expect($post)->toBeInstanceOf(HasRichContent::class);
 });
 
 test('post uses interacts with rich content and sets up rich content attributes', function () {

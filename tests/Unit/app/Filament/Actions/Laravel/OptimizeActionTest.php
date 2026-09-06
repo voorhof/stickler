@@ -1,12 +1,12 @@
 <?php
 
 use App\Filament\Actions\Laravel\OptimizeAction;
-use \Filament\Pages\Page;
-use Illuminate\Contracts\View\View;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Filament\Facades\Filament;
+use Filament\Pages\Page;
+use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 
@@ -45,14 +45,14 @@ it('can call the optimize action', function () {
 
     $page = new class extends Page
     {
-        function render(): Illuminate\Contracts\View\View
+        public function render(): View
         {
             $checkResults = app(ResultStore::class)->latestResults();
 
             return view('filament.pages.spatie.health', ['checkResults' => $checkResults]);
         }
 
-        function getHeaderActions(): array
+        public function getHeaderActions(): array
         {
             return [
                 OptimizeAction::make(),

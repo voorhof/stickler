@@ -1,10 +1,10 @@
 <?php
 
 use App\Services\Spatie\BackupService;
-use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumStorageInMegabytes;
-use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumAgeInDays;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumAgeInDays;
+use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumStorageInMegabytes;
 
 beforeEach(function () {
     Cache::flush();
@@ -76,8 +76,8 @@ test('getBackupDestinationStatusData reports a healthy, reachable backup destina
             'name' => $backupName,
             'disks' => ['backups'],
             'health_checks' => [
-                Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumAgeInDays::class => 1,
-                Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumStorageInMegabytes::class => 5000,
+                MaximumAgeInDays::class => 1,
+                MaximumStorageInMegabytes::class => 5000,
             ],
         ],
     ]);
@@ -108,8 +108,8 @@ test('getBackupDestinationStatusData reports no backups present when the destina
             'name' => $backupName,
             'disks' => ['backups'],
             'health_checks' => [
-                Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumAgeInDays::class => 1,
-                Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumStorageInMegabytes::class => 5000,
+                MaximumAgeInDays::class => 1,
+                MaximumStorageInMegabytes::class => 5000,
             ],
         ],
     ]);
@@ -131,8 +131,8 @@ test('getBackupDestinationStatusData caches the result', function () {
             'name' => $backupName,
             'disks' => ['backups'],
             'health_checks' => [
-                Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumAgeInDays::class => 1,
-                Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumStorageInMegabytes::class => 5000,
+                MaximumAgeInDays::class => 1,
+                MaximumStorageInMegabytes::class => 5000,
             ],
         ],
     ]);

@@ -3,10 +3,10 @@
 /** @noinspection PhpPossiblePolymorphicInvocationInspection, PhpUnhandledExceptionInspection, PhpUndefinedMethodInspection */
 
 use App\Actions\RichContent\CopyRichContentMedia;
-use Illuminate\Database\Eloquent\Model;
 use App\Models\Media;
 use App\Models\Post;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 
@@ -88,9 +88,7 @@ test('it handles multiple attributes when copying rich content media', function 
 });
 
 test('it returns early if model does not implement HasMedia', function () {
-    $nonMediaModel = new class extends Illuminate\Database\Eloquent\Model
-    {
-    };
+    $nonMediaModel = new class extends Model {};
 
     $nonMediaModel->content = '<p>Some content</p>';
 

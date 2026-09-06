@@ -2,8 +2,8 @@
 
 /** @noinspection LaravelUnknownRouteNameInspection */
 
-use App\Models\Message;
 use App\Mail\ContactMessageReceived;
+use App\Models\Message;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -15,7 +15,7 @@ beforeEach(function () {
 test('mailable content', function () {
     $message = Message::factory()->create();
 
-    $mailable = new App\Mail\ContactMessageReceived($message);
+    $mailable = new ContactMessageReceived($message);
 
     $mailable
         ->assertFrom(config('mail.from.address'))
