@@ -2,7 +2,7 @@
 
 A Laravel application starter kit.
 
-[![🚀 Test Laravel Application](https://github.com/voorhof/stickler/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/voorhof/stickler/actions/workflows/main.yml)
+[![🚀 Test Laravel Application](https://github.com/voorhof/stickler/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/voorhof/stickler/actions/workflows/tests.yml)
 
 ## About Stickler
 
