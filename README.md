@@ -2,7 +2,7 @@
 
 A Laravel application starter kit.
 
-[![🚀 Test Laravel Application](https://github.com/voorhof/stickler/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/voorhof/stickler/actions/workflows/main.yml)
+[![🚀 Test Laravel Application](https://github.com/voorhof/stickler/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/voorhof/stickler/actions/workflows/tests.yml)
 
 ## About Stickler
 
@@ -10,7 +10,11 @@ Stickler website and custom CMS built with Laravel and Filament.
 
 ## Installing Stickler
 
-TODO
+The easiest way to install this starter kit is by using the [Laravel Installer](https://github.com/laravel/installer).
+
+```bash
+laravel new my-app --using=voorhof/stickler
+```
 
 ## Filament CMS
 
