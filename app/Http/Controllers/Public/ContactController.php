@@ -8,7 +8,6 @@ use App\Mail\ContactMessageReceived;
 use App\Models\Message;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
-use Spatie\ResponseCache\Attributes\NoCache;
 
 class ContactController extends Controller
 {
