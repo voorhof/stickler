@@ -1,17 +1,31 @@
 {
     "agents": [
+        "claude_code",
         "junie"
     ],
-    "cloud": false,
+    "cloud": true,
     "guidelines": true,
+    "mcp": true,
+    "nightwatch": false,
     "packages": [
-        "spatie/laravel-permission"
+        "filament/filament",
+        "spatie/laravel-activitylog",
+        "spatie/laravel-backup",
+        "spatie/laravel-medialibrary",
+        "spatie/laravel-permission",
+        "spatie/laravel-responsecache",
+        "spatie/laravel-sluggable"
     ],
+    "sail": false,
     "skills": [
         "infer-conventions",
         "laravel-best-practices",
         "testing-best-practices",
+        "laravel-backup",
+        "medialibrary-development",
         "laravel-permission-development",
+        "responsecache-development",
+        "sluggable-development",
         "deploying-laravel-cloud"
     ]
 }
