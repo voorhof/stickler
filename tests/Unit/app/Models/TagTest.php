@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUndefinedFieldInspection */
+
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;

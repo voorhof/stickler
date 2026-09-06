@@ -1,29 +1,27 @@
 <?php
 
-use App\Filament\Traits\FormatsModelType;
+/** @noinspection PhpUnhandledExceptionInspection */
+
+use App\Filament\Resources\Activities\Schemas\Sections\InfoSection;
+
+function formatModelTypeForTest(?string $type): string
+{
+    $method = new ReflectionMethod(InfoSection::class, 'formatModelType');
+
+    return $method->invoke(null, $type);
+}
 
 beforeEach(function () {
     app()->setLocale('en_US');
-
-    $this->formatter = new class
-    {
-        use FormatsModelType;
-
-        public function format(mixed $state): ?string
-        {
-            return self::formatModelType(type: $state);
-        }
-    };
 });
 
 it('returns a dash when type is blank', function () {
-    expect($this->formatter->format(null))->toBe('-')
-        ->and($this->formatter->format(''))->toBe('-');
+    expect(formatModelTypeForTest(null))->toBe('-')
+        ->and(formatModelTypeForTest(''))->toBe('-');
 });
 
 it('formats a standard model name correctly', function () {
     // App\Models\User -> User -> user -> User
-    expect($this->formatter->format('App\Models\User'))->toBe('User')
-        ->and($this->formatter->format('App\Models\Post'))->toBe('Post');
-
+    expect(formatModelTypeForTest('App\Models\User'))->toBe('User')
+        ->and(formatModelTypeForTest('App\Models\Post'))->toBe('Post');
 });

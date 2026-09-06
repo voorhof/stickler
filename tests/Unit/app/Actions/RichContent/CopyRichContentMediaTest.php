@@ -1,6 +1,6 @@
 <?php
 
-/** @noinspection PhpPossiblePolymorphicInvocationInspection, PhpUnhandledExceptionInspection */
+/** @noinspection PhpPossiblePolymorphicInvocationInspection, PhpUnhandledExceptionInspection, PhpUndefinedMethodInspection */
 
 use App\Actions\RichContent\CopyRichContentMedia;
 use App\Models\Media;

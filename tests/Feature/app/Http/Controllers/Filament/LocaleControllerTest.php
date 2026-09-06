@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUndefinedMethodInspection */
+
 use App\Http\Controllers\Filament\LocaleController;
 use App\Models\Permission;
 use App\Models\Role;

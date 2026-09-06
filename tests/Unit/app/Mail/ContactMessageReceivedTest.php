@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection LaravelUnknownRouteNameInspection */
+
 use App\Models\Message;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 

@@ -2,8 +2,16 @@
     "agents": [
         "junie"
     ],
+    "cloud": false,
     "guidelines": true,
     "packages": [
         "spatie/laravel-permission"
+    ],
+    "skills": [
+        "infer-conventions",
+        "laravel-best-practices",
+        "testing-best-practices",
+        "laravel-permission-development",
+        "deploying-laravel-cloud"
     ]
 }

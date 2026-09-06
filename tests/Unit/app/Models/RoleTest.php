@@ -1,6 +1,6 @@
 <?php
 
-/** @noinspection PhpPossiblePolymorphicInvocationInspection */
+/** @noinspection PhpPossiblePolymorphicInvocationInspection, PhpUndefinedFieldInspection */
 
 use App\Models\Permission;
 use App\Models\Role;

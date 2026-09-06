@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUndefinedFieldInspection */
+
 use App\Models\Media;
 use App\Models\User;
 use App\Policies\MediaPolicy;

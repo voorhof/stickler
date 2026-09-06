@@ -6,6 +6,7 @@ use App\Models\Permission;
 use App\Models\Post;
 use App\Models\Role;
 use App\Models\User;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
@@ -268,7 +269,7 @@ test('email_verified_at is cast to a datetime instance', function () {
 });
 
 test('it can access the admin panel when it has the access admin permission', function () {
-    $panel = Filament\Facades\Filament::getPanel('admin'); // @phpstan-ignore-line
+    $panel = Filament::getPanel('admin'); // @phpstan-ignore-line
 
     $user = User::factory()->create();
     expect($user->canAccessPanel($panel))->toBeFalse();
