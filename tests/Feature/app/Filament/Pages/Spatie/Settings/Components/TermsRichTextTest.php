@@ -2,23 +2,12 @@
 
 use App\Filament\Pages\Spatie\Settings\Components\TermsRichText;
 use Filament\Forms\Components\RichEditor;
-use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
 use Livewire\Component;
 
 test('it creates terms rich text component with correct configuration', function () {
-    $livewire = new class extends Component implements HasSchemas
-    {
-        use InteractsWithSchemas;
-
-        public function render(): string
-        {
-            return '<div></div>';
-        }
-    };
-
-    $schema = Schema::make($livewire);
+    $schema = Schema::make(Mockery::mock(Component::class, HasSchemas::class));
     $component = TermsRichText::make('terms_and_conditions', 'Terms and conditions')->container($schema);
 
     expect($component)->toBeInstanceOf(RichEditor::class)

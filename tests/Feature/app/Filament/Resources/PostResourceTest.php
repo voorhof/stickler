@@ -11,12 +11,15 @@ use App\Filament\Resources\Posts\Pages\ListPosts;
 use App\Models\Permission;
 use App\Models\Post;
 use App\Models\Role;
+use App\Models\Tag;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 
 use function Pest\Livewire\livewire;
+
+use Spatie\Activitylog\Models\Activity;
 
 uses(RefreshDatabase::class);
 
@@ -202,7 +205,7 @@ it('can edit a post', function () {
 });
 
 it('logs tags in activity after creating a post', function () {
-    $tag1 = App\Models\Tag::factory()->create(['name' => 'Tag 1']);
+    $tag1 = Tag::factory()->create(['name' => 'Tag 1']);
 
     livewire(CreatePost::class)
         ->fillForm([
@@ -215,7 +218,7 @@ it('logs tags in activity after creating a post', function () {
         ->assertNotified();
 
     $post = Post::where('title', 'My New Post')->first();
-    $activity = Spatie\Activitylog\Models\Activity::where('subject_type', Post::class)
+    $activity = Activity::where('subject_type', Post::class)
         ->where('subject_id', $post->id)
         ->where('event', 'created')
         ->first();
@@ -225,7 +228,7 @@ it('logs tags in activity after creating a post', function () {
 });
 
 it('logs tags in activity after editing a post', function () {
-    $tag1 = App\Models\Tag::factory()->create(['name' => 'Tag 1']);
+    $tag1 = Tag::factory()->create(['name' => 'Tag 1']);
 
     $post = Post::factory()->create();
     $post->attachTag($tag1->name);
@@ -238,7 +241,7 @@ it('logs tags in activity after editing a post', function () {
         ->assertHasNoFormErrors()
         ->assertNotified();
 
-    $activity = Spatie\Activitylog\Models\Activity::where('subject_type', Post::class)
+    $activity = Activity::where('subject_type', Post::class)
         ->where('subject_id', $post->id)
         ->where('event', 'updated')
         ->latest()

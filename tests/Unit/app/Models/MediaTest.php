@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUndefinedFieldInspection */
+
 use App\Models\Media;
 use App\Models\User;
 use App\Policies\MediaPolicy;
@@ -9,6 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use function Pest\Laravel\actingAs;
 
+use Spatie\Activitylog\Support\LogOptions;
 use Spatie\MediaLibrary\MediaCollections\Models\Media as BaseMedia;
 
 uses(RefreshDatabase::class);
@@ -414,5 +417,5 @@ test('it configures activity log options correctly', function () {
     $media = new Media;
     $options = $media->getActivitylogOptions();
 
-    expect($options)->toBeInstanceOf(Spatie\Activitylog\Support\LogOptions::class);
+    expect($options)->toBeInstanceOf(LogOptions::class);
 });

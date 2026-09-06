@@ -7,7 +7,6 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\RichEditor;
 use Filament\Notifications\Notification;
-use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\Alignment;
@@ -16,7 +15,6 @@ use Filament\Support\Facades\FilamentView;
 use Filament\Tables\Columns\Column;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Filament\Tables\View\TablesRenderHook;
@@ -97,17 +95,7 @@ test('it configures datetime pickers without seconds by default', function () {
 });
 
 test('it configures rich editors with attachments settings and toolbar buttons', function () {
-    $livewire = new class extends Component implements HasSchemas
-    {
-        use InteractsWithSchemas;
-
-        public function render(): string
-        {
-            return '<div></div>';
-        }
-    };
-
-    $schema = Schema::make($livewire);
+    $schema = Schema::make(Mockery::mock(Component::class, HasSchemas::class));
     $editor = RichEditor::make('test_content')->container($schema);
 
     expect($editor->getFileAttachmentsDiskName())->toBe('public')
@@ -134,17 +122,7 @@ test('it configures actions to not close modal on click away and to slide over',
 });
 
 test('it configures schemas with default date and time display formats', function () {
-    $livewire = new class extends Component implements HasSchemas
-    {
-        use InteractsWithSchemas;
-
-        public function render(): string
-        {
-            return '<div></div>';
-        }
-    };
-
-    $schema = Schema::make($livewire);
+    $schema = Schema::make(Mockery::mock(Component::class, HasSchemas::class));
 
     expect($schema->getDefaultDateDisplayFormat())->toBe('Y-m-d')
         ->and($schema->getDefaultDateTimeDisplayFormat())->toBe('h:i A')
@@ -152,18 +130,7 @@ test('it configures schemas with default date and time display formats', functio
 });
 
 test('it configures tables with default options', function () {
-    $livewire = new class extends Component implements HasSchemas, HasTable
-    {
-        use InteractsWithSchemas;
-        use InteractsWithTable;
-
-        public function render(): string
-        {
-            return '<div></div>';
-        }
-    };
-
-    $table = Table::make($livewire);
+    $table = Table::make(Mockery::mock(Component::class, HasSchemas::class, HasTable::class));
 
     expect($table->getPaginationPageOptions())->toBe([10, 25, 50, 100])
         ->and($table->getDefaultDateDisplayFormat())->toBe('d/m/Y')

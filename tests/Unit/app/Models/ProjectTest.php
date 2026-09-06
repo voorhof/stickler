@@ -1,8 +1,12 @@
 <?php
 
+/** @noinspection PhpUndefinedFieldInspection */
+
 use App\Models\Project;
 use App\Models\User;
+use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\Support\LogOptions;
 
@@ -277,13 +281,13 @@ test('published_at is cast to a datetime instance', function () {
     User::factory()->create();
     $project = Project::factory()->create(['published_at' => '2024-01-15 12:00:00']);
 
-    expect($project->published_at)->toBeInstanceOf(Illuminate\Support\Carbon::class);
+    expect($project->published_at)->toBeInstanceOf(Carbon::class);
 });
 
 test('project implements has rich content contract', function () {
     $project = new Project;
 
-    expect($project)->toBeInstanceOf(Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent::class);
+    expect($project)->toBeInstanceOf(HasRichContent::class);
 });
 
 test('project uses interacts with rich content and sets up rich content attributes', function () {

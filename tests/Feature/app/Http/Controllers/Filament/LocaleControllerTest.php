@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUndefinedMethodInspection */
+
 use App\Http\Controllers\Filament\LocaleController;
 use App\Models\Permission;
 use App\Models\Role;
@@ -7,6 +9,7 @@ use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 uses(RefreshDatabase::class);
 
@@ -45,7 +48,7 @@ test('it aborts 403 when unauthenticated in controller', function () {
     $request = Request::create('/admin/locale/nl_BE', 'GET');
     $controller = new LocaleController;
 
-    $this->expectException(Symfony\Component\HttpKernel\Exception\HttpException::class);
+    $this->expectException(HttpException::class);
 
     $controller->update($request, 'nl_BE');
 });

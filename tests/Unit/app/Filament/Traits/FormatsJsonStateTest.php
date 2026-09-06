@@ -1,24 +1,21 @@
 <?php
 
-use App\Filament\Traits\FormatsJsonState;
+/** @noinspection PhpUnhandledExceptionInspection */
+
+use App\Filament\Resources\Activities\Schemas\Sections\PropertiesSection;
 use Illuminate\Support\Collection;
 
-beforeEach(function () {
-    $this->formatter = new class
-    {
-        use FormatsJsonState;
+function formatJsonStateForTest(mixed $state): ?string
+{
+    $method = new ReflectionMethod(PropertiesSection::class, 'formatJsonState');
 
-        public function format(mixed $state): ?string
-        {
-            return self::formatJsonState($state);
-        }
-    };
-});
+    return $method->invoke(null, $state);
+}
 
 it('returns null when the state is empty', function () {
-    expect($this->formatter->format(null))->toBeNull()
-        ->and($this->formatter->format([]))->toBeNull()
-        ->and($this->formatter->format(new Collection))->toBeNull();
+    expect(formatJsonStateForTest(null))->toBeNull()
+        ->and(formatJsonStateForTest([]))->toBeNull()
+        ->and(formatJsonStateForTest(new Collection))->toBeNull();
 });
 
 it('hides keys with empty values but keeps populated ones', function () {
@@ -29,7 +26,7 @@ it('hides keys with empty values but keeps populated ones', function () {
         'old_categories' => ['itaque', 'quasi'],
     ];
 
-    $output = $this->formatter->format($state);
+    $output = formatJsonStateForTest($state);
 
     expect($output)->toContain('**Categories**')
         ->and($output)->toContain('- event categorie')
@@ -48,7 +45,7 @@ it('renders associative scalar values as key value pairs', function () {
         ],
     ];
 
-    $output = $this->formatter->format($state);
+    $output = formatJsonStateForTest($state);
 
     expect($output)->toContain('**Attributes**')
         ->and($output)->toContain('- **Address:** De Costerlaan 300')
@@ -63,7 +60,7 @@ it('formats booleans as Yes and No and keeps false values', function () {
         'preview' => false,
     ];
 
-    $output = $this->formatter->format($state);
+    $output = formatJsonStateForTest($state);
 
     expect($output)->toContain('- **Thumb:** '.__('Yes'))
         ->and($output)->toContain('- **Preview:** '.__('No'));
@@ -72,7 +69,7 @@ it('formats booleans as Yes and No and keeps false values', function () {
 it('normalizes a JSON string into formatted markdown', function () {
     $state = '{"categories":["itaque","quasi"]}';
 
-    $output = $this->formatter->format($state);
+    $output = formatJsonStateForTest($state);
 
     expect($output)->toContain('**Categories**')
         ->and($output)->toContain('- itaque')
@@ -84,7 +81,7 @@ it('normalizes a collection cast into formatted markdown', function () {
         'categories' => ['itaque', 'quasi'],
     ]);
 
-    $output = $this->formatter->format($state);
+    $output = formatJsonStateForTest($state);
 
     expect($output)->toContain('**Categories**')
         ->and($output)->toContain('- itaque');
@@ -93,7 +90,7 @@ it('normalizes a collection cast into formatted markdown', function () {
 it('truncates the base64svg value', function () {
     $long = str_repeat('a', 100);
 
-    $output = $this->formatter->format(['base64svg' => $long]);
+    $output = formatJsonStateForTest(['base64svg' => $long]);
 
     expect($output)->toContain('...')
         ->and(mb_strlen($output))->toBeLessThan(mb_strlen('- **Base64svg:** '.$long));
@@ -102,7 +99,7 @@ it('truncates the base64svg value', function () {
 it('does not truncate other long scalar values', function () {
     $long = str_repeat('a', 100);
 
-    $output = $this->formatter->format(['content' => $long]);
+    $output = formatJsonStateForTest(['content' => $long]);
 
     expect($output)->toContain($long)
         ->and($output)->not->toContain('...');

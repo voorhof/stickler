@@ -1,15 +1,14 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
+use App\Models\Post;
 use App\Traits\LogsTrashedActivity;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Activity;
 
 test('it does not change event name if event name is not deleted', function () {
-    $model = new class
-    {
-        use LogsTrashedActivity;
-    };
+    $model = Mockery::mock(Post::class)->makePartial();
+    $model->shouldReceive('isForceDeleting')->never();
 
     $activity = new Activity;
     $activity->event = 'updated';
@@ -20,10 +19,7 @@ test('it does not change event name if event name is not deleted', function () {
 });
 
 test('it does not change event name if model does not use soft deletes', function () {
-    $model = new class
-    {
-        use LogsTrashedActivity;
-    };
+    $model = Mockery::mock(LogsTrashedActivity::class);
 
     $activity = new Activity;
     $activity->event = 'deleted';
@@ -34,15 +30,8 @@ test('it does not change event name if model does not use soft deletes', functio
 });
 
 test('it keeps event name deleted when force deleting', function () {
-    $model = new class extends Model
-    {
-        use LogsTrashedActivity, SoftDeletes;
-
-        public function isForceDeleting(): bool
-        {
-            return true;
-        }
-    };
+    $model = Mockery::mock(Post::class)->makePartial();
+    $model->shouldReceive('isForceDeleting')->once()->andReturnTrue();
 
     $activity = new Activity;
     $activity->event = 'deleted';
@@ -53,15 +42,8 @@ test('it keeps event name deleted when force deleting', function () {
 });
 
 test('it changes event name to trashed when soft deleting', function () {
-    $model = new class extends Model
-    {
-        use LogsTrashedActivity, SoftDeletes;
-
-        public function isForceDeleting(): bool
-        {
-            return false;
-        }
-    };
+    $model = Mockery::mock(Post::class)->makePartial();
+    $model->shouldReceive('isForceDeleting')->once()->andReturnFalse();
 
     $activity = new Activity;
     $activity->event = 'deleted';

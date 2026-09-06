@@ -1,8 +1,12 @@
 <?php
 
+/** @noinspection PhpUndefinedFieldInspection */
+
 use App\Models\Tag;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Activitylog\Support\LogOptions;
 
 uses(RefreshDatabase::class);
 
@@ -195,19 +199,19 @@ test('it returns default fallback locale', function () {
 test('it has media relationship', function () {
     $tag = new Tag;
 
-    expect($tag->media())->toBeInstanceOf(Illuminate\Database\Eloquent\Relations\MorphToMany::class);
+    expect($tag->media())->toBeInstanceOf(MorphToMany::class);
 });
 
 test('it has posts relationship', function () {
     $tag = new Tag;
 
-    expect($tag->posts())->toBeInstanceOf(Illuminate\Database\Eloquent\Relations\MorphToMany::class);
+    expect($tag->posts())->toBeInstanceOf(MorphToMany::class);
 });
 
 test('it has projects relationship', function () {
     $tag = new Tag;
 
-    expect($tag->projects())->toBeInstanceOf(Illuminate\Database\Eloquent\Relations\MorphToMany::class);
+    expect($tag->projects())->toBeInstanceOf(MorphToMany::class);
 });
 
 test('it generates unique url_slug for tags with same name', function () {
@@ -222,5 +226,5 @@ test('it configures activity log options correctly', function () {
     $tag = new Tag;
     $options = $tag->getActivitylogOptions();
 
-    expect($options)->toBeInstanceOf(Spatie\Activitylog\Support\LogOptions::class);
+    expect($options)->toBeInstanceOf(LogOptions::class);
 });

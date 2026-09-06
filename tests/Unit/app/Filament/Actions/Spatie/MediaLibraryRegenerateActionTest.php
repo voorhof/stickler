@@ -5,13 +5,8 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Filament\Facades\Filament;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Pages\Page;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
-
-use function Pest\Livewire\livewire;
 
 uses(RefreshDatabase::class);
 
@@ -42,26 +37,20 @@ it('has the correct default name', function () {
 
 it('can call the mediaGenerate action', function () {
     Artisan::shouldReceive('call')->with('media-library:regenerate --with-responsive-images --force --queue-all')->once();
-    Artisan::shouldReceive('output')->once()->andReturn("Line 1\nResult: Success");
+    Artisan::shouldReceive('output')->once()->andReturn('Result: Success');
 
-    $page = new class extends Page implements HasForms
-    {
-        use InteractsWithForms;
+    MediaLibraryRegenerateAction::make()->call();
 
-        public function render(): Illuminate\Contracts\View\View
-        {
-            return view('filament-panels::components.page.index');
-        }
+    $notification = DB::table('notifications')
+        ->where('notifiable_type', User::class)
+        ->where('notifiable_id', $this->adminUser->id)
+        ->latest()
+        ->first();
 
-        protected function getHeaderActions(): array
-        {
-            return [
-                MediaLibraryRegenerateAction::make(),
-            ];
-        }
-    };
+    expect($notification)->not->toBeNull();
 
-    livewire($page::class)
-        ->callAction('mediaGenerate')
-        ->assertNotified();
+    $data = json_decode($notification->data, true);
+
+    expect($data['title'])->toBe(__('Regenerating media queued'))
+        ->and($data['body'])->toBe(__('Result: Success'));
 });

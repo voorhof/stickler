@@ -1,27 +1,31 @@
 <?php
 
-/** @noinspection PhpUnhandledExceptionInspection */
+/** @noinspection PhpUnhandledExceptionInspection, PhpRedundantOptionalArgumentInspection */
 
 use App\Actions\RichContent\CopyRichContentMedia;
 use App\Actions\RichContent\SyncImageAltToMediaName;
 use App\Models\Post;
 use App\Models\User;
-use App\Observers\Traits\SyncsRichContentImageAltText;
+use App\Observers\PostObserver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
+function callSyncImageAltToMediaName(PostObserver $observer, Post $post, array $attributes = ['content']): void
+{
+    (function () use ($post, $attributes): void {
+        $this->syncImageAltToMediaName($post, $attributes);
+    })->call($observer);
+}
+
+function callCopyRichContentMedia(PostObserver $observer, Post $post, array $attributes = ['content']): void
+{
+    (function () use ($post, $attributes): void {
+        $this->copyRichContentMedia($post, $attributes);
+    })->call($observer);
+}
+
 test('it calls sync image alt to media name action when trait method is invoked', function () {
-    $observer = new class
-    {
-        use SyncsRichContentImageAltText;
-
-        public function publicSync($model, $attributes = ['content']): void
-        {
-            $this->syncImageAltToMediaName($model, $attributes);
-        }
-    };
-
     User::factory()->create();
 
     $post = Post::factory()->create([
@@ -37,20 +41,10 @@ test('it calls sync image alt to media name action when trait method is invoked'
 
     app()->instance(SyncImageAltToMediaName::class, $mock);
 
-    $observer->publicSync($post, ['content']);
+    callSyncImageAltToMediaName(new PostObserver, $post, ['content']);
 });
 
 test('it calls copy rich content media action when trait method is invoked', function () {
-    $observer = new class
-    {
-        use SyncsRichContentImageAltText;
-
-        public function publicCopy($model, $attributes = ['content']): void
-        {
-            $this->copyRichContentMedia($model, $attributes);
-        }
-    };
-
     User::factory()->create();
 
     $post = Post::factory()->create([
@@ -66,5 +60,5 @@ test('it calls copy rich content media action when trait method is invoked', fun
 
     app()->instance(CopyRichContentMedia::class, $mock);
 
-    $observer->publicCopy($post, ['content']);
+    callCopyRichContentMedia(new PostObserver, $post, ['content']);
 });

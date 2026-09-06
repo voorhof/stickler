@@ -2,8 +2,10 @@
 
 /** @noinspection PhpUnhandledExceptionInspection */
 
+use App\Models\Media;
 use App\Models\Post;
 use App\Models\User;
+use App\Observers\PostObserver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use function Pest\Laravel\actingAs;
@@ -78,7 +80,7 @@ it('syncs image alt text to media name when a post is saved with rich content', 
         'content' => '<p><img src="/storage/test.jpg" alt="Observer Test Alt" data-id="'.$uuid.'"></p>',
     ]);
 
-    $media = App\Models\Media::create([
+    $media = Media::create([
         'uuid' => $uuid,
         'model_type' => $post->getMorphClass(),
         'model_id' => $post->getKey(),
@@ -116,7 +118,7 @@ it('calls syncImageAltToMediaName in post observer saved method', function (): v
         'content' => '<p><img src="/storage/test.jpg" alt="Direct Observer Alt" data-id="'.$uuid.'"></p>',
     ]);
 
-    $media = App\Models\Media::create([
+    $media = Media::create([
         'uuid' => $uuid,
         'model_type' => $post->getMorphClass(),
         'model_id' => $post->getKey(),
@@ -132,7 +134,7 @@ it('calls syncImageAltToMediaName in post observer saved method', function (): v
         'responsive_images' => [],
     ]);
 
-    $observer = new App\Observers\PostObserver;
+    $observer = new PostObserver;
     $observer->saved($post);
 
     expect($media->fresh()->name)->toBe('Direct Observer Alt');

@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUndefinedMethodInspection, PhpPossiblePolymorphicInvocationInspection */
+
 use App\Models\Permission;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Activitylog\Support\LogOptions;

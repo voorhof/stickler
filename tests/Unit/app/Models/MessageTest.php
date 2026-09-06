@@ -3,7 +3,9 @@
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Spatie\Activitylog\Support\LogOptions;
 
 uses(RefreshDatabase::class);
 
@@ -229,13 +231,13 @@ test('it returns a default user instance when updater is not loaded', function (
 test('replied_at is cast to a datetime instance', function () {
     $message = Message::factory()->create(['replied_at' => '2024-01-15 12:00:00']);
 
-    expect($message->replied_at)->toBeInstanceOf(Illuminate\Support\Carbon::class);
+    expect($message->replied_at)->toBeInstanceOf(Carbon::class);
 });
 
 test('archived_at is cast to a datetime instance', function () {
     $message = Message::factory()->create(['archived_at' => '2024-01-15 12:00:00']);
 
-    expect($message->archived_at)->toBeInstanceOf(Illuminate\Support\Carbon::class);
+    expect($message->archived_at)->toBeInstanceOf(Carbon::class);
 });
 
 test('read is cast to a boolean', function () {
@@ -272,5 +274,5 @@ test('it configures activity log options correctly', function () {
     $message = new Message;
     $options = $message->getActivitylogOptions();
 
-    expect($options)->toBeInstanceOf(Spatie\Activitylog\Support\LogOptions::class);
+    expect($options)->toBeInstanceOf(LogOptions::class);
 });

@@ -6,6 +6,8 @@ use App\Models\Permission;
 use App\Models\Post;
 use App\Models\Role;
 use App\Models\User;
+use Filament\Facades\Filament;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
@@ -268,7 +270,7 @@ test('email_verified_at is cast to a datetime instance', function () {
 });
 
 test('it can access the admin panel when it has the access admin permission', function () {
-    $panel = Filament\Facades\Filament::getPanel('admin'); // @phpstan-ignore-line
+    $panel = Filament::getPanel('admin'); // @phpstan-ignore-line
 
     $user = User::factory()->create();
     expect($user->canAccessPanel($panel))->toBeFalse();
@@ -353,43 +355,43 @@ test('it returns default user instance when creator or updater is not loaded', f
 test('it has relations for created and updated media', function () {
     $user = User::factory()->create();
 
-    expect($user->createdMedia())->toBeInstanceOf(Illuminate\Database\Eloquent\Relations\HasMany::class)
-        ->and($user->updatedMedia())->toBeInstanceOf(Illuminate\Database\Eloquent\Relations\HasMany::class);
+    expect($user->createdMedia())->toBeInstanceOf(HasMany::class)
+        ->and($user->updatedMedia())->toBeInstanceOf(HasMany::class);
 });
 
 test('it has relations for created and updated messages', function () {
     $user = User::factory()->create();
 
-    expect($user->createdMessages())->toBeInstanceOf(Illuminate\Database\Eloquent\Relations\HasMany::class)
-        ->and($user->updatedMessages())->toBeInstanceOf(Illuminate\Database\Eloquent\Relations\HasMany::class);
+    expect($user->createdMessages())->toBeInstanceOf(HasMany::class)
+        ->and($user->updatedMessages())->toBeInstanceOf(HasMany::class);
 });
 
 test('it has relations for created and updated projects', function () {
     $user = User::factory()->create();
 
-    expect($user->createdProjects())->toBeInstanceOf(Illuminate\Database\Eloquent\Relations\HasMany::class)
-        ->and($user->updatedProjects())->toBeInstanceOf(Illuminate\Database\Eloquent\Relations\HasMany::class);
+    expect($user->createdProjects())->toBeInstanceOf(HasMany::class)
+        ->and($user->updatedProjects())->toBeInstanceOf(HasMany::class);
 });
 
 test('it has relations for created and updated roles', function () {
     $user = User::factory()->create();
 
-    expect($user->createdRoles())->toBeInstanceOf(Illuminate\Database\Eloquent\Relations\HasMany::class)
-        ->and($user->updatedRoles())->toBeInstanceOf(Illuminate\Database\Eloquent\Relations\HasMany::class);
+    expect($user->createdRoles())->toBeInstanceOf(HasMany::class)
+        ->and($user->updatedRoles())->toBeInstanceOf(HasMany::class);
 });
 
 test('it has relations for created and updated tags', function () {
     $user = User::factory()->create();
 
-    expect($user->createdTags())->toBeInstanceOf(Illuminate\Database\Eloquent\Relations\HasMany::class)
-        ->and($user->updatedTags())->toBeInstanceOf(Illuminate\Database\Eloquent\Relations\HasMany::class);
+    expect($user->createdTags())->toBeInstanceOf(HasMany::class)
+        ->and($user->updatedTags())->toBeInstanceOf(HasMany::class);
 });
 
 test('it has relations for created and updated users', function () {
     $user = User::factory()->create();
 
-    expect($user->createdUsers())->toBeInstanceOf(Illuminate\Database\Eloquent\Relations\HasMany::class)
-        ->and($user->updatedUsers())->toBeInstanceOf(Illuminate\Database\Eloquent\Relations\HasMany::class);
+    expect($user->createdUsers())->toBeInstanceOf(HasMany::class)
+        ->and($user->updatedUsers())->toBeInstanceOf(HasMany::class);
 });
 
 test('it configures activity log options correctly', function () {

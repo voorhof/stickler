@@ -1,11 +1,12 @@
 <?php
 
-/** @noinspection PhpPossiblePolymorphicInvocationInspection */
+/** @noinspection PhpPossiblePolymorphicInvocationInspection, PhpUndefinedFieldInspection */
 
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Permission\Exceptions\RoleAlreadyExists;
 
 uses(RefreshDatabase::class);
@@ -301,5 +302,5 @@ test('it configures activity log options correctly', function () {
     $role = new Role;
     $options = $role->getActivitylogOptions();
 
-    expect($options)->toBeInstanceOf(Spatie\Activitylog\Support\LogOptions::class);
+    expect($options)->toBeInstanceOf(LogOptions::class);
 });
