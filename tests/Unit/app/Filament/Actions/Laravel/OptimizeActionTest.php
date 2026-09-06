@@ -1,8 +1,8 @@
 <?php
 
 use App\Filament\Actions\Laravel\OptimizeAction;
+use \Filament\Pages\Page;
 use Illuminate\Contracts\View\View;
-use Filament\Pages\Page;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;

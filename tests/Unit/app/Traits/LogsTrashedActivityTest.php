@@ -1,7 +1,5 @@
 <?php
 
-/** @noinspection PhpIllegalPsrClassPathInspection */
-
 use App\Traits\LogsTrashedActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
