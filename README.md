@@ -15,6 +15,8 @@ and developer tooling for testing, debugging, and code quality.
 
 The starter kit is designed to give new projects a strong production-ready baseline while still being easy to customize for each website or application.
 
+[Bootstrap](https://getbootstrap.com/) frontend toolkit is used for styling the public views.
+
 ## Installing Stickler
 
 ### Laravel Installer
@@ -36,6 +38,11 @@ APP_URL=https://stickler.test
 
 RESPONSE_CACHE_ENABLED=true
 ```
+
+You can log in to the Filament admin dashboard via `/admin` using the login details defined in .env:
+
+- email: admin@example.com
+- password: password
 
 ### Custom installation
 
