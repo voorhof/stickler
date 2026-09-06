@@ -8,13 +8,58 @@ A Laravel application starter kit.
 
 Stickler website and custom CMS built with Laravel and Filament.
 
+Stickler provides a ready-to-use foundation for building content-driven Laravel websites with a custom Filament admin panel. 
+It includes structured content management, user roles and permissions, media handling, tags, settings, activity logging, 
+health checks, backups, sitemap generation, spam protection, cookie consent, response caching, 
+and developer tooling for testing, debugging, and code quality.
+
+The starter kit is designed to give new projects a strong production-ready baseline while still being easy to customize for each website or application.
+
 ## Installing Stickler
 
-The easiest way to install this starter kit is by using the [Laravel Installer](https://github.com/laravel/installer).
+### Laravel Installer
+
+The easiest way to install this starter kit is using the [Laravel Installer](https://github.com/laravel/installer).
+This will set up the project automatically.
 
 ```bash
 laravel new my-app --using=voorhof/stickler
 ```
+
+After installation, update the variables, such as `APP_NAME` and `APP_URL`, in the `.env` file so that they match your environment.
+
+You can also set `RESPONSE_CACHE_ENABLED` to true (not required for development, but useful for production)
+
+```dotenv
+APP_NAME=Stickler
+APP_URL=https://stickler.test
+
+RESPONSE_CACHE_ENABLED=true
+```
+
+### Custom installation
+
+You may also install Stickler manually by cloning the repository and running the following commands:
+
+```bash
+git clone https://github.com/voorhof/stickler.git my-app
+cd my-app
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+```
+
+Make sure you have all this covered:
+- composer install
+- npm install
+- storage symlink
+- database creation
+- migration & test data seeding
+- PhpStorm settings (or other editor)
+- update art in public folder (and references to the logo's inside blade views)
+- re-generate llms.txt to fit your project
+
 
 ## Filament CMS
 

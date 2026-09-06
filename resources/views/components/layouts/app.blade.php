@@ -50,8 +50,8 @@
     <meta property="og:description" content="{{ config('app.name') }} website template">
     <meta property="og:url" content="{{ config('app.url') }}/">
     <meta property="og:site_name" content="{{ str_replace('https://', '', config('app.url')) }}">
-    <meta property="og:image" content="{{ config('app.url') }}/art/logo/pietjeprecies_logo_bg.png">
-    <meta property="og:image:secure_url" content="{{ config('app.url') }}/art/logo/pietjeprecies_logo_bg.png">
+    <meta property="og:image" content="{{ config('app.url') }}/art/logo/logo_bg.png">
+    <meta property="og:image:secure_url" content="{{ config('app.url') }}/art/logo/logo_bg.png">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="2160">
     <meta property="og:image:height" content="960">
