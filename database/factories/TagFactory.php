@@ -22,8 +22,8 @@ class TagFactory extends Factory
         $slug = Str::limit(Str::slug($name, '-', 'nl'), 48, '');
 
         return [
-            'name' => $this->translations(['nl_BE', 'en_US'], $name),
-            'slug' => $this->translations(['nl_BE', 'en_US'], $slug),
+            'name' => $this->translations(['nl', 'en'], $name),
+            'slug' => $this->translations(['nl', 'en'], $slug),
             'url_slug' => $slug,
             'created_by_user_id' => 1,
             'updated_by_user_id' => 1,

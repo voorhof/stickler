@@ -6,8 +6,8 @@ use Illuminate\Support\Facades\File;
 
 it('has properly ordered keys in json files', function () {
     $files = [
-        base_path('lang/en_US.json'),
-        base_path('lang/nl_BE.json'),
+        base_path('lang/en.json'),
+        base_path('lang/nl.json'),
     ];
 
     foreach ($files as $file) {
@@ -29,7 +29,7 @@ it('has properly ordered keys in json files', function () {
 });
 
 it('has properly ordered keys in php files', function () {
-    $locales = ['en_US', 'nl_BE'];
+    $locales = ['en', 'nl'];
 
     foreach ($locales as $locale) {
         $path = base_path("lang/$locale");
@@ -59,18 +59,18 @@ it('has properly ordered keys in php files', function () {
 
 it('has no missing translation keys', function () {
     // Check JSON files
-    $enUsJson = json_decode(File::get(base_path('lang/en_US.json')), true);
-    $nlBeJson = json_decode(File::get(base_path('lang/nl_BE.json')), true);
+    $enJson = json_decode(File::get(base_path('lang/en.json')), true);
+    $nlJson = json_decode(File::get(base_path('lang/nl.json')), true);
 
-    if ($enUsJson !== null && $nlBeJson !== null) {
-        $enUsKeys = array_keys($enUsJson);
-        $nlBeKeys = array_keys($nlBeJson);
+    if ($enJson !== null && $nlJson !== null) {
+        $enKeys = array_keys($enJson);
+        $nlKeys = array_keys($nlJson);
 
-        $missingInNl = array_diff($enUsKeys, $nlBeKeys);
-        $missingInEn = array_diff($nlBeKeys, $enUsKeys);
+        $missingInNl = array_diff($enKeys, $nlKeys);
+        $missingInEn = array_diff($nlKeys, $enKeys);
 
-        expect($missingInNl)->toBeEmpty('Keys missing in nl_BE.json: '.implode(', ', $missingInNl))
-            ->and($missingInEn)->toBeEmpty('Keys missing in en_US.json: '.implode(', ', $missingInEn));
+        expect($missingInNl)->toBeEmpty('Keys missing in nl.json: '.implode(', ', $missingInNl))
+            ->and($missingInEn)->toBeEmpty('Keys missing in en.json: '.implode(', ', $missingInEn));
     }
 
     // Check PHP files
@@ -99,8 +99,8 @@ it('has no missing translation keys', function () {
         }
     };
 
-    $checkPhpFiles('en_US', 'nl_BE');
-    $checkPhpFiles('nl_BE', 'en_US');
+    $checkPhpFiles('en', 'nl');
+    $checkPhpFiles('nl', 'en');
 });
 
 it('checks vendor translations', function () {
@@ -113,8 +113,8 @@ it('checks vendor translations', function () {
 
     foreach ($packages as $packagePath) {
         $packageName = basename($packagePath);
-        $enUsPath = "$packagePath/en_US";
-        $nlBePath = "$packagePath/nl_BE";
+        $enUsPath = "$packagePath/en";
+        $nlBePath = "$packagePath/nl";
 
         $checkFiles = function ($sourcePath, $targetPath, $sourceLocale, $targetLocale) use ($packageName) {
             if (! File::isDirectory($sourcePath)) {
@@ -143,7 +143,7 @@ it('checks vendor translations', function () {
             }
         };
 
-        $checkFiles($enUsPath, $nlBePath, 'en_US', 'nl_BE');
-        $checkFiles($nlBePath, $enUsPath, 'nl_BE', 'en_US');
+        $checkFiles($enUsPath, $nlBePath, 'en', 'nl');
+        $checkFiles($nlBePath, $enUsPath, 'nl', 'en');
     }
 });

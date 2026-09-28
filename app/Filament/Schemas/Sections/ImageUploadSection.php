@@ -24,7 +24,7 @@ class ImageUploadSection
                     ->label(__('Images'))
                     ->hiddenLabel()
                     ->collection('images')
-                    ->placeholder(fn (): string => str_replace('-', '_', app()->getLocale()) === 'nl_BE'
+                    ->placeholder(fn (): string => str_replace('-', '_', app()->getLocale()) === 'nl'
                         ? 'Sleep je afbeeldingen hierheen of <span class="filepond--label-action">Blader</span>'
                         : 'Drag & Drop your images or <span class="filepond--label-action">Browse</span>')
                     ->image()

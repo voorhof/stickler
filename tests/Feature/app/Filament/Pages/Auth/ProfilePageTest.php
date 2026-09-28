@@ -34,7 +34,7 @@ beforeEach(function () {
 
     $this->adminUser->assignRole($adminRole);
 
-    app()->setLocale('en_US');
+    app()->setLocale('en');
 
     $this->actingAs($this->adminUser);
 });
@@ -46,7 +46,7 @@ it('can load the profile page', function () {
 });
 
 it('shows the dutch avatar upload placeholder on the profile page', function () {
-    app()->setLocale('nl_BE');
+    app()->setLocale('nl');
 
     get('/admin/profile')
         ->assertSuccessful()
@@ -54,7 +54,7 @@ it('shows the dutch avatar upload placeholder on the profile page', function () 
 });
 
 it('aliases nl_BE to nl for file upload localization in filament', function () {
-    app()->setLocale('nl_BE');
+    app()->setLocale('nl');
 
     get('/admin/profile')
         ->assertSuccessful()

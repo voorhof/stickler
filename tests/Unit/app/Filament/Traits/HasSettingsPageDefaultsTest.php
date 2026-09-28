@@ -13,7 +13,7 @@ use function Pest\Livewire\livewire;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    app()->setLocale('en_US');
+    app()->setLocale('en');
     Filament::setCurrentPanel(Filament::getPanel('admin'));
     Filament::bootCurrentPanel();
 

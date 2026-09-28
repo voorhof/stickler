@@ -31,7 +31,7 @@ test('it updates locale successfully when authenticated and locale is supported'
 
     $response->assertRedirect();
     expect($user->fresh()->locale)->toBe('nl_BE')
-        ->and(app()->getLocale())->toBe('nl_BE');
+        ->and(app()->getLocale())->toBe('nl');
 });
 
 test('it returns 404 when locale is unsupported', function () {
@@ -45,7 +45,7 @@ test('it returns 404 when locale is unsupported', function () {
 });
 
 test('it aborts 403 when unauthenticated in controller', function () {
-    $request = Request::create('/admin/locale/nl_BE', 'GET');
+    $request = Request::create('/admin/locale/nl_BE');
     $controller = new LocaleController;
 
     $this->expectException(HttpException::class);

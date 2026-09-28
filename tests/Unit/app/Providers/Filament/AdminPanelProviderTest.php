@@ -2,6 +2,9 @@
 
 use App\Filament\Pages\Auth\EditProfile;
 use App\Http\Middleware\SetLocaleFromUserPreference;
+use App\Models\Permission;
+use App\Models\Role;
+use App\Models\User;
 use App\Providers\Filament\AdminPanelProvider;
 use Asmit\ResizedColumn\ResizedColumnPlugin;
 use Filament\Facades\Filament;
@@ -19,9 +22,12 @@ use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+
+uses(RefreshDatabase::class);
 
 test('it extends PanelProvider', function () {
     $provider = new AdminPanelProvider(app());
@@ -173,13 +179,21 @@ test('it configures user menu items correctly', function () {
 
     $originalLocale = app()->getLocale();
 
-    app()->setLocale('en_US');
-    expect($enItem->getLabel())->toBe('✓ English')
-        ->and($nlItem->getLabel())->toBe('Nederlands');
+    $adminUser = User::factory()->create([
+        'password' => 'password',
+        'locale' => 'nl_BE',
+    ]);
+    $adminRole = Role::factory()->create(['name' => 'Admin']);
+    $adminRole->givePermissionTo(Permission::create(['name' => 'access admin']));
+    $adminUser->assignRole($adminRole);
+    $this->actingAs($adminUser);
 
-    app()->setLocale('nl_BE');
     expect($enItem->getLabel())->toBe('English')
         ->and($nlItem->getLabel())->toBe('✓ Nederlands');
+
+    $adminUser->update(['locale' => 'en_US']);
+    expect($enItem->getLabel())->toBe('✓ English')
+        ->and($nlItem->getLabel())->toBe('Nederlands');
 
     app()->setLocale($originalLocale);
 });

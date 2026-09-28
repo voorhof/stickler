@@ -187,13 +187,13 @@ test('it returns name as title attribute', function () {
 test('it returns default locale', function () {
     $tag = new Tag;
 
-    expect($tag->getLocale())->toBe('nl_BE');
+    expect($tag->getLocale())->toBe('nl');
 });
 
 test('it returns default fallback locale', function () {
     $tag = new Tag;
 
-    expect($tag->getFallbackLocale())->toBe('en_US');
+    expect($tag->getFallbackLocale())->toBe('en');
 });
 
 test('it has media relationship', function () {
