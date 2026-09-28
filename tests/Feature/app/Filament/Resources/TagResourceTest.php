@@ -118,7 +118,7 @@ it('can create a tag', function () {
         ->assertNotified();
 
     $this->assertDatabaseHas(Tag::class, [
-        'name->nl_BE' => 'My New Tag',
+        'name->nl' => 'My New Tag',
     ]);
 });
 
@@ -150,7 +150,7 @@ it('can edit a tag', function () {
 
     $this->assertDatabaseHas(Tag::class, [
         'id' => $tag->id,
-        'name->nl_BE' => 'Updated Tag Title',
+        'name->nl' => 'Updated Tag Title',
         'url_slug' => 'updated-slug',
     ]);
 });

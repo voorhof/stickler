@@ -1,11 +1,15 @@
 {{--
-Script for normalizing locale values (supports both `nl_BE` and `nl-BE`) before aliasing to `nl`.
-Fix is needed for upload-localization of FilePond locale aliasing in an `nl_BE` setup.
+Script for normalizing locale values (e.g. `nl_BE`, `nl_NL`, `en_US`, `en_UK`, `en_GB`) before aliasing to base languages (`nl`, `en`).
+Provides upload-localization compatibility for FilePond in multi-regional setups.
 --}}
 <script data-navigate-once>
     (() => {
         const localeAliases = {
             nl_be: 'nl',
+            nl_nl: 'nl',
+            en_us: 'en',
+            en_uk: 'en',
+            en_gb: 'en',
         }
 
         const normalizeLocale = (locale) => {

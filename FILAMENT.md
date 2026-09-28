@@ -30,11 +30,10 @@ php artisan make:provider Filament/UiServiceProvider
 
 ### Translation files
 
-Language files for the `en_US` and `nl_BE` locales are located in `lang/vendor/filament`.
-When publishing the default Filament lang folders, the name for Dutch translations is originally `nl`,
-but **we have renamed those folders to `nl_BE`** for consistency with the default Belgian locale.
+Language files for the `en` and `nl` languages are located in `lang/vendor/filament` and other vendor packages.
+Translations use standard ISO 639-1 base language codes (`en`, `nl`).
 
-These commands will (re-)publish the language files, be sure to rename the `nl` folder to `nl_BE` afterward:
+These commands will (re-)publish the language files:
 
 ```bash
 php artisan vendor:publish --tag=filament-translations
@@ -48,8 +47,8 @@ php artisan vendor:publish --tag=filament-tables-translations
 php artisan vendor:publish --tag=filament-widgets-translations
 ```
 
-The Laravel's framework own English language files have also been published (and customized).
-You can find them inside the `lang` root folder, together with the translated nl_BE locale version.
+The Laravel framework's own language files have also been published (and customized).
+You can find them inside the `lang` root folder (`lang/en`, `lang/nl`, `lang/en.json`, `lang/nl.json`).
 
 This command will (re-)publish the English language files:
 

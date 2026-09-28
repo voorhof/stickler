@@ -1,7 +1,5 @@
 <?php
 
-/** @noinspection PhpUnused */
-
 namespace App\Models;
 
 use App\Observers\TagObserver;
@@ -144,12 +142,12 @@ class Tag extends BaseTag implements Sortable
 
     public static function getLocale(): string
     {
-        return 'nl_BE';
+        return 'nl';
     }
 
     public function getFallbackLocale(): string
     {
-        return 'en_US';
+        return 'en';
     }
 
     /*

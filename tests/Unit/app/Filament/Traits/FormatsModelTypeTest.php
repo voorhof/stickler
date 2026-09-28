@@ -12,7 +12,7 @@ function formatModelTypeForTest(?string $type): string
 }
 
 beforeEach(function () {
-    app()->setLocale('en_US');
+    app()->setLocale('en');
 });
 
 it('returns a dash when type is blank', function () {

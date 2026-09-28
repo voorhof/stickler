@@ -48,10 +48,10 @@ class AdminPanelProvider extends PanelProvider
             )
             ->userMenuItems([
                 'locale-en_US' => Action::make('locale-en_US')
-                    ->label(fn (): string => app()->getLocale() === 'en_US' ? '✓ English' : 'English')
+                    ->label(fn (): string => auth()->user()?->locale === 'en_US' ? '✓ English' : 'English')
                     ->url(fn (): string => route('filament.admin.locale.update', ['locale' => 'en_US'])),
                 'locale-nl_BE' => Action::make('locale-nl_BE')
-                    ->label(fn (): string => app()->getLocale() === 'nl_BE' ? '✓ Nederlands' : 'Nederlands')
+                    ->label(fn (): string => auth()->user()?->locale === 'nl_BE' ? '✓ Nederlands' : 'Nederlands')
                     ->url(fn (): string => route('filament.admin.locale.update', ['locale' => 'nl_BE'])),
             ])
             ->brandLogo(fn () => view('filament.brand-logo'))

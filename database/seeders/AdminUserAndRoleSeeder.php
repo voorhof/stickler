@@ -26,7 +26,7 @@ class AdminUserAndRoleSeeder extends Seeder
             'name' => config('stickler.admin_users.admin.name'),
             'email' => config('stickler.admin_users.admin.email'),
             'password' => Hash::make(config('stickler.admin_users.admin.password')),
-            'locale' => config('app.locale'),
+            'locale' => config('app.faker_locale'),
         ]);
 
         // Create ceo user
@@ -35,7 +35,7 @@ class AdminUserAndRoleSeeder extends Seeder
             'name' => config('stickler.admin_users.ceo.name'),
             'email' => config('stickler.admin_users.ceo.email'),
             'password' => Hash::make(config('stickler.admin_users.ceo.password')),
-            'locale' => config('app.locale'),
+            'locale' => config('app.faker_locale'),
         ]);
 
         // Create permissions

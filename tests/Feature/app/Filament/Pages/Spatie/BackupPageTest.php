@@ -19,7 +19,7 @@ use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumStorageInMegabytes;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    config(['app.locale' => 'en_US']);
+    config(['app.locale' => 'en']);
     config(['logging.channels.single.path' => storage_path('logs/testing.log')]);
     Filament::setCurrentPanel(Filament::getPanel('admin'));
     Filament::bootCurrentPanel();

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
+<html lang="{{ str_replace('_', '-', $user?->locale ?? 'nl_BE') }}" data-theme="auto">
 <head>
     @stack('scripts-head-top')
     {{-- Required meta --}}
@@ -81,6 +81,8 @@
 
     <x-footer />
 </div>
+
+<x-footer-pietje />
 
 @include('cookie-consent::index')
 @stack('modals-bottom')

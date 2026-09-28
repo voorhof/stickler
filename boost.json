@@ -19,8 +19,11 @@
     "sail": false,
     "skills": [
         "infer-conventions",
+        "deploying-to-cloud",
         "laravel-best-practices",
         "testing-best-practices",
+        "telescope-debugging",
+        "filament-development",
         "laravel-backup",
         "medialibrary-development",
         "laravel-permission-development",

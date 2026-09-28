@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Public\StoreMessageRequest;
 use App\Mail\ContactMessageReceived;
 use App\Models\Message;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
@@ -24,7 +25,7 @@ class ContactController extends Controller
     /**
      * Store a newly created contact message in storage.
      */
-    public function store(StoreMessageRequest $request)
+    public function store(StoreMessageRequest $request): RedirectResponse
     {
         $message = Message::create($request->validated());
 

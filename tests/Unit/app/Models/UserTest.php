@@ -213,12 +213,7 @@ test('it applies name mutators and accessors', function () {
 });
 
 test('it has default locale when none is provided', function () {
-    $user = User::factory()->create([
-        'name' => 'Locale',
-        'email' => 'default.locale@example.com',
-        'password' => 'password',
-        'locale' => app()->getLocale(),
-    ]);
+    $user = new User;
 
     expect($user->locale)->toBe('nl_BE');
 });

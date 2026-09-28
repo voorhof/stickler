@@ -78,13 +78,23 @@ return [
     |
     */
 
-    'locale' => env('APP_LOCALE', 'nl_BE'),
+    'locale' => env('APP_LOCALE', 'nl'),
 
-    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en_US'),
+    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
 
-    'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
+    'faker_locale' => env('APP_FAKER_LOCALE', 'nl_BE'),
 
-    'supported_locales' => ['en_US', 'nl_BE'],
+    'supported_languages' => ['nl', 'en'],
+
+    'supported_locales' => ['nl_BE', 'nl_NL', 'en_US', 'en_UK', 'en_GB'],
+
+    'locale_map' => [
+        'nl_BE' => 'nl',
+        'nl_NL' => 'nl',
+        'en_US' => 'en',
+        'en_UK' => 'en',
+        'en_GB' => 'en',
+    ],
 
     /*
     |--------------------------------------------------------------------------
