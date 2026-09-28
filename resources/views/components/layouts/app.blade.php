@@ -82,6 +82,8 @@
     <x-footer />
 </div>
 
+<x-footer-pietje />
+
 @include('cookie-consent::index')
 @stack('modals-bottom')
 @stack('scripts-body-bottom')
