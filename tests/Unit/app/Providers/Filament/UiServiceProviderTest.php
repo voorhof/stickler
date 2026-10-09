@@ -84,7 +84,7 @@ test('it configures notifications with a 10000ms duration', function () {
 test('it configures date pickers with default min and max dates', function () {
     $picker = DatePicker::make('test_date');
 
-    expect($picker->getMinDate())->toEqual(Carbon::createFromDate(1900, 1, 1))
+    expect($picker->getMinDate())->toEqual(Carbon::createFromDate(1900, 1, 1)->startOfDay())
         ->and($picker->getMaxDate())->not->toBeNull();
 });
 
