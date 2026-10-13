@@ -902,7 +902,7 @@ Inside the `app.blade.php` layout file the cookie consent banner is included:
 
 
 ### Spatie Response Cache
-[Documentation](https://spatie.be/docs/laravel-responsecache/v8)
+[Documentation](https://spatie.be/docs/laravel-responsecache/v8)   
 [GitHub](https://github.com/spatie/laravel-responsecache)  
 
 The first time a request comes in, the package will save the response before sending it to the user. 

@@ -16,6 +16,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\RouteKey;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -69,6 +70,7 @@ use Spatie\Sluggable\Attributes\Sluggable;
     'password',
     'remember_token',
 ])]
+#[RouteKey('slug')]
 #[Sluggable(
     from: 'name',
     to: 'slug',
@@ -183,23 +185,6 @@ class User extends Authenticatable implements FilamentUser, HasMedia, HasName, M
     public function getFilamentName(): string
     {
         return $this->name;
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Spatie Sluggable
-    |--------------------------------------------------------------------------
-    |
-    | The #[Sluggable()] attribute is used to generate slugs for the model.
-    | https://spatie.be/docs/laravel-sluggable/v4/introduction
-    */
-
-    /**
-     * Get the route key for the model.
-     */
-    public function getRouteKeyName(): string
-    {
-        return 'slug';
     }
 
     /*

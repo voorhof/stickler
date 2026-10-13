@@ -14,6 +14,7 @@ use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\RouteKey;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -66,6 +67,7 @@ use Spatie\Tags\HasTags;
     'published_at',
 ])]
 #[Hidden([])]
+#[RouteKey('slug')]
 #[Sluggable(
     from: 'title',
     to: 'slug',
@@ -128,23 +130,6 @@ class Project extends Model implements HasMedia, HasRichContent, Sortable
         return Attribute::make(
             get: fn () => $this->published_at !== null,
         );
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Spatie Sluggable
-    |--------------------------------------------------------------------------
-    |
-    | The #[Sluggable()] attribute is used to generate slugs for the model.
-    | https://spatie.be/docs/laravel-sluggable/v4/introduction
-    */
-
-    /**
-     * Get the route key for the model.
-     */
-    public function getRouteKeyName(): string
-    {
-        return 'slug';
     }
 
     /*
