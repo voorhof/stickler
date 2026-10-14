@@ -304,6 +304,12 @@ The Video generator requires the PHP-FFMpeg package (in composer.json).
 
 More info and documentation is available [here](https://spatie.be/docs/laravel-medialibrary/v11/converting-other-file-types/using-image-generators).
 
+An artisan command is available to generate missing responsive images:
+
+```bash
+php artisan media:generate-missing-responsive-images
+```
+
 #### Filament Plugin
 
 The **Filament plug-in** for uploading media from the admin panel to Spatie Media Library is also installed in composer.json.
