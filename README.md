@@ -156,17 +156,11 @@ for example, in the User model:
 )]
 ```
 
-A model must override the `getRouteKeyName` method within its class,
+The `#[RouteKey('slug')]` attribute is added to models so it overrides the `getRouteKeyName` method within its class,
 so that route binding works based on the slug rather than the ID:
 
 ```php
-/**
- * Get the route key for the model.
- */
-public function getRouteKeyName(): string
-{
-    return 'slug';
-}
+#[RouteKey('slug')]
 ```
 
 
