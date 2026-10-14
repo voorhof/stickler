@@ -94,7 +94,7 @@ class General extends SettingsPage
                             ->inlineLabel()
                             ->schema([
                                 TextInput::make('social_facebook')
-                                    ->label(__('Finished at'))
+                                    ->label(__('Facebook'))
                                     ->maxLength(250),
                                 TextInput::make('social_instagram')
                                     ->label(__('Instagram'))

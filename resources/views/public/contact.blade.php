@@ -47,20 +47,26 @@
                         </div>
 
                         <div class="d-flex align-items-center gap-4">
-                            <a href="{{ app(GeneralSettings::class)->social_facebook }}" target="_blank"
-                               class="h2 m-0 link-body-emphasis text-decoration-none" aria-label="Facebook">
-                                <x-icons.facebook />
-                            </a>
+                            @if(app(GeneralSettings::class)->social_facebook)
+                                <a href="{{ app(GeneralSettings::class)->social_facebook }}" target="_blank"
+                                   class="h2 m-0 link-body-emphasis text-decoration-none" aria-label="Facebook">
+                                    <x-icons.facebook />
+                                </a>
+                            @endif
 
-                            <a href="{{ app(GeneralSettings::class)->social_instagram }}" target="_blank"
-                               class="h2 m-0 link-body-emphasis text-decoration-none" aria-label="Instagram">
-                                <x-icons.instagram />
-                            </a>
+                            @if(app(GeneralSettings::class)->social_instagram)
+                                <a href="{{ app(GeneralSettings::class)->social_instagram }}" target="_blank"
+                                   class="h2 m-0 link-body-emphasis text-decoration-none" aria-label="Instagram">
+                                    <x-icons.instagram />
+                                </a>
+                            @endif
 
-                            <a href="{{ app(GeneralSettings::class)->social_linkedin }}" target="_blank"
-                               class="h2 m-0 link-body-emphasis text-decoration-none" aria-label="LinkedIn">
-                                <x-icons.linkedin />
-                            </a>
+                            @if(app(GeneralSettings::class)->social_linkedin)
+                                <a href="{{ app(GeneralSettings::class)->social_linkedin }}" target="_blank"
+                                   class="h2 m-0 link-body-emphasis text-decoration-none" aria-label="LinkedIn">
+                                    <x-icons.linkedin />
+                                </a>
+                            @endif
                         </div>
                     </address>
                 </div>
