@@ -8,11 +8,13 @@ use App\Filament\Actions\SoftDeleteAction;
 use App\Filament\Resources\Posts\Pages\CreatePost;
 use App\Filament\Resources\Posts\Pages\EditPost;
 use App\Filament\Resources\Posts\Pages\ListPosts;
+use App\Filament\RichEditor\Plugins\SourceCodePlugin;
 use App\Models\Permission;
 use App\Models\Post;
 use App\Models\Role;
 use App\Models\Tag;
 use App\Models\User;
+use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -202,6 +204,26 @@ it('can edit a post', function () {
         'content' => '<p>Updated <strong>rich text</strong> content.</p>',
         'slug' => 'updated-slug',
     ]);
+});
+
+it('can edit the html source code of the content', function () {
+    $post = Post::factory()->create(['content' => '<p>Original content.</p>']);
+
+    livewire(EditPost::class, ['record' => $post->getRouteKey()])
+        ->mountAction(
+            TestAction::make(SourceCodePlugin::NAME)
+                ->schemaComponent('content', schema: 'form')
+                ->arguments(['source' => '<h2>Title</h2><p>Original content.</p>']),
+        )
+        ->assertSchemaStateSet(['source' => "<h2>Title</h2>\n<p>Original content.</p>"])
+        ->fillForm(['source' => '<p>Edited <strong>source</strong>.</p>'])
+        ->callMountedAction()
+        ->assertHasNoFormErrors()
+        ->assertDispatched(
+            'run-rich-editor-commands',
+            fn (string $eventName, array $params): bool => $params['commands'][0]['name'] === 'setContent'
+                && $params['commands'][0]['arguments'] === ['<p>Edited <strong>source</strong>.</p>'],
+        );
 });
 
 it('logs tags in activity after creating a post', function () {
