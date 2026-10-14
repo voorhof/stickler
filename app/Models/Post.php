@@ -144,7 +144,7 @@ class Post extends Model implements HasMedia, HasRichContent, Sortable
         // The Collection component will show a preview thumbnail for items in the collection it is showing.
         // To generate that thumbnail, we must add a conversion like this one to the model.
         $this->addMediaConversion('preview')
-            ->fit(Fit::Contain, 200, 200)
+            ->fit(Fit::Crop, 400, 400)
             ->nonQueued()
             ->deferred()
             ->performOnCollections('cover', 'images', 'videos', 'documents', 'content')
@@ -152,7 +152,7 @@ class Post extends Model implements HasMedia, HasRichContent, Sortable
             ->extractVideoFrameAtSecond(1);
 
         $this->addMediaConversion('thumb')
-            ->fit(Fit::Contain, 40, 40)
+            ->fit(Fit::Crop, 40, 40)
             ->nonQueued()
             ->deferred()
             ->performOnCollections('cover', 'images', 'videos', 'documents', 'content')
