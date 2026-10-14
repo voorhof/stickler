@@ -181,6 +181,70 @@ php artisan queue:work --queue=high,default,media,low
 ```
 
 
+## Rich Editor Source Code
+
+Filament's TipTap `RichEditor` does not ship a tool to view or edit the HTML of its content.
+We added a custom **"Source code"** toolbar button (code bracket icon) that opens a modal with an HTML `CodeEditor`,
+where the rendered HTML can be previewed and edited.
+On submit, the edited HTML is sent back into the editor.
+
+The implementation is based on the `SourceCodePlugin` of the [awcodes/richer-editor](https://github.com/awcodes/richer-editor) package,
+but is part of the project itself, so no extra dependency is required.
+
+### SourceCodePlugin
+
+Located at `app/Filament/RichEditor/Plugins/SourceCodePlugin.php`,
+this class implements Filament's `RichContentPlugin` contract and provides:
+- **Editor tool**: a `RichEditorTool` named `sourceCode` (`SourceCodePlugin::NAME`).
+  It reads the HTML from the live JS editor with `$getEditor().getHTML()`, so changes that are not yet synced to Livewire are included.
+- **Editor action**: an `Action` with the same name, that opens the modal (sticky footer, default width `Width::FiveExtraLarge`).
+  The HTML is formatted for readability with PHP 8.4's HTML5 parser (`Dom\HTMLDocument`): every top-level element is put on its own line.
+  On submit, the HTML is sent to the editor with the `setContent` editor command. Empty content falls back to `<p></p>`.
+- No extra TipTap PHP or JS extensions.
+
+### Registration
+
+The plugin is registered globally for every `RichEditor` inside the `UiServiceProvider`,
+and the button is added as its own group in the toolbar:
+
+```php
+use App\Filament\RichEditor\Plugins\SourceCodePlugin;
+
+RichEditor::configureUsing(function (RichEditor $richEditor): void {
+    $richEditor
+        ->toolbarButtons([
+            // ... other toolbar groups
+            ['attachFiles'],
+            [SourceCodePlugin::NAME],
+        ])
+        ->plugins([
+            SourceCodePlugin::make(),
+        ]);
+});
+```
+
+The modal width can be changed when registering the plugin:
+
+```php
+SourceCodePlugin::make()->modalWidth(Width::ScreenLarge)
+```
+
+The button label and modal heading use the `"Source code"` translation key in `lang/en.json` and `lang/nl.json` ("Broncode").
+
+### Limitations
+
+- TipTap only keeps the HTML its schema knows. When applying an edit, unknown tags, classes, `style` attributes,
+  `<div>` wrappers, `<iframe>`, `<script>`, ... are silently removed. It is meant for tweaking text, links and headings, not as a free-form HTML editor.
+- Keep the `data-id` attribute on images intact, it links the image to its Spatie Media Library attachment.
+- Always render rich content with `$model->renderRichContent('content')` or `RichContentRenderer` (which sanitizes the HTML), never with `{!! $model->content !!}`.
+
+### Tests
+
+- `tests/Unit/app/Filament/RichEditor/Plugins/SourceCodePluginTest.php`: HTML formatting, tool, action and modal width.
+- `tests/Unit/app/Providers/Filament/UiServiceProviderTest.php`: the toolbar button and tool are registered.
+- `tests/Feature/app/Filament/Resources/PostResourceTest.php`: opens and submits the action on the Edit Post page.
+
+
 ## Plugins
 
 List of plugins used in this project.  

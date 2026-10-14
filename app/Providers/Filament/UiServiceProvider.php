@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\RichEditor\Plugins\SourceCodePlugin;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
@@ -108,6 +109,7 @@ class UiServiceProvider extends ServiceProvider
                     ['bold', 'italic', 'underline', 'strike', 'link', 'textColor', 'highlight'],
                     ['blockquote', 'codeBlock', ToolbarButtonGroup::make('Lists', ['bulletList', 'orderedList'])],
                     ['attachFiles'],
+                    [SourceCodePlugin::NAME],
                     // The `customBlocks` and `mergeTags` tools are also added here if those features are needed in the future.
                 ])
                 ->floatingToolbars([
@@ -129,6 +131,9 @@ class UiServiceProvider extends ServiceProvider
                 ->fileAttachmentsAcceptedFileTypes(['image/png', 'image/jpeg'])
                 ->fileAttachmentsMaxSize(5120) // 5 MB
                 ->resizableImages()
+                ->plugins([
+                    SourceCodePlugin::make(),
+                ])
                 ->registerActions([
                     // Make the text input field required
                     AttachFilesAction::make()

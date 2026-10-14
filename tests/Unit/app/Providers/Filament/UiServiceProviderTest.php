@@ -1,5 +1,8 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
+use App\Filament\RichEditor\Plugins\SourceCodePlugin;
 use App\Providers\Filament\UiServiceProvider;
 use Carbon\Carbon;
 use Filament\Actions\Action;
@@ -111,7 +114,9 @@ test('it configures rich editors with attachments settings and toolbar buttons',
         ->and($editor->hasToolbarButton('blockquote'))->toBeTrue()
         ->and($editor->hasToolbarButton('strike'))->toBeTrue()
         ->and($editor->hasToolbarButton('undo'))->toBeTrue()
-        ->and($editor->hasToolbarButton('redo'))->toBeTrue();
+        ->and($editor->hasToolbarButton('redo'))->toBeTrue()
+        ->and($editor->hasToolbarButton(SourceCodePlugin::NAME))->toBeTrue()
+        ->and($editor->getTools())->toHaveKey(SourceCodePlugin::NAME);
 });
 
 test('it configures actions to not close modal on click away and to slide over', function () {
