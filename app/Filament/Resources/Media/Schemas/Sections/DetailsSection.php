@@ -62,7 +62,10 @@ class DetailsSection
                         ->maxLength(32),
                     ImageEntry::make('preview_url')
                         ->label(__('Preview'))
-                        ->imageSize(200)
+                        ->imageSize(400)
+                        ->extraImgAttributes([
+                            'style' => 'max-width: 100%; height: auto;',
+                        ])
                         ->columnSpanFull(),
                     TextEntry::make('model.title')
                         ->label(fn ($record) => $record->model_type ? __('For :model', ['model' => __($record->mediaOwnerTitle())]) : null)
