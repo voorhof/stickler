@@ -8,13 +8,10 @@ use App\Models\Role;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\Support\LogOptions;
-
-uses(RefreshDatabase::class);
 
 test('a user can be created', function () {
     // All required fields are filled

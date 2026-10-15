@@ -3,11 +3,8 @@
 /** @noinspection PhpUndefinedMethodInspection, LaravelEloquentGuardedAttributeAssignmentInspection */
 
 use App\Models\Permission;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
-
-uses(RefreshDatabase::class);
 
 test('the Permission model uses the LogsActivity trait', function () {
     expect(in_array(LogsActivity::class, class_uses_recursive(Permission::class), true))->toBeTrue();

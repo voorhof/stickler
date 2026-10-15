@@ -6,11 +6,8 @@ use App\Models\Role;
 use App\Models\User;
 use App\Settings\GeneralSettings;
 use Filament\Facades\Filament;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use function Pest\Livewire\livewire;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     app()->setLocale('en');

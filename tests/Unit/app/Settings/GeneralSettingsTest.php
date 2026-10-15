@@ -2,10 +2,7 @@
 
 use App\Settings\GeneralSettings;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\LaravelSettings\Settings;
-
-uses(RefreshDatabase::class);
 
 test('general settings extends settings', function () {
     $settings = new GeneralSettings;

@@ -3,11 +3,15 @@
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
+use Spatie\Sitemap\Sitemap;
+use Spatie\Sitemap\SitemapGenerator;
 
 test('it generates sitemap successfully when authorized', function () {
+    $sitemapGenerator = Mockery::mock(SitemapGenerator::class);
+    $sitemapGenerator->shouldReceive('setUrl')->andReturnSelf();
+    $sitemapGenerator->shouldReceive('getSitemap')->andReturn(new Sitemap);
+    $this->app->instance(SitemapGenerator::class, $sitemapGenerator);
+
     Permission::firstOrCreate(['name' => 'edit settings']);
     Permission::firstOrCreate(['name' => 'access admin']);
 

@@ -9,11 +9,8 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Filament\Facades\Filament;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use function Pest\Livewire\livewire;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     Filament::setCurrentPanel(Filament::getPanel('admin'));
@@ -41,10 +38,9 @@ it('has the correct default name', function () {
 });
 
 it('returns the title case plural model label from the table', function () {
-    livewire(ListMessages::class)
+    $component = livewire(ListMessages::class)
         ->assertTableFilterExists('isArchived');
 
-    $component = livewire(ListMessages::class);
     $table = $component->instance()->getTable();
     $filter = $table->getFilter('isArchived');
 

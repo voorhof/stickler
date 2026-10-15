@@ -2,11 +2,8 @@
 
 use App\Models\Message;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use function Pest\Laravel\actingAs;
-
-uses(RefreshDatabase::class);
 
 it('sets created_by_user_id and updated_by_user_id when a message is created', function (): void {
     $user = User::factory()->create();

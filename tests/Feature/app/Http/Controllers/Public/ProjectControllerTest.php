@@ -3,9 +3,6 @@
 use App\Http\Controllers\Public\ProjectController;
 use App\Models\Project;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 test('project controller index method executes successfully', function () {
     $controller = new ProjectController;

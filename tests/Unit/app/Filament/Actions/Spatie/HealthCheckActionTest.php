@@ -7,14 +7,11 @@ use App\Models\User;
 use Filament\Facades\Filament;
 use Filament\Pages\Page;
 use Illuminate\Contracts\View\View;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 
 use function Pest\Livewire\livewire;
 
 use Spatie\Health\ResultStores\ResultStore;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     Filament::bootCurrentPanel();

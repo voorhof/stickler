@@ -322,6 +322,7 @@
     "Settings": "Settings",
     "Showing": "Showing",
     "Size": "Size",
+    "Source code": "Source code",
     "Start date": "Start date",
     "Status": "Status",
     "Status check results from": "Status check results from",
@@ -425,5 +426,6 @@
     "You don\\'t have permission to publish :count :label.": "You don\\'t have permission to publish :count :label.",
     "You don\\'t have permission to unpublish :count :label.": "You don\\'t have permission to unpublish :count :label.",
     "Your email address is unverified.": "Your email address is unverified.",
-    "Your new password must be different from your current password.": "Your new password must be different from your current password."
+    "Your new password must be different from your current password.": "Your new password must be different from your current password.",
+    "Your original message": "Your original message"
 }

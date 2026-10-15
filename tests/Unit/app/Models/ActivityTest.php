@@ -5,12 +5,9 @@
 use App\Models\Activity;
 use App\Models\Post;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Spatie\Activitylog\Enums\ActivityEvent;
 use Spatie\Activitylog\Support\LogOptions;
-
-uses(RefreshDatabase::class);
 
 test('an activity can be created', function () {
     $activity = Activity::create([

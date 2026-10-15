@@ -4,11 +4,8 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use App\Providers\Spatie\AccessServiceProvider;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
-
-uses(RefreshDatabase::class);
 
 test('it extends ServiceProvider', function () {
     $provider = new AccessServiceProvider(app());
@@ -19,9 +16,7 @@ test('it extends ServiceProvider', function () {
 test('it executes boot method without errors', function () {
     $provider = new AccessServiceProvider(app());
 
-    $provider->boot();
-
-    expect(true)->toBeTrue();
+    expect(fn () => $provider->boot())->not->toThrow(Throwable::class);
 });
 
 test('it is registered in the application', function () {

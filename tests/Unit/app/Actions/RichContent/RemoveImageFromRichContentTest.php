@@ -3,9 +3,6 @@
 use App\Actions\RichContent\RemoveImageFromRichContent;
 use App\Models\Post;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 test('it removes matching image tag from rich content when handled', function () {
     $user = User::factory()->create();

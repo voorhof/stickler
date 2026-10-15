@@ -11,6 +11,7 @@ use DateTime;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\RouteKey;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -52,6 +53,7 @@ use Spatie\Tags\Tag as BaseTag;
     'order_column',
 ])]
 #[Hidden([])]
+#[RouteKey('url_slug')]
 #[Sluggable(
     from: 'name',
     to: 'url_slug',
@@ -97,23 +99,6 @@ class Tag extends BaseTag implements Sortable
         return Attribute::make(
             get: fn () => "$this->name",
         )->shouldCache();
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Spatie Sluggable
-    |--------------------------------------------------------------------------
-    |
-    | The #[Sluggable()] attribute is used to generate slugs for the model.
-    | https://spatie.be/docs/laravel-sluggable/v4/introduction
-    */
-
-    /**
-     * Get the route key for the model.
-     */
-    public function getRouteKeyName(): string
-    {
-        return 'url_slug';
     }
 
     /*

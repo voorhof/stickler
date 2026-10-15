@@ -5,12 +5,9 @@
 use App\Models\Project;
 use App\Models\User;
 use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\Support\LogOptions;
-
-uses(RefreshDatabase::class);
 
 test('a project can be created', function () {
     $user = User::factory()->create();

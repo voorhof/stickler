@@ -9,6 +9,7 @@ use App\Models\Message;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
+use Laravel\Head\Facades\Head;
 
 class ContactController extends Controller
 {
@@ -17,9 +18,10 @@ class ContactController extends Controller
      */
     public function index(): View
     {
-        return view('public.contact', [
-            'headTitle' => __('Contact'),
-        ]);
+        Head::title('Contact')
+            ->description('Contact details '.config('app.name'));
+
+        return view('public.contact');
     }
 
     /**

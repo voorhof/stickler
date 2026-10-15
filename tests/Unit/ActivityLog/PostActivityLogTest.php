@@ -4,11 +4,8 @@
 
 use App\Models\Post;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->author = User::factory()->create();

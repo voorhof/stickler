@@ -8,15 +8,12 @@ use App\Models\Role;
 use App\Models\User;
 use Filament\Auth\Pages\Login;
 use Filament\Facades\Filament;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertAuthenticated;
 use function Pest\Laravel\assertGuest;
 use function Pest\Laravel\get;
 use function Pest\Livewire\livewire;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     Filament::setCurrentPanel(Filament::getPanel('admin'));

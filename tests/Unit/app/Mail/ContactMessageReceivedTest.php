@@ -4,16 +4,13 @@
 
 use App\Mail\ContactMessageReceived;
 use App\Models\Message;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     config(['logging.channels.single.path' => storage_path('logs/testing.log')]);
 });
 
 test('mailable content', function () {
-    $message = Message::factory()->create();
+    $message = Message::factory()->make(['id' => 1]);
 
     $mailable = new ContactMessageReceived($message);
 

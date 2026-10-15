@@ -7,14 +7,11 @@ use App\Models\User;
 use App\Policies\MediaPolicy;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use function Pest\Laravel\actingAs;
 
 use Spatie\Activitylog\Support\LogOptions;
 use Spatie\MediaLibrary\MediaCollections\Models\Media as BaseMedia;
-
-uses(RefreshDatabase::class);
 
 test('media model extends spatie base media model', function () {
     expect(new Media)->toBeInstanceOf(BaseMedia::class);

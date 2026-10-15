@@ -5,13 +5,10 @@ use App\Filament\Resources\Roles\Pages\EditRole;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use function Pest\Livewire\livewire;
 
 use Spatie\Activitylog\Models\Activity;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->adminUser = User::factory()->create();

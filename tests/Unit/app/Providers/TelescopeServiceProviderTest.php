@@ -3,11 +3,8 @@
 use App\Models\Permission;
 use App\Models\User;
 use App\Providers\TelescopeServiceProvider;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Telescope\TelescopeApplicationServiceProvider;
-
-uses(RefreshDatabase::class);
 
 test('it extends TelescopeApplicationServiceProvider', function () {
     $provider = new TelescopeServiceProvider(app());
@@ -18,10 +15,10 @@ test('it extends TelescopeApplicationServiceProvider', function () {
 test('it executes register and boot methods without errors', function () {
     $provider = new TelescopeServiceProvider(app());
 
-    $provider->register();
-    $provider->boot();
-
-    expect(true)->toBeTrue();
+    expect(function () use ($provider) {
+        $provider->register();
+        $provider->boot();
+    })->not->toThrow(Throwable::class);
 });
 
 test('it is registered in the application', function () {

@@ -4,9 +4,6 @@ use App\Actions\RichContent\SyncImageAltToMediaName;
 use App\Models\Media;
 use App\Models\Post;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 test('it updates media name to match image alt text in rich content', function () {
     $user = User::factory()->create();

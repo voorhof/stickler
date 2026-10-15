@@ -12,6 +12,8 @@ class UnreadMessagesWidget extends StatsOverviewWidget
 {
     protected static ?int $sort = 10;
 
+    protected int|array|null $columns = 1;
+
     protected int|string|array $columnSpan = [
         'md' => 3,
         '2xl' => 2,

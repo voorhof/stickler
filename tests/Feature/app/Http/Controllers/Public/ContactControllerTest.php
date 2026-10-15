@@ -2,12 +2,9 @@
 
 use App\Mail\ContactMessageReceived;
 use App\Models\Message;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use Spatie\Honeypot\Events\SpamDetectedEvent;
-
-uses(RefreshDatabase::class);
 
 test('it can view the contact page', function () {
     $response = $this->get(route('contact.index'));

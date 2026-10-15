@@ -3,10 +3,7 @@
 /** @noinspection PhpUndefinedMethodInspection, LaravelEloquentGuardedAttributeAssignmentInspection */
 
 use App\Models\Activity;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
-
-uses(RefreshDatabase::class);
 
 function makeActivity(): Activity
 {

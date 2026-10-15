@@ -5,10 +5,7 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Filament\Facades\Filament;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     Filament::setCurrentPanel(Filament::getPanel('admin'));

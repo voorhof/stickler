@@ -7,9 +7,6 @@ use App\Actions\RichContent\SyncImageAltToMediaName;
 use App\Models\Post;
 use App\Models\User;
 use App\Observers\PostObserver;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 function callSyncImageAltToMediaName(PostObserver $observer, Post $post, array $attributes = ['content']): void
 {

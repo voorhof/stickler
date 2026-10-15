@@ -14,6 +14,7 @@ use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\RouteKey;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -63,6 +64,7 @@ use Spatie\Tags\HasTags;
     'published_at',
 ])]
 #[Hidden([])]
+#[RouteKey('slug')]
 #[Sluggable(
     from: 'title',
     to: 'slug',
@@ -129,23 +131,6 @@ class Post extends Model implements HasMedia, HasRichContent, Sortable
 
     /*
     |--------------------------------------------------------------------------
-    | Spatie Sluggable
-    |--------------------------------------------------------------------------
-    |
-    | The #[Sluggable()] attribute is used to generate slugs for the model.
-    | https://spatie.be/docs/laravel-sluggable/v4/introduction
-    */
-
-    /**
-     * Get the route key for the model.
-     */
-    public function getRouteKeyName(): string
-    {
-        return 'slug';
-    }
-
-    /*
-    |--------------------------------------------------------------------------
     | Spatie Media Library
     |--------------------------------------------------------------------------
     */
@@ -159,7 +144,7 @@ class Post extends Model implements HasMedia, HasRichContent, Sortable
         // The Collection component will show a preview thumbnail for items in the collection it is showing.
         // To generate that thumbnail, we must add a conversion like this one to the model.
         $this->addMediaConversion('preview')
-            ->fit(Fit::Contain, 200, 200)
+            ->fit(Fit::Crop, 400, 400)
             ->nonQueued()
             ->deferred()
             ->performOnCollections('cover', 'images', 'videos', 'documents', 'content')
@@ -167,7 +152,7 @@ class Post extends Model implements HasMedia, HasRichContent, Sortable
             ->extractVideoFrameAtSecond(1);
 
         $this->addMediaConversion('thumb')
-            ->fit(Fit::Contain, 40, 40)
+            ->fit(Fit::Crop, 40, 40)
             ->nonQueued()
             ->deferred()
             ->performOnCollections('cover', 'images', 'videos', 'documents', 'content')

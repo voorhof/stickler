@@ -4,13 +4,10 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use App\Providers\Spatie\BackupServiceProvider;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Spatie\Backup\Events\BackupWasSuccessful;
-
-uses(RefreshDatabase::class);
 
 test('it extends ServiceProvider', function () {
     $provider = new BackupServiceProvider(app());
@@ -21,9 +18,7 @@ test('it extends ServiceProvider', function () {
 test('it executes boot method without errors', function () {
     $provider = new BackupServiceProvider(app());
 
-    $provider->boot();
-
-    expect(true)->toBeTrue();
+    expect(fn () => $provider->boot())->not->toThrow(Throwable::class);
 });
 
 test('it is registered in the application', function () {

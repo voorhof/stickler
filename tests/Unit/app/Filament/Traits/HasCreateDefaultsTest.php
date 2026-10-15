@@ -11,10 +11,7 @@ use App\Models\Role;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Activitylog\Models\Activity;
-
-uses(RefreshDatabase::class);
 
 function createdNotificationTitleFor(string $pageClass, Model $record): ?string
 {

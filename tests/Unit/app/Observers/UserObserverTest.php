@@ -1,12 +1,9 @@
 <?php
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 
 use function Pest\Laravel\actingAs;
-
-uses(RefreshDatabase::class);
 
 it('sets created_by_user_id and updated_by_user_id when a user is created', function (): void {
     $user = User::factory()->create();

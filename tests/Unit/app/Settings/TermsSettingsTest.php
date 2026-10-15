@@ -2,10 +2,7 @@
 
 use App\Settings\TermsSettings;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\LaravelSettings\Settings;
-
-uses(RefreshDatabase::class);
 
 test('terms settings extends settings', function () {
     $settings = new TermsSettings;

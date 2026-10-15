@@ -3,10 +3,7 @@
 /** @noinspection PhpUndefinedMethodInspection, PhpPossiblePolymorphicInvocationInspection */
 
 use App\Models\Permission;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Activitylog\Support\LogOptions;
-
-uses(RefreshDatabase::class);
 
 test('a permission can be created', function () {
     $permission = Permission::create(['name' => 'test permission']);

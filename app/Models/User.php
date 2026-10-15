@@ -16,6 +16,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\RouteKey;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -69,6 +70,7 @@ use Spatie\Sluggable\Attributes\Sluggable;
     'password',
     'remember_token',
 ])]
+#[RouteKey('slug')]
 #[Sluggable(
     from: 'name',
     to: 'slug',
@@ -187,23 +189,6 @@ class User extends Authenticatable implements FilamentUser, HasMedia, HasName, M
 
     /*
     |--------------------------------------------------------------------------
-    | Spatie Sluggable
-    |--------------------------------------------------------------------------
-    |
-    | The #[Sluggable()] attribute is used to generate slugs for the model.
-    | https://spatie.be/docs/laravel-sluggable/v4/introduction
-    */
-
-    /**
-     * Get the route key for the model.
-     */
-    public function getRouteKeyName(): string
-    {
-        return 'slug';
-    }
-
-    /*
-    |--------------------------------------------------------------------------
     | Spatie Media Library
     |--------------------------------------------------------------------------
     */
@@ -217,7 +202,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, HasName, M
         // The Collection component will show a preview thumbnail for items in the collection it is showing.
         // To generate that thumbnail, we must add a conversion like this one to the model.
         $this->addMediaConversion('preview')
-            ->fit(Fit::Contain, 200, 200)
+            ->fit(Fit::Crop, 400, 400)
             ->nonQueued()
             ->deferred()
             ->performOnCollections('avatar', 'images', 'videos', 'documents')
@@ -225,7 +210,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, HasName, M
             ->extractVideoFrameAtSecond(1);
 
         $this->addMediaConversion('thumb')
-            ->fit(Fit::Contain, 40, 40)
+            ->fit(Fit::Crop, 40, 40)
             ->nonQueued()
             ->deferred()
             ->performOnCollections('avatar', 'images', 'videos', 'documents')

@@ -1,11 +1,8 @@
 <?php
 
 use App\Support\MediaLibrary\CustomPathGenerator;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
-
-uses(RefreshDatabase::class);
 
 test('it generates correct path without prefix', function () {
     config()->set('media-library.prefix', '');

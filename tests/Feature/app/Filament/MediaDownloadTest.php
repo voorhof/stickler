@@ -6,9 +6,6 @@ use App\Models\Media;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 test('download route is available with permissions', function () {
     Permission::firstOrCreate(['name' => 'view media']);

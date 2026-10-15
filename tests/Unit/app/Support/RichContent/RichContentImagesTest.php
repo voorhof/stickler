@@ -6,10 +6,7 @@ use App\Models\Media;
 use App\Models\Post;
 use App\Models\User;
 use App\Support\RichContent\RichContentImages;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-
-uses(RefreshDatabase::class);
 
 test('it returns empty array for non-string or blank input', function () {
     expect(RichContentImages::altByUuid(null))->toBe([])

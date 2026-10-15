@@ -322,6 +322,7 @@
     "Settings": "Instellingen",
     "Showing": "Toont",
     "Size": "Grootte",
+    "Source code": "Broncode",
     "Start date": "Startdatum",
     "Status": "Status",
     "Status check results from": "Status controle resultaten van",
@@ -425,5 +426,6 @@
     "You don\\'t have permission to publish :count :label.": "Je hebt geen permissie om :count :label te publiceren.",
     "You don\\'t have permission to unpublish :count :label.": "Je hebt geen permissie om :count :label te depubliceren",
     "Your email address is unverified.": "Je e-mailadres is niet geverifieerd.",
-    "Your new password must be different from your current password.": "Je nieuw wachtwoord moet anders zijn dan je huidige wachtwoord."
+    "Your new password must be different from your current password.": "Je nieuw wachtwoord moet anders zijn dan je huidige wachtwoord.",
+    "Your original message": "Je originele bericht"
 }
