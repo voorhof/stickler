@@ -3,9 +3,6 @@
 use App\Filament\Actions\RestoreDeletedAction;
 use App\Models\Media;
 use App\Models\Message;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 it('has the correct default name', function () {
     $action = RestoreDeletedAction::make();

@@ -12,17 +12,13 @@ test('it extends ServiceProvider', function () {
 test('it executes register method without errors', function () {
     $provider = new AppServiceProvider(app());
 
-    $provider->register();
-
-    expect(true)->toBeTrue();
+    expect(fn () => $provider->register())->not->toThrow(Throwable::class);
 });
 
 test('it executes boot method without errors', function () {
     $provider = new AppServiceProvider(app());
 
-    $provider->boot();
-
-    expect(true)->toBeTrue();
+    expect(fn () => $provider->boot())->not->toThrow(Throwable::class);
 });
 
 test('it is registered in the application', function () {

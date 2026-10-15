@@ -4,9 +4,6 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use App\Policies\RolePolicy;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->policy = new RolePolicy;

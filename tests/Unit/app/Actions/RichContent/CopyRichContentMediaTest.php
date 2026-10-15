@@ -7,10 +7,7 @@ use App\Models\Media;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-
-uses(RefreshDatabase::class);
 
 test('it copies media referenced in rich content attributes and updates model attribute', function () {
     $user = User::factory()->create();

@@ -3,11 +3,8 @@
 /** @noinspection PhpUndefinedMethodInspection */
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Models\Concerns\HasActivity;
-
-uses(RefreshDatabase::class);
 
 test('the User model uses the HasActivity trait', function () {
     expect(in_array(HasActivity::class, class_uses_recursive(User::class), true))->toBeTrue();

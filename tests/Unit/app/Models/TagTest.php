@@ -5,10 +5,7 @@
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Activitylog\Support\LogOptions;
-
-uses(RefreshDatabase::class);
 
 test('a tag can be created', function () {
     $user = User::factory()->create();

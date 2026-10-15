@@ -4,15 +4,12 @@
 
 use App\Models\Post;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
 
 use function Pest\Laravel\actingAs;
 
 use Spatie\MediaLibrary\ResponsiveImages\Jobs\GenerateResponsiveImagesJob;
-
-uses(RefreshDatabase::class);
 
 it('outputs info message when no media items require responsive image generation', function () {
     $this->artisan('media:generate-missing-responsive-images')
@@ -27,7 +24,7 @@ it('dispatches generate responsive images jobs synchronously by default', functi
 
     $post = Post::factory()->create();
 
-    $media = $post->addMedia(UploadedFile::fake()->image('test.jpg', 600, 600))
+    $media = $post->addMedia(UploadedFile::fake()->image('test.jpg', 10, 10))
         ->toMediaCollection('image');
 
     // Simulate media item uploaded without responsive images
@@ -51,7 +48,7 @@ it('queues generate responsive images jobs when queue option is provided', funct
 
     $post = Post::factory()->create();
 
-    $media = $post->addMedia(UploadedFile::fake()->image('test-queue.jpg', 600, 600))
+    $media = $post->addMedia(UploadedFile::fake()->image('test-queue.jpg', 10, 10))
         ->toMediaCollection('image');
 
     $media->update(['responsive_images' => []]);

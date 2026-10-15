@@ -14,10 +14,7 @@ use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Activitylog\Models\Activity;
-
-uses(RefreshDatabase::class);
 
 function editPageFor(string $pageClass, ?Model $record = null): object
 {

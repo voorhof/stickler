@@ -5,14 +5,11 @@
 use App\Http\Middleware\SetLocaleFromUserPreference;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-uses(RefreshDatabase::class);
-
 test('it sets application locale to nl when user has nl_BE locale', function () {
-    $user = User::factory()->create(['locale' => 'nl_BE']);
+    $user = User::factory()->make(['locale' => 'nl_BE']);
     $request = Request::create('/');
     $request->setUserResolver(fn () => $user);
 
@@ -34,7 +31,7 @@ test('it sets application locale to nl when user has nl_BE locale', function () 
 });
 
 test('it sets application locale to nl when user has nl_NL locale', function () {
-    $user = User::factory()->create(['locale' => 'nl_NL']);
+    $user = User::factory()->make(['locale' => 'nl_NL']);
     $request = Request::create('/');
     $request->setUserResolver(fn () => $user);
 
@@ -56,7 +53,7 @@ test('it sets application locale to nl when user has nl_NL locale', function () 
 });
 
 test('it sets application locale to en when user has en_US locale', function () {
-    $user = User::factory()->create(['locale' => 'en_US']);
+    $user = User::factory()->make(['locale' => 'en_US']);
     $request = Request::create('/');
     $request->setUserResolver(fn () => $user);
 
@@ -78,7 +75,7 @@ test('it sets application locale to en when user has en_US locale', function () 
 });
 
 test('it sets application locale to en when user has en_UK locale', function () {
-    $user = User::factory()->create(['locale' => 'en_UK']);
+    $user = User::factory()->make(['locale' => 'en_UK']);
     $request = Request::create('/');
     $request->setUserResolver(fn () => $user);
 
@@ -99,7 +96,7 @@ test('it sets application locale to en when user has en_UK locale', function () 
 });
 
 test('it sets application locale to en when user has en_GB locale', function () {
-    $user = User::factory()->create(['locale' => 'en_GB']);
+    $user = User::factory()->make(['locale' => 'en_GB']);
     $request = Request::create('/');
     $request->setUserResolver(fn () => $user);
 
@@ -121,7 +118,7 @@ test('it sets application locale to en when user has en_GB locale', function () 
 });
 
 test('it does not set application locale when authenticated user has unsupported locale', function () {
-    $user = User::factory()->create(['locale' => 'fr_FR']);
+    $user = User::factory()->make(['locale' => 'fr_FR']);
     $request = Request::create('/');
     $request->setUserResolver(fn () => $user);
 

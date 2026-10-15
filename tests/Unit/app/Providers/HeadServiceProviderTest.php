@@ -13,9 +13,7 @@ test('it extends ServiceProvider', function () {
 test('it executes boot method without errors', function () {
     $provider = new HeadServiceProvider(app());
 
-    $provider->boot();
-
-    expect(true)->toBeTrue();
+    expect(fn () => $provider->boot())->not->toThrow(Throwable::class);
 });
 
 test('it is registered in the application', function () {

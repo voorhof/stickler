@@ -3,6 +3,8 @@
 use App\Console\Commands\GenerateSitemap;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Sitemap\Sitemap;
+use Spatie\Sitemap\SitemapGenerator;
 
 test('it extends command', function () {
     $command = new GenerateSitemap;
@@ -19,6 +21,11 @@ test('it has correct signature and description', function () {
 
 test('it executes the command successfully and generates sitemap file', function () {
     Storage::fake('public');
+
+    $sitemapGenerator = Mockery::mock(SitemapGenerator::class);
+    $sitemapGenerator->shouldReceive('setUrl')->andReturnSelf();
+    $sitemapGenerator->shouldReceive('getSitemap')->andReturn(new Sitemap);
+    $this->app->instance(SitemapGenerator::class, $sitemapGenerator);
 
     $this->artisan('sitemap:generate')
         ->expectsOutput('Sitemap generated!')

@@ -6,11 +6,8 @@ use App\Models\Media;
 use App\Models\Project;
 use App\Models\User;
 use App\Observers\ProjectObserver;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use function Pest\Laravel\actingAs;
-
-uses(RefreshDatabase::class);
 
 it('sets created_by_user_id and updated_by_user_id when a project is created', function (): void {
     $user = User::factory()->create();
