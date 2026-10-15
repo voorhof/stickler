@@ -111,7 +111,9 @@ it('does not affect other users column settings', function () {
 it('resets the table column manager', function () {
     Post::factory()->create();
 
-    session()->put('tables.'.md5(ListPosts::class).'_columns', [
+    $sessionKey = 'filament.tables.'.hash('sha256', ListPosts::class).'.columns';
+
+    session()->put($sessionKey, [
         ['type' => 'column', 'name' => 'title', 'label' => 'Title', 'isHidden' => true, 'isToggled' => false, 'isToggleable' => true, 'isToggledHiddenByDefault' => true],
     ]);
 
@@ -119,7 +121,7 @@ it('resets the table column manager', function () {
         ->call('resetColumnWidths')
         ->assertNotified();
 
-    expect(session()->get('tables.'.md5(ListPosts::class).'_columns'))
+    expect(session()->get($sessionKey))
         ->not->toBe([
             ['type' => 'column', 'name' => 'title', 'label' => 'Title', 'isHidden' => true, 'isToggled' => false, 'isToggleable' => true, 'isToggledHiddenByDefault' => true],
         ]);
