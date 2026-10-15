@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Messages\Schemas\Sections;
 
+use App\Filament\Actions\SendMessageReplyMailAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -25,6 +26,7 @@ class ReplySection
                         ->autosize()
                         ->trim()
                         ->columnSpanFull(),
+                    SendMessageReplyMailAction::make(),
                 ]),
             ]);
     }
