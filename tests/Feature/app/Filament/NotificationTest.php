@@ -15,12 +15,9 @@ use App\Models\Role;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
 use function Pest\Livewire\livewire;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     Filament::setCurrentPanel(Filament::getPanel('admin'));

@@ -16,14 +16,11 @@ use App\Models\Tag;
 use App\Models\User;
 use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 
 use function Pest\Livewire\livewire;
 
 use Spatie\Activitylog\Models\Activity;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     Filament::setCurrentPanel(Filament::getPanel('admin'));
@@ -142,7 +139,7 @@ it('validates max lengths when creating a post', function () {
 });
 
 it('can create a post', function () {
-    $file = UploadedFile::fake()->image('cover.jpg');
+    $file = UploadedFile::fake()->image('cover.jpg', 10, 10);
 
     livewire(CreatePost::class)
         ->fillForm([

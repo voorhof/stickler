@@ -5,7 +5,6 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Filament\Facades\Filament;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -15,8 +14,6 @@ use function Pest\Livewire\livewire;
 use Spatie\Backup\Commands\BackupCommand;
 use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumAgeInDays;
 use Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumStorageInMegabytes;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     config(['app.locale' => 'en']);

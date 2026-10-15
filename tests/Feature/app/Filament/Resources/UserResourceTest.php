@@ -11,12 +11,9 @@ use App\Filament\Resources\Users\Pages\ListUsers;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 
 use function Pest\Livewire\livewire;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $adminUser = User::factory()->create();

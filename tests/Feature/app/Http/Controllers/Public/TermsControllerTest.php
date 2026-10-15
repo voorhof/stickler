@@ -2,9 +2,6 @@
 
 use App\Settings\GeneralSettings;
 use App\Settings\TermsSettings;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 test('it can view the general terms page', function () {
     $response = $this->get(route('terms.terms'));

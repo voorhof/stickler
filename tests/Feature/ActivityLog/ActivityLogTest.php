@@ -2,10 +2,7 @@
 
 use App\Models\Post;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Activitylog\Models\Activity;
-
-uses(RefreshDatabase::class);
 
 it('logs a basic activity via the activity() helper', function () {
     activity()->log('Look mum, I logged something');

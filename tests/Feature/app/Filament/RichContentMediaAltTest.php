@@ -3,9 +3,6 @@
 use App\Models\Media;
 use App\Models\Post;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 test('saving a post with rich content syncs matching media name to image alt text', function () {
     $user = User::factory()->create();

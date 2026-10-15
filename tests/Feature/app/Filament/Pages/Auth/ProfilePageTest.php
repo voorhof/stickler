@@ -7,7 +7,6 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Filament\Facades\Filament;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -17,8 +16,6 @@ use function Pest\Laravel\get;
 use function Pest\Livewire\livewire;
 
 use Spatie\Activitylog\Models\Activity;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
     Filament::setCurrentPanel(Filament::getPanel('admin'));
@@ -118,7 +115,7 @@ it('can update password from the profile page', function () {
 it('can upload an avatar from the profile page', function () {
     Storage::fake(config('media-library.disk_name'));
 
-    $avatar = UploadedFile::fake()->image('avatar.jpg', 300, 300)->size(300);
+    $avatar = UploadedFile::fake()->image('avatar.jpg', 10, 10)->size(10);
 
     livewire(EditProfile::class)
         ->fillForm([

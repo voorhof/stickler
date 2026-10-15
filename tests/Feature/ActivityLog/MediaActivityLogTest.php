@@ -2,21 +2,18 @@
 
 use App\Models\Media;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 
 use function Pest\Laravel\actingAs;
 
 use Spatie\Activitylog\Models\Activity;
 
-uses(RefreshDatabase::class);
-
 it('does not log generated_conversions in activity log for media', function () {
     $user = User::factory()->create();
 
     actingAs($user);
 
-    $file = UploadedFile::fake()->image('avatar.jpg');
+    $file = UploadedFile::fake()->image('avatar.jpg', 10, 10);
 
     // Add media to trigger conversion
     // This will trigger creation activity and then update activity due to generated_conversions

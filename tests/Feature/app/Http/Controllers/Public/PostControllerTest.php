@@ -3,9 +3,6 @@
 use App\Http\Controllers\Public\PostController;
 use App\Models\Post;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 test('post controller index method executes successfully', function () {
     $controller = new PostController;

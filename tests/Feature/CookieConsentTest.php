@@ -1,9 +1,5 @@
 <?php
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
-
 test('cookie consent banner displays correctly on page visit', function () {
     $response = $this->get('/');
 
