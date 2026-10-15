@@ -133,6 +133,109 @@ Schedule::command('telescope:prune')
 ```
 
 
+### Laravel Head
+[Documentation](https://laravel.com/framework/docs/13.x/head)  
+[GitHub](https://github.com/laravel/head)
+
+This package provides a fluent API for defining `<head>` elements in Laravel applications, including titles, metadata, Open Graph tags, favicons, PWA settings, robots instructions, and error pages.
+
+**Service Provider** is registered in `bootstrap/providers.php` and located at `app/Providers/HeadServiceProvider.php`.
+
+Default head tags and error page configurations are defined in `app/Providers/HeadServiceProvider.php`:
+
+```php
+Head::defaults(function (HeadBuilder $head) {
+    $head
+        ->title(config('app.name'), prefix: config('app.name').' | ')
+        ->description(config('app.name').' website template')
+        ->canonical()
+        ->robots([
+            RobotsRule::Index,
+            RobotsRule::Follow,
+            'max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+        ])
+        ->og(
+            type: OgType::Website,
+            url: config('app.url'),
+            image: config('app.url').'/art/logo/logo_bg.png',
+            siteName: str_replace('https://', '', config('app.url')),
+            locale: config('app.locale'),
+        )
+        ->viewport('width=device-width, initial-scale=1')
+        ->meta('keywords', strtolower(config('app.name')).', laravel, starter kit')
+        ->referrer('strict-origin-when-cross-origin')
+        ->applicationName(config('app.name'))
+        ->colorScheme('light dark')
+        ->appleWebAppTitle(config('app.name'))
+        ->webAppCapable()
+        ->pwa(
+            name: config('app.name'),
+            manifest: asset('art/favicons/site.webmanifest'),
+            themeColor: '#ffffff',
+            appleTouchIcon: asset('art/favicons/apple-touch-icon.png'),
+            appleWebAppStatusBarStyle: 'black',
+        )
+        ->meta('msapplication-TileColor', '#ffffff')
+        ->favicon(asset('art/favicons/favicon.ico'), ImageType::Ico)
+        ->icon(asset('art/favicons/favicon-16x16.png'), ImageType::Png, '16x16')
+        ->icon(asset('art/favicons/favicon-32x32.png'), ImageType::Png, '32x32')
+        ->icon(asset('art/favicons/favicon-48x48.png'), ImageType::Png, '48x48')
+        ->icon(asset('art/favicons/favicon-96x96.png'), ImageType::Png, '96x96')
+        ->icon(asset('art/favicons/favicon.svg'), ImageType::Svg)
+        ->maskIcon(asset('art/favicons/favicon.svg'), '#000000')
+        ->manifest(asset('art/favicons/site.webmanifest'))
+        ->link('sitemap', Storage::url('sitemap.xml'), ['type' => 'application/xml', 'title' => 'Sitemap']);
+});
+
+Head::errors(function (ErrorPages $errors) {
+    $errors->defaults(robots: 'noindex, follow');
+
+    $errors->status(
+        404,
+        title: __('Not Found'),
+        description: __('Nothing to show.'),
+    );
+
+    $errors->status(
+        500,
+        title: __('Forbidden'),
+        description: __('Forbidden'),
+    );
+});
+```
+
+The `@head` Blade directive is included in the base layout (`resources/views/components/layouts/app.blade.php`) within the `<head>` tag to render all generated elements:
+
+```blade
+<head>
+    <meta charset="utf-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    @stack('scripts-head-top')
+    
+    {{-- Laravel HeadServiceProvider  --}}
+    @head
+    
+    {{-- Styles / Scripts --}}
+    @fonts
+    @vite(['resources/scss/app.scss', 'resources/js/app.js'])
+</head>
+```
+
+Page-specific titles and descriptions can be customized fluently in controllers or routes using the `Head` facade:
+
+```php
+use Laravel\Head\Facades\Head;
+
+public function index(): View
+{
+    Head::title('Contact')
+        ->description('Contact details '.config('app.name'));
+
+    return view('public.contact');
+}
+```
+
+
 ### Spatie Sluggable
 [Documentation](https://spatie.be/docs/laravel-sluggable/v4/introduction)  
 [GitHub](https://github.com/spatie/laravel-sluggable)

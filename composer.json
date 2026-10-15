@@ -26,6 +26,7 @@
         "filament/spatie-laravel-settings-plugin": "^5.10",
         "filament/spatie-laravel-tags-plugin": "^5.10",
         "laravel/framework": "^13.35",
+        "laravel/head": "^0.2.2",
         "laravel/telescope": "^5.25",
         "laravel/tinker": "^3.0",
         "league/flysystem-aws-s3-v3": "^3.35",

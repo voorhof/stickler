@@ -1,7 +1,5 @@
 @php use App\Settings\GeneralSettings; @endphp
 <x-layouts.app>
-    <x-slot:headTitle>{{ $headTitle }}</x-slot>
-
     <section class="py-5">
         <div class="container-xl">
             <div class="row justify-content-center mb-5">

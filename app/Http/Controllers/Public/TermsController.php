@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Settings\TermsSettings;
 use Illuminate\View\View;
+use Laravel\Head\Facades\Head;
 
 class TermsController extends Controller
 {
@@ -13,9 +14,11 @@ class TermsController extends Controller
      */
     public function terms(): View
     {
+        Head::title(__('Terms and conditions'))
+            ->description(__('Terms and conditions').' | '.config('app.name'));
+
         return view('public.terms', [
             'content' => app(TermsSettings::class)->terms_and_conditions,
-            'headTitle' => __('Terms and conditions'),
         ]);
     }
 
@@ -24,9 +27,11 @@ class TermsController extends Controller
      */
     public function privacy(): View
     {
+        Head::title(__('Privacy policy'))
+            ->description(__('Privacy policy').' | '.config('app.name'));
+
         return view('public.terms', [
             'content' => app(TermsSettings::class)->privacy_policy,
-            'headTitle' => __('Privacy policy'),
         ]);
     }
 
@@ -35,9 +40,11 @@ class TermsController extends Controller
      */
     public function cookie(): View
     {
+        Head::title(__('Cookie policy'))
+            ->description(__('Cookie policy').' | '.config('app.name'));
+
         return view('public.terms', [
             'content' => app(TermsSettings::class)->cookie_policy,
-            'headTitle' => __('Cookie policy'),
         ]);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use Illuminate\View\View;
+use Laravel\Head\Facades\Head;
 
 class WelcomeController extends Controller
 {
@@ -12,8 +13,8 @@ class WelcomeController extends Controller
      */
     public function index(): View
     {
-        return view('public.welcome', [
-            'headTitle' => __('Welcome'),
-        ]);
+        Head::title('Welkom');
+
+        return view('public.welcome');
     }
 }
