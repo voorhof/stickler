@@ -3,6 +3,7 @@
 namespace App\Filament\Schemas\Components;
 
 use Filament\Forms\Components\TextInput;
+use Illuminate\Validation\Rule;
 
 class SlugInput
 {
@@ -20,6 +21,9 @@ class SlugInput
                 'maxlength' => 48,
                 'pattern' => '[a-z0-9\-]+',
                 'title' => __('The slug must consist solely of lower-case letters, numbers and hyphens.'),
+            ])
+            ->rules([
+                Rule::notIn(config('sluggable.excluded_from_slug')),
             ])
             ->belowContent(__('The slug must consist solely of lower-case letters, numbers and hyphens.'));
     }

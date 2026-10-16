@@ -6,6 +6,7 @@ use App\Models\Media;
 use App\Models\Page;
 use App\Models\User;
 use App\Observers\PageObserver;
+use Illuminate\Support\Carbon;
 
 use function Pest\Laravel\actingAs;
 
@@ -63,6 +64,94 @@ it('does not overwrite user ids when no user is authenticated during update', fu
 
     expect($page->fresh()->created_by_user_id)->toBe($originalCreatorId)
         ->and($page->fresh()->updated_by_user_id)->toBe($originalUpdaterId);
+});
+
+it('appends timestamp suffix to slug when creating a page with an excluded slug', function (): void {
+    Carbon::setTestNow('2026-10-16 12:00:00');
+
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $excludedSlug = config('sluggable.excluded_from_slug')[0] ?? 'contact';
+    $expectedSuffix = now()->format('-y-m-d-H-i-s');
+
+    $page = Page::create([
+        'title' => 'Contact Page',
+        'slug' => $excludedSlug,
+        'intro' => 'Testing creating with an excluded slug.',
+    ]);
+
+    expect($page->slug)->toBe($excludedSlug.$expectedSuffix)
+        ->and($page->fresh()->slug)->toBe($excludedSlug.$expectedSuffix);
+
+    Carbon::setTestNow();
+});
+
+it('appends timestamp suffix to slug when updating a page to an excluded slug', function (): void {
+    Carbon::setTestNow('2026-10-16 12:00:00');
+
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $page = Page::create([
+        'title' => 'Normal Page',
+        'slug' => 'normal-page',
+        'intro' => 'Original intro text.',
+    ]);
+
+    expect($page->slug)->toBe('normal-page');
+
+    $excludedSlug = config('sluggable.excluded_from_slug')[0] ?? 'contact';
+    $expectedSuffix = now()->format('-y-m-d-H-i-s');
+
+    $page->update([
+        'slug' => $excludedSlug,
+    ]);
+
+    expect($page->fresh()->slug)->toBe($excludedSlug.$expectedSuffix);
+
+    Carbon::setTestNow();
+});
+
+it('does not alter slug when creating or updating with a non-excluded slug', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $page = Page::create([
+        'title' => 'Unique Allowed Title',
+        'slug' => 'unique-allowed-slug',
+        'intro' => 'Intro text.',
+    ]);
+
+    expect($page->slug)->toBe('unique-allowed-slug');
+
+    $page->update([
+        'slug' => 'another-unique-allowed-slug',
+    ]);
+
+    expect($page->fresh()->slug)->toBe('another-unique-allowed-slug');
+});
+
+it('appends timestamp to excluded slug directly via creating and updating observer methods', function (): void {
+    Carbon::setTestNow('2026-10-16 12:00:00');
+
+    $observer = new PageObserver;
+    $excludedSlug = config('sluggable.excluded_from_slug')[0] ?? 'contact';
+    $expectedSuffix = now()->format('-y-m-d-H-i-s');
+
+    $page = new Page([
+        'title' => 'Direct Observer Test',
+        'slug' => $excludedSlug,
+    ]);
+
+    $observer->creating($page);
+    expect($page->slug)->toBe($excludedSlug.$expectedSuffix);
+
+    $page->slug = $excludedSlug;
+    $observer->updating($page);
+    expect($page->slug)->toBe($excludedSlug.$expectedSuffix);
+
+    Carbon::setTestNow();
 });
 
 it('syncs image alt text to media name when a page is saved with rich content', function (): void {

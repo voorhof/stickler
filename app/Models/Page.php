@@ -99,28 +99,6 @@ class Page extends Model implements HasMedia, HasRichContent, Sortable
         'order_column' => 1,
     ];
 
-    /**
-     * The model's excluded values for slug generation.
-     *
-     * @var array<string>
-     */
-    protected array $excludeFromSlug = [
-        'contact',
-        'algemene-voorwaarden',
-        'privacy-policy',
-        'cookie-policy',
-        'pages',
-        'page',
-        'test',
-        'admin',
-        'filament',
-        'home',
-        'storage',
-        'up',
-        'welcome',
-        'xxx',
-    ];
-
     /*
     |--------------------------------------------------------------------------
     | Casts, Accessors and Mutators

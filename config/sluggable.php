@@ -16,4 +16,24 @@ return [
         'build_self_healing_route_key' => BuildSelfHealingRouteKeyAction::class,
         'extract_identifier_from_self_healing_route_key' => ExtractIdentifierFromSelfHealingRouteKeyAction::class,
     ],
+
+    /**
+     * The model's excluded values for slug generation.
+     */
+    'excluded_from_slug' => [
+        'contact',
+        'algemene-voorwaarden',
+        'privacy-policy',
+        'cookie-policy',
+        'pages',
+        'page',
+        'test',
+        'admin',
+        'filament',
+        'home',
+        'storage',
+        'up',
+        'welcome',
+        'xxx',
+    ],
 ];
