@@ -24,6 +24,24 @@
 
             <a @class([
                 'nav-link link-body-emphasis',
+                'active' => request()->routeIs('pages.*'),
+            ])
+               href="{{ route('pages.index') }}">PAGES</a>
+
+            <a @class([
+                'nav-link link-body-emphasis',
+                'active' => request()->routeIs('posts.*'),
+            ])
+               href="{{ route('posts.index') }}">POSTS</a>
+
+            <a @class([
+                'nav-link link-body-emphasis',
+                'active' => request()->routeIs('projects.*'),
+            ])
+               href="{{ route('projects.index') }}">PROJECTS</a>
+
+            <a @class([
+                'nav-link link-body-emphasis',
                 'active' => request()->routeIs('contact.index'),
             ])
                href="{{ route('contact.index') }}">CONTACT</a>
