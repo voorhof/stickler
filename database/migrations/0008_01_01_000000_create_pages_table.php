@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->string('title');
             $table->text('intro');
-            $table->json('content')->nullable();
+            $table->longText('content')->nullable();
             $table->unsignedInteger('order_column')->nullable()->index();
             $table->timestamp('published_at')->nullable();
             $table->timestamps();

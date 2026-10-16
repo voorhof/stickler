@@ -113,7 +113,6 @@ class Page extends Model implements HasMedia, HasRichContent, Sortable
     protected function casts(): array
     {
         return [
-            'content' => 'array',
             'published_at' => 'datetime',
             'published' => 'boolean',
         ];
