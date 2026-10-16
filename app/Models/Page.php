@@ -53,7 +53,7 @@ use Spatie\Tags\HasTags;
  * @method static updater()
  * @method static create(mixed $validated)
  * @method static forceCreate(array $array)
- * @method static where(string $string, mixed $id)
+ * @method static where(string $column, mixed $operator, mixed $value)
  */
 #[Fillable([
     'slug',
@@ -97,6 +97,28 @@ class Page extends Model implements HasMedia, HasRichContent, Sortable
      */
     protected $attributes = [
         'order_column' => 1,
+    ];
+
+    /**
+     * The model's excluded values for slug generation.
+     *
+     * @var array<string>
+     */
+    protected array $excludeFromSlug = [
+        'contact',
+        'algemene-voorwaarden',
+        'privacy-policy',
+        'cookie-policy',
+        'pages',
+        'page',
+        'test',
+        'admin',
+        'filament',
+        'home',
+        'storage',
+        'up',
+        'welcome',
+        'xxx',
     ];
 
     /*

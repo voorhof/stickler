@@ -53,7 +53,7 @@ use Spatie\Tags\HasTags;
  * @method static updater()
  * @method static create(mixed $validated)
  * @method static forceCreate(array $array)
- * @method static where(string $string, mixed $id)
+ * @method static where(string $column, mixed $operator, mixed $value)
  */
 #[Fillable([
     'slug',
