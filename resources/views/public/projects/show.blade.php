@@ -13,7 +13,7 @@
                                 {{ $project->intro }}
                             </p>
 
-                            <div class="mb-4">
+                            <div class="c-rich-content mb-4">
                                 {!! $project->content !!}
                             </div>
                         </div>

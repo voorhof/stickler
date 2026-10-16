@@ -13,7 +13,7 @@
                                 {{ $page->intro }}
                             </p>
 
-                            <div class="mb-4">
+                            <div class="c-rich-content mb-4">
                                 {!! $page->content !!}
                             </div>
                         </div>

@@ -13,7 +13,7 @@
                                 {{ $post->intro }}
                             </p>
 
-                            <div class="mb-4">
+                            <div class="c-rich-content mb-4">
                                 {!! $post->content !!}
                             </div>
                         </div>
