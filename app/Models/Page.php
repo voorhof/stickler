@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Observers\PageObserver;
 use App\Policies\PagePolicy;
 use App\Traits\LogsTrashedActivity;
+use App\Traits\RenderResponsiveRichContent;
 use App\Traits\SortableOnUpdate;
 use Database\Factories\PageFactory;
 use DateTime;
@@ -86,6 +87,7 @@ class Page extends Model implements HasMedia, HasRichContent, Sortable
     use InteractsWithRichContent;
     use LogsActivity;
     use LogsTrashedActivity;
+    use RenderResponsiveRichContent;
     use SoftDeletes;
     use SortableOnUpdate;
     use SortableTrait;

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Observers\PostObserver;
 use App\Policies\PostPolicy;
 use App\Traits\LogsTrashedActivity;
+use App\Traits\RenderResponsiveRichContent;
 use App\Traits\SortableOnUpdate;
 use Database\Factories\PostFactory;
 use DateTime;
@@ -86,6 +87,7 @@ class Post extends Model implements HasMedia, HasRichContent, Sortable
     use InteractsWithRichContent;
     use LogsActivity;
     use LogsTrashedActivity;
+    use RenderResponsiveRichContent;
     use SoftDeletes;
     use SortableOnUpdate;
     use SortableTrait;

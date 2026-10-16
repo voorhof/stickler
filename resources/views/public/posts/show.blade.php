@@ -14,7 +14,7 @@
                             </p>
 
                             <div class="c-rich-content mb-4">
-                                {!! $post->content !!}
+                                {!! $post->renderResponsiveRichContent() !!}
                             </div>
                         </div>
 

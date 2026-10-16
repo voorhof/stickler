@@ -14,7 +14,7 @@
                             </p>
 
                             <div class="c-rich-content mb-4">
-                                {!! $project->content !!}
+                                {!! $project->renderResponsiveRichContent() !!}
                             </div>
                         </div>
 

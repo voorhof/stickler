@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Observers\ProjectObserver;
 use App\Policies\ProjectPolicy;
 use App\Traits\LogsTrashedActivity;
+use App\Traits\RenderResponsiveRichContent;
 use App\Traits\SortableOnUpdate;
 use Database\Factories\ProjectFactory;
 use DateTime;
@@ -90,6 +91,7 @@ class Project extends Model implements HasMedia, HasRichContent, Sortable
     use InteractsWithRichContent;
     use LogsActivity;
     use LogsTrashedActivity;
+    use RenderResponsiveRichContent;
     use SoftDeletes;
     use SortableOnUpdate;
     use SortableTrait;
