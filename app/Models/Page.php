@@ -167,7 +167,7 @@ class Page extends Model implements HasMedia, HasRichContent, Sortable
             ->deferred()
             ->format('webp')
             ->withResponsiveImages()
-            ->performOnCollections('cover', 'images');
+            ->performOnCollections('cover', 'images', 'content');
     }
 
     /**

@@ -223,7 +223,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, HasName, M
             ->deferred()
             ->format('webp')
             ->withResponsiveImages()
-            ->performOnCollections('cover', 'images');
+            ->performOnCollections('avatar', 'images');
     }
 
     /**

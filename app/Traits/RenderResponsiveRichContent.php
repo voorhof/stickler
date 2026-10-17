@@ -41,11 +41,23 @@ trait RenderResponsiveRichContent
             $class = isset($node->attrs->class) ? ' class="'.e($node->attrs->class).'"' : ' class="img-fluid"';
             $loading = e($node->attrs->loading ?? 'lazy');
 
-            $src = $media->getUrl();
-            $srcset = $media->hasResponsiveImages() ? $media->getSrcset() : null;
+            $hasWebpConversion = $media->hasGeneratedConversion('webp');
+            $conversion = $hasWebpConversion ? 'webp' : '';
+
+            $src = $hasWebpConversion ? $media->getUrl('webp') : $media->getUrl();
+
+            if ($media->hasResponsiveImages($conversion)) {
+                $srcset = $media->getSrcset($conversion);
+                $responsiveFile = $media->responsiveImages($conversion)->files->first();
+            } elseif ($media->hasResponsiveImages()) {
+                $srcset = $media->getSrcset();
+                $responsiveFile = $media->responsiveImages()->files->first();
+            } else {
+                $srcset = null;
+                $responsiveFile = null;
+            }
 
             // Dimensions
-            $responsiveFile = $media->hasResponsiveImages() ? $media->responsiveImages()->files->first() : null;
             $width = $responsiveFile?->width() ?? $node->attrs->width ?? $media->getCustomProperty('width');
             $height = $responsiveFile?->height() ?? $node->attrs->height ?? $media->getCustomProperty('height');
 
