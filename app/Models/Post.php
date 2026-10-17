@@ -149,6 +149,7 @@ class Post extends Model implements HasMedia, HasRichContent, Sortable
             ->fit(Fit::Crop, 400, 400)
             ->nonQueued()
             ->deferred()
+            ->format('webp')
             ->performOnCollections('cover', 'images', 'videos', 'documents', 'content')
             ->pdfPageNumber(1)
             ->extractVideoFrameAtSecond(1);
@@ -157,9 +158,16 @@ class Post extends Model implements HasMedia, HasRichContent, Sortable
             ->fit(Fit::Crop, 40, 40)
             ->nonQueued()
             ->deferred()
+            ->format('webp')
             ->performOnCollections('cover', 'images', 'videos', 'documents', 'content')
             ->pdfPageNumber(1)
             ->extractVideoFrameAtSecond(1);
+
+        $this->addMediaConversion('webp')
+            ->deferred()
+            ->format('webp')
+            ->withResponsiveImages()
+            ->performOnCollections('cover', 'images');
     }
 
     /**

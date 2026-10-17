@@ -19,7 +19,7 @@
                         </div>
 
                         <div class="col-md-6">
-                            {{ $post->getFirstMedia('cover') }}
+                            {{ $post->getFirstMedia('cover')?->img('webp', ['alt' => $post->title]) }}
                         </div>
                     </div>
                 </div>

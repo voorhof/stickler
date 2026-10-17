@@ -205,6 +205,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, HasName, M
             ->fit(Fit::Crop, 400, 400)
             ->nonQueued()
             ->deferred()
+            ->format('webp')
             ->performOnCollections('avatar', 'images', 'videos', 'documents')
             ->pdfPageNumber(1)
             ->extractVideoFrameAtSecond(1);
@@ -213,9 +214,16 @@ class User extends Authenticatable implements FilamentUser, HasMedia, HasName, M
             ->fit(Fit::Crop, 40, 40)
             ->nonQueued()
             ->deferred()
+            ->format('webp')
             ->performOnCollections('avatar', 'images', 'videos', 'documents')
             ->pdfPageNumber(1)
             ->extractVideoFrameAtSecond(1);
+
+        $this->addMediaConversion('webp')
+            ->deferred()
+            ->format('webp')
+            ->withResponsiveImages()
+            ->performOnCollections('cover', 'images');
     }
 
     /**
