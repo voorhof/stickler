@@ -412,3 +412,22 @@ it('denies deleting a page when the user does not have delete permission', funct
 
     $this->assertDatabaseHas(Page::class, ['id' => $page->id]);
 });
+
+it('shows the view public page action when page is published', function () {
+    $page = Page::factory()->create(['published_at' => now()->subHour()]);
+
+    livewire(EditPage::class, ['record' => $page->getRouteKey()])
+        ->assertActionVisible('viewPublicPage')
+        ->assertActionHasUrl('viewPublicPage', route('pages.show', $page));
+});
+
+it('hides the view public page action when page is not published', function () {
+    $unpublishedPage = Page::factory()->create(['published_at' => null]);
+    $scheduledPage = Page::factory()->create(['published_at' => now()->addHour()]);
+
+    livewire(EditPage::class, ['record' => $unpublishedPage->getRouteKey()])
+        ->assertActionHidden('viewPublicPage');
+
+    livewire(EditPage::class, ['record' => $scheduledPage->getRouteKey()])
+        ->assertActionHidden('viewPublicPage');
+});

@@ -139,7 +139,7 @@ it('validates max lengths when creating a post', function () {
 });
 
 it('can create a post', function () {
-    $file = UploadedFile::fake()->image('cover.jpg', 10, 10);
+    $file = UploadedFile::fake()->image('cover.jpg');
 
     livewire(CreatePost::class)
         ->fillForm([
@@ -411,4 +411,23 @@ it('denies deleting a post when the user does not have delete permission', funct
         ->assertActionHidden(SoftDeleteAction::class);
 
     $this->assertDatabaseHas(Post::class, ['id' => $post->id]);
+});
+
+it('shows the view public page action when post is published', function () {
+    $post = Post::factory()->create(['published_at' => now()->subHour()]);
+
+    livewire(EditPost::class, ['record' => $post->getRouteKey()])
+        ->assertActionVisible('viewPublicPage')
+        ->assertActionHasUrl('viewPublicPage', route('posts.show', $post));
+});
+
+it('hides the view public page action when post is not published', function () {
+    $unpublishedPost = Post::factory()->create(['published_at' => null]);
+    $scheduledPost = Post::factory()->create(['published_at' => now()->addHour()]);
+
+    livewire(EditPost::class, ['record' => $unpublishedPost->getRouteKey()])
+        ->assertActionHidden('viewPublicPage');
+
+    livewire(EditPost::class, ['record' => $scheduledPost->getRouteKey()])
+        ->assertActionHidden('viewPublicPage');
 });

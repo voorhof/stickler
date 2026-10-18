@@ -139,7 +139,7 @@ it('validates max lengths when creating a project', function () {
 });
 
 it('can create a project', function () {
-    $file = UploadedFile::fake()->image('cover.jpg', 10, 10);
+    $file = UploadedFile::fake()->image('cover.jpg');
 
     livewire(CreateProject::class)
         ->fillForm([
@@ -411,4 +411,23 @@ it('denies deleting a project when the user does not have delete permission', fu
         ->assertActionHidden(SoftDeleteAction::class);
 
     $this->assertDatabaseHas(Project::class, ['id' => $project->id]);
+});
+
+it('shows the view public page action when project is published', function () {
+    $project = Project::factory()->create(['published_at' => now()->subHour()]);
+
+    livewire(EditProject::class, ['record' => $project->getRouteKey()])
+        ->assertActionVisible('viewPublicPage')
+        ->assertActionHasUrl('viewPublicPage', route('projects.show', $project));
+});
+
+it('hides the view public page action when project is not published', function () {
+    $unpublishedProject = Project::factory()->create(['published_at' => null]);
+    $scheduledProject = Project::factory()->create(['published_at' => now()->addHour()]);
+
+    livewire(EditProject::class, ['record' => $unpublishedProject->getRouteKey()])
+        ->assertActionHidden('viewPublicPage');
+
+    livewire(EditProject::class, ['record' => $scheduledProject->getRouteKey()])
+        ->assertActionHidden('viewPublicPage');
 });
