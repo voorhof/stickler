@@ -25,7 +25,7 @@
         "filament/spatie-laravel-media-library-plugin": "^5.10",
         "filament/spatie-laravel-settings-plugin": "^5.10",
         "filament/spatie-laravel-tags-plugin": "^5.10",
-        "laravel/framework": "^13.36",
+        "laravel/framework": "^13.37",
         "laravel/head": "^0.2.2",
         "laravel/telescope": "^5.26",
         "laravel/tinker": "^3.0",
