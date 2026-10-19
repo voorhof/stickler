@@ -4,7 +4,7 @@
         <div class="container-xl">
             <div class="row justify-content-center">
                 <div class="col-md-11 col-lg-9 col-xxl-8 mb-4">
-                    <div class="c-terms">
+                    <div class="c-rich-content c-terms">
                         {!! $content !!}
                     </div>
 

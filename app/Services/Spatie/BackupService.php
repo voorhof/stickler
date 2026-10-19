@@ -2,6 +2,7 @@
 
 namespace App\Services\Spatie;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Spatie\Backup\BackupDestination\Backup;
 use Spatie\Backup\BackupDestination\BackupDestination;
@@ -35,7 +36,7 @@ class BackupService
 
     public static function getBackupDestinationData(string $disk): array
     {
-        return Cache::remember('backups-'.$disk, now()->addSeconds(4), function () use ($disk) {
+        return Cache::rememberForever('backups-'.$disk, function () use ($disk) {
             return BackupDestination::create($disk, config('backup.backup.name'))
                 ->backups()
                 ->map(function (Backup $backup) use ($disk) {
@@ -44,6 +45,7 @@ class BackupService
                         'path' => $backup->path(),
                         'date' => $backup->date()->format('Y-m-d H:i:s'),
                         'size' => Format::humanReadableSize($backup->sizeInBytes()),
+                        'sizeInBytes' => $backup->sizeInBytes(),
                     ];
                 })
                 ->toArray();
@@ -52,24 +54,28 @@ class BackupService
 
     public static function getBackupDestinationStatusData(): array
     {
-        return Cache::remember('backup-statuses', now()->addSeconds(4), function () {
+        return Cache::rememberForever('backup-statuses', function () {
             $config = class_exists('Spatie\Backup\Config\MonitoredBackupsConfig')
                 ? MonitoredBackupsConfig::fromArray(config('backup.monitor_backups'))
                 : config('backup.monitor_backups');
 
             return BackupDestinationStatusFactory::createForMonitorConfig($config)
                 ->map(function (BackupDestinationStatus $backupDestinationStatus, int|string $key) {
+                    $disk = $backupDestinationStatus->backupDestination()->diskName();
+                    $backups = collect(static::getBackupDestinationData($disk));
+                    $newestBackup = $backups->sortByDesc('date')->first();
+
                     return [
                         'id' => $key,
                         'name' => $backupDestinationStatus->backupDestination()->backupName(),
-                        'disk' => $backupDestinationStatus->backupDestination()->diskName(),
+                        'disk' => $disk,
                         'reachable' => $backupDestinationStatus->backupDestination()->isReachable(),
                         'healthy' => $backupDestinationStatus->isHealthy(),
-                        'amount' => $backupDestinationStatus->backupDestination()->backups()->count(),
-                        'newest' => $backupDestinationStatus->backupDestination()->newestBackup()
-                            ? $backupDestinationStatus->backupDestination()->newestBackup()->date()->diffForHumans()
+                        'amount' => $backups->count(),
+                        'newest' => $newestBackup
+                            ? Carbon::parse($newestBackup['date'])->diffForHumans()
                             : __('backups.no_backups_info'),
-                        'usedStorage' => Format::humanReadableSize($backupDestinationStatus->backupDestination()->usedStorage()),
+                        'usedStorage' => Format::humanReadableSize($backups->sum('sizeInBytes')),
                     ];
                 })
                 ->values()

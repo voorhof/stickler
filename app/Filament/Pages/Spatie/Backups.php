@@ -133,7 +133,6 @@ class Backups extends Page implements HasTable
     public function table(Table $table): Table
     {
         return $table
-            ->poll('5s')
             ->records(function () {
                 $data = [];
                 foreach (BackupService::getDisks() as $disk) {

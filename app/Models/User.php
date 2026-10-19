@@ -205,6 +205,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, HasName, M
             ->fit(Fit::Crop, 400, 400)
             ->nonQueued()
             ->deferred()
+            ->format('webp')
             ->performOnCollections('avatar', 'images', 'videos', 'documents')
             ->pdfPageNumber(1)
             ->extractVideoFrameAtSecond(1);
@@ -213,9 +214,16 @@ class User extends Authenticatable implements FilamentUser, HasMedia, HasName, M
             ->fit(Fit::Crop, 40, 40)
             ->nonQueued()
             ->deferred()
+            ->format('webp')
             ->performOnCollections('avatar', 'images', 'videos', 'documents')
             ->pdfPageNumber(1)
             ->extractVideoFrameAtSecond(1);
+
+        $this->addMediaConversion('webp')
+            ->deferred()
+            ->format('webp')
+            ->withResponsiveImages()
+            ->performOnCollections('avatar', 'images');
     }
 
     /**
@@ -324,6 +332,24 @@ class User extends Authenticatable implements FilamentUser, HasMedia, HasName, M
     public function updatedPosts(): HasMany
     {
         return $this->hasMany(Post::class, 'updated_by_user_id', 'id')
+            ->chaperone('updater');
+    }
+
+    /**
+     * Get the pages created by the user.
+     */
+    public function createdPages(): HasMany
+    {
+        return $this->hasMany(Page::class, 'created_by_user_id', 'id')
+            ->chaperone('creator');
+    }
+
+    /**
+     * Get the pages updated by the user.
+     */
+    public function updatedPages(): HasMany
+    {
+        return $this->hasMany(Page::class, 'updated_by_user_id', 'id')
             ->chaperone('updater');
     }
 

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Observers\PostObserver;
 use App\Policies\PostPolicy;
 use App\Traits\LogsTrashedActivity;
+use App\Traits\RenderResponsiveRichContent;
 use App\Traits\SortableOnUpdate;
 use Database\Factories\PostFactory;
 use DateTime;
@@ -53,7 +54,7 @@ use Spatie\Tags\HasTags;
  * @method static updater()
  * @method static create(mixed $validated)
  * @method static forceCreate(array $array)
- * @method static where(string $string, mixed $id)
+ * @method static where(string $column, mixed $operator, mixed $value)
  */
 #[Fillable([
     'slug',
@@ -86,6 +87,7 @@ class Post extends Model implements HasMedia, HasRichContent, Sortable
     use InteractsWithRichContent;
     use LogsActivity;
     use LogsTrashedActivity;
+    use RenderResponsiveRichContent;
     use SoftDeletes;
     use SortableOnUpdate;
     use SortableTrait;
@@ -147,6 +149,7 @@ class Post extends Model implements HasMedia, HasRichContent, Sortable
             ->fit(Fit::Crop, 400, 400)
             ->nonQueued()
             ->deferred()
+            ->format('webp')
             ->performOnCollections('cover', 'images', 'videos', 'documents', 'content')
             ->pdfPageNumber(1)
             ->extractVideoFrameAtSecond(1);
@@ -155,9 +158,16 @@ class Post extends Model implements HasMedia, HasRichContent, Sortable
             ->fit(Fit::Crop, 40, 40)
             ->nonQueued()
             ->deferred()
+            ->format('webp')
             ->performOnCollections('cover', 'images', 'videos', 'documents', 'content')
             ->pdfPageNumber(1)
             ->extractVideoFrameAtSecond(1);
+
+        $this->addMediaConversion('webp')
+            ->deferred()
+            ->format('webp')
+            ->withResponsiveImages()
+            ->performOnCollections('cover', 'images', 'content');
     }
 
     /**

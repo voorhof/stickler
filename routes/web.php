@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\Public\ContactController;
+use App\Http\Controllers\Public\PageController;
+use App\Http\Controllers\Public\PostController;
+use App\Http\Controllers\Public\ProjectController;
 use App\Http\Controllers\Public\TermsController;
 use App\Http\Controllers\Public\WelcomeController;
 use Illuminate\Support\Facades\Route;
@@ -38,6 +41,29 @@ Route::middleware('cache.headers:public;max_age=60;s_maxage=300;stale_while_reva
                 ->name('cookie');
         });
 
+    /**
+     * PostController routes
+     */
+    Route::get('/posts', [PostController::class, 'index'])
+        ->name('posts.index');
+    Route::get('/posts/{post}', [PostController::class, 'show'])
+        ->name('posts.show');
+
+    /**
+     * ProjectController routes
+     */
+    Route::get('/projects', [ProjectController::class, 'index'])
+        ->name('projects.index');
+    Route::get('/projects/{project}', [ProjectController::class, 'show'])
+        ->name('projects.show');
+
+    /**
+     * PageController routes (put these routes last)
+     */
+    Route::get('/pages', [PageController::class, 'index'])
+        ->name('pages.index');
+    Route::get('/{page}', [PageController::class, 'show'])
+        ->name('pages.show');
 });
 
 /**
@@ -51,7 +77,7 @@ Route::post('/contact', [ContactController::class, 'store'])
  * Test route
  */
 if (app()->environment('local')) {
-    Route::get('/test', function () {
+    Route::get('/test/test', function () {
         return view('test', [
             'headTitle' => 'TEST',
         ]);

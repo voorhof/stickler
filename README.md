@@ -266,6 +266,23 @@ so that route binding works based on the slug rather than the ID:
 #[RouteKey('slug')]
 ```
 
+#### Excluded Slugs Configuration (excluded_from_slug)
+
+A custom configuration array excluded_from_slug is defined in config/sluggable.php to blacklist reserved keywords and system route names (e.g. contact, admin, pages, privacy-policy, etc.):
+
+```php
+'excluded_from_slug' => [
+    'contact',
+    'algemene-voorwaarden',
+    'privacy-policy',
+    '...',
+],
+```
+
+This list is used across the application:
+1. Filament Form Validation (SlugInput): The reusable SlugInput component (App\Filament\Schemas\Components\SlugInput) applies Rule::notIn(config('sluggable.excluded_from_slug')) to prevent users from manually entering reserved slugs in the admin panel.
+2. Model Observers (PageObserver): During creating and updating model events in PageObserver, the model checks if the assigned slug is within config('sluggable.excluded_from_slug'). If matched, a unique timestamp suffix (now()->format('-y-m-d-H-i-s')) is automatically appended to avoid route collisions with existing system routes.
+
 
 ### Spatie Permission
 [Documentation](https://spatie.be/docs/laravel-permission/v8/introduction)  

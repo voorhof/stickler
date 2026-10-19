@@ -125,6 +125,7 @@ class UiServiceProvider extends ServiceProvider
                     '#fff' => __('White'),
                     ...TextColor::getDefaults(),
                 ])
+                ->maxHeight('80svh')
                 ->fileAttachmentsDisk('public')
                 ->fileAttachmentsDirectory('attachments')
                 ->fileAttachmentsVisibility('public')

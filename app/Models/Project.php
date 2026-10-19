@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Observers\ProjectObserver;
 use App\Policies\ProjectPolicy;
 use App\Traits\LogsTrashedActivity;
+use App\Traits\RenderResponsiveRichContent;
 use App\Traits\SortableOnUpdate;
 use Database\Factories\ProjectFactory;
 use DateTime;
@@ -55,6 +56,7 @@ use Spatie\Tags\HasTags;
  * @method static updater()
  * @method static create(mixed $validated)
  * @method static forceCreate(array $array)
+ * @method static where(string $column, mixed $operator, mixed $value)
  */
 #[Fillable([
     'slug',
@@ -89,6 +91,7 @@ class Project extends Model implements HasMedia, HasRichContent, Sortable
     use InteractsWithRichContent;
     use LogsActivity;
     use LogsTrashedActivity;
+    use RenderResponsiveRichContent;
     use SoftDeletes;
     use SortableOnUpdate;
     use SortableTrait;
@@ -150,6 +153,7 @@ class Project extends Model implements HasMedia, HasRichContent, Sortable
             ->fit(Fit::Crop, 400, 400)
             ->nonQueued()
             ->deferred()
+            ->format('webp')
             ->performOnCollections('cover', 'images', 'videos', 'documents', 'content')
             ->pdfPageNumber(1)
             ->extractVideoFrameAtSecond(1);
@@ -158,9 +162,16 @@ class Project extends Model implements HasMedia, HasRichContent, Sortable
             ->fit(Fit::Crop, 40, 40)
             ->nonQueued()
             ->deferred()
+            ->format('webp')
             ->performOnCollections('cover', 'images', 'videos', 'documents', 'content')
             ->pdfPageNumber(1)
             ->extractVideoFrameAtSecond(1);
+
+        $this->addMediaConversion('webp')
+            ->deferred()
+            ->format('webp')
+            ->withResponsiveImages()
+            ->performOnCollections('cover', 'images', 'content');
     }
 
     /**
