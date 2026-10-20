@@ -35,6 +35,11 @@
 <body>
 @stack('scripts-body-top')
 
+<a href="#main"
+   class="btn btn-secondary btn-skip">
+    {{ __('Skip to main content') }}
+</a>
+
 <div id="app">
     <x-navbar />
 
@@ -42,7 +47,7 @@
 
     <x-header />
 
-    <main>
+    <main id="main">
         {{ $slot }}
     </main>
 
