@@ -18,6 +18,8 @@ use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -73,7 +75,21 @@ class UsersTable
                 Filter::make('verified users')
                     ->label(__('Verified users'))
                     ->toggle()
+                    // Make sure the verified users filter is mutually exclusive with the unverified users filter
+                    ->modifyFormFieldUsing(fn (Toggle $field) => $field
+                        ->live()
+                        ->afterStateUpdated(fn (Set $set, $state) => $state ? $set('../unverified users.isActive', false) : null),
+                    )
                     ->query(fn (Builder $query): Builder => $query->whereNotNull('email_verified_at')),
+                Filter::make('unverified users')
+                    ->label(__('Unverified users'))
+                    ->toggle()
+                    // Make sure the unverified users filter is mutually exclusive with the verified users filter
+                    ->modifyFormFieldUsing(fn (Toggle $field) => $field
+                        ->live()
+                        ->afterStateUpdated(fn (Set $set, $state) => $state ? $set('../verified users.isActive', false) : null),
+                    )
+                    ->query(fn (Builder $query): Builder => $query->whereNull('email_verified_at')),
                 SelectFilter::make('role')
                     ->label(__('Role'))
                     ->relationship('roles', 'name'),

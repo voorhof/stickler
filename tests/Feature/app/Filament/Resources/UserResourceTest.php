@@ -75,6 +75,16 @@ it('can filter verified users on the list page table', function () {
         ->assertCanNotSeeTableRecords([$unverifiedUser]);
 });
 
+it('can filter unverified users on the list page table', function () {
+    $verifiedUser = User::factory()->create(['email_verified_at' => Carbon::now()]);
+    $unverifiedUser = User::factory()->create(['email_verified_at' => null]);
+
+    livewire(ListUsers::class)
+        ->filterTable('unverified users')
+        ->assertCanSeeTableRecords([$unverifiedUser])
+        ->assertCanNotSeeTableRecords([$verifiedUser]);
+});
+
 it('can filter users by trashed state on the list page table', function () {
     $activeUser = User::factory()->create();
     $trashedUser = User::factory()->create();
