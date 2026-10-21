@@ -36,11 +36,11 @@ class MediaResource extends Resource
         ];
     }
 
-    protected static ?int $navigationSort = 1700; // Specify the order in which navigation items are listed.
+    protected static ?int $navigationSort = 5100; // Specify the order in which navigation items are listed.
 
     public static function getNavigationGroup(): ?string
     {
-        return __('Content management');
+        return __('File management');
     }
 
     public static function form(Schema $schema): Schema
