@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Users\Tables;
 use App\Filament\Actions\HardDeleteBulkAction;
 use App\Filament\Actions\RestoreDeletedBulkAction;
 use App\Filament\Actions\SoftDeleteBulkAction;
+use App\Filament\Actions\VerifyEmailBulkAction;
 use App\Filament\Schemas\Columns\CreatedColumn;
 use App\Filament\Schemas\Columns\DeletedColumn;
 use App\Filament\Schemas\Columns\EmailColumn;
@@ -83,6 +84,7 @@ class UsersTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    VerifyEmailBulkAction::make(),
                     SoftDeleteBulkAction::make(),
                     HardDeleteBulkAction::make(),
                     RestoreDeletedBulkAction::make(),
