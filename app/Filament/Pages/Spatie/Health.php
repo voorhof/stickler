@@ -4,6 +4,7 @@ namespace App\Filament\Pages\Spatie;
 
 use App\Filament\Actions\Laravel\OptimizeAction;
 use App\Filament\Actions\Laravel\OptimizeClearAction;
+use App\Filament\Actions\Spatie\ClearResponseCacheAction;
 use App\Filament\Actions\Spatie\HealthCheckAction;
 use BackedEnum;
 use Filament\Pages\Page;
@@ -54,6 +55,7 @@ class Health extends Page
         return [
             OptimizeAction::make(),
             OptimizeClearAction::make(),
+            ClearResponseCacheAction::make(),
             HealthCheckAction::make(),
         ];
     }

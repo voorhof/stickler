@@ -1053,6 +1053,9 @@ use Spatie\ResponseCache\Middlewares\DoNotCacheResponse;
 Inside the `ContactController` we added the `#[NoCache]` attribute to the `index` and `store` method,
 so the response will not be cached and the success message will be shown.
 
+A custom `ClearResponseCacheAction` was created inside `app/Filament/Actions/Spatie/ClearResponseCacheAction.php` to clear the response cache manually.  
+This action is registered as a header action on the Filament `Health` page (`app/Filament/Pages/Spatie/Health.php`).
+
 More configuration is possible, for now this project is using the default settings.
 
 
