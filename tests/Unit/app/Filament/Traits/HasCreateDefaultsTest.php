@@ -4,7 +4,6 @@
 
 use App\Filament\Resources\Posts\Pages\CreatePost;
 use App\Filament\Resources\Roles\Pages\CreateRole;
-use App\Filament\Resources\Users\Pages\CreateUser;
 use App\Models\Permission;
 use App\Models\Post;
 use App\Models\Role;
