@@ -18,6 +18,21 @@
  * Components
  */
 
+// Skip button
+.btn-skip {
+    position: absolute;
+    left: -9999px;
+    z-index: 99999;
+    opacity: 0;
+    margin: 0.5rem;
+
+    &:focus {
+        position: fixed;
+        left: 0;
+        opacity: 1;
+    }
+}
+
 // Navbar top
 .c-navbar {
     position: sticky;

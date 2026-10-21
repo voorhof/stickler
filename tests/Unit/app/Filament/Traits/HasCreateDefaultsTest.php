@@ -4,7 +4,6 @@
 
 use App\Filament\Resources\Posts\Pages\CreatePost;
 use App\Filament\Resources\Roles\Pages\CreateRole;
-use App\Filament\Resources\Users\Pages\CreateUser;
 use App\Models\Permission;
 use App\Models\Post;
 use App\Models\Role;
@@ -109,15 +108,6 @@ it('does not sync all permissions when running afterCreate for a non-Admin role'
     callAfterCreateFor(CreateRole::class, $role);
 
     expect($role->fresh()->permissions->count())->toBe(0);
-});
-
-it('sets email_verified_at when running afterCreate for a user', function () {
-    $user = User::factory()->create(['email_verified_at' => null]);
-    expect($user->email_verified_at)->toBeNull();
-
-    callAfterCreateFor(CreateUser::class, $user);
-
-    expect($user->fresh()->email_verified_at)->not->toBeNull();
 });
 
 it('logs activity with properties on afterCreate', function () {

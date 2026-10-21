@@ -37,7 +37,7 @@ class Backups extends Page implements HasTable
 
     protected string $view = 'filament.pages.spatie.backups';
 
-    protected static ?int $navigationSort = 9700;
+    protected static ?int $navigationSort = 5200;
 
     public function getTitle(): string|Htmlable
     {
@@ -51,7 +51,7 @@ class Backups extends Page implements HasTable
 
     public static function getNavigationGroup(): string|UnitEnum|null
     {
-        return __('Settings');
+        return __('File management');
     }
 
     public static function canAccess(): bool

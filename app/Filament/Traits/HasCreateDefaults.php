@@ -72,17 +72,17 @@ trait HasCreateDefaults
         }
 
         // User model actions
-        if (parent::getModel() === 'App\Models\User') {
-            // Set email_verified_at to now
-            $user = User::find($this->record->id);
-            $user->email_verified_at = now();
-            $user->save();
+        // if (parent::getModel() === 'App\Models\User') {
+        // Set email_verified_at to now
+        // $user = User::find($this->record->id);
+        // $user->email_verified_at = now();
+        // $user->save();
 
-            // Send mail with random temporary password to the created user
-            // if ($this->randomPassword !== null && $user->email) {
-            //    Mail::queue(new UserCreatedMail($user, $this->randomPassword));
-            // }
-        }
+        // Send mail with random temporary password to the created user
+        // if ($this->randomPassword !== null && $user->email) {
+        //    Mail::queue(new UserCreatedMail($user, $this->randomPassword));
+        // }
+        // }
 
         // Log linked models for newly created records (merging with existing 'created' activity if possible)
         $tags = $this->record->tags ? $this->record->tags()->pluck('name')->toArray() : [];
