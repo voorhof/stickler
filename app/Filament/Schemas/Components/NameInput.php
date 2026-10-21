@@ -9,7 +9,7 @@ class NameInput
     public static function make(int $maxLength = 32): TextInput
     {
         return TextInput::make('name')
-            ->label(__('Naam'))
+            ->label(__('Name'))
             ->required()
             ->maxLength($maxLength)
             ->trim()
