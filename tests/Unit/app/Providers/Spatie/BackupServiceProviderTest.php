@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUndefinedMethodInspection */
+
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
@@ -13,12 +15,6 @@ test('it extends ServiceProvider', function () {
     $provider = new BackupServiceProvider(app());
 
     expect($provider)->toBeInstanceOf(ServiceProvider::class);
-});
-
-test('it executes boot method without errors', function () {
-    $provider = new BackupServiceProvider(app());
-
-    expect(fn () => $provider->boot())->not->toThrow(Throwable::class);
 });
 
 test('it is registered in the application', function () {

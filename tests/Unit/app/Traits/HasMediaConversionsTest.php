@@ -1,6 +1,6 @@
 <?php
 
-/** @noinspection PhpUnhandledExceptionInspection */
+/** @noinspection PhpUndefinedMethodInspection */
 
 use App\Models\Post;
 use App\Models\User;

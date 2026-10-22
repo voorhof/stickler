@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 use App\Filament\Filters\IsPublishedFilter;
 use App\Filament\Resources\Posts\Pages\ListPosts;
 use App\Models\Permission;
@@ -29,29 +31,33 @@ beforeEach(function () {
     $this->actingAs($this->adminUser);
 });
 
-it('has the correct default name', function () {
-    $filter = IsPublishedFilter::make();
+describe('filter creation', function () {
+    it('has the correct default name', function () {
+        $filter = IsPublishedFilter::make();
 
-    expect($filter->getName())->toBe('isPublished');
+        expect($filter->getName())->toBe('isPublished');
+    });
+
+    it('has the correct label', function () {
+        $filter = IsPublishedFilter::make();
+
+        expect($filter->getLabel())->toBe(__('Published'));
+    });
+
+    it('exists in the posts table', function () {
+        livewire(ListPosts::class)
+            ->assertTableFilterExists('isPublished');
+    });
 });
 
-it('has the correct label', function () {
-    $filter = IsPublishedFilter::make();
+describe('filter execution', function () {
+    it('filters published records when enabled', function () {
+        $publishedPost = Post::factory()->create(['published_at' => now()]);
+        $draftPost = Post::factory()->create(['published_at' => null]);
 
-    expect($filter->getLabel())->toBe(__('Published'));
-});
-
-it('exists in the posts table', function () {
-    livewire(ListPosts::class)
-        ->assertTableFilterExists('isPublished');
-});
-
-it('filters published records when enabled', function () {
-    $publishedPost = Post::factory()->create(['published_at' => now()]);
-    $draftPost = Post::factory()->create(['published_at' => null]);
-
-    livewire(ListPosts::class)
-        ->filterTable('isPublished')
-        ->assertCanSeeTableRecords([$publishedPost])
-        ->assertCanNotSeeTableRecords([$draftPost]);
+        livewire(ListPosts::class)
+            ->filterTable('isPublished')
+            ->assertCanSeeTableRecords([$publishedPost])
+            ->assertCanNotSeeTableRecords([$draftPost]);
+    });
 });

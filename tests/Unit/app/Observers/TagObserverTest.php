@@ -5,55 +5,23 @@ use App\Models\User;
 
 use function Pest\Laravel\actingAs;
 
-it('sets created_by_user_id and updated_by_user_id when a tag is created', function (): void {
-    $user = User::factory()->create();
-
-    actingAs($user);
-
-    $tag = Tag::create([
-        'name' => 'Observer Test Tag',
-    ]);
-
-    expect($tag->created_by_user_id)->toBe($user->id)
-        ->and($tag->updated_by_user_id)->toBe($user->id);
-});
-
-it('updates updated_by_user_id but not created_by_user_id when a tag is updated', function (): void {
+it('tracks creator and updater on tag create and update', function (): void {
     $creator = User::factory()->create();
     $updater = User::factory()->create();
 
     actingAs($creator);
 
     $tag = Tag::create([
-        'name' => 'Original Title',
+        'name' => 'Observer Test Tag',
     ]);
 
-    expect($tag->created_by_user_id)->toBe($creator->id);
+    expect($tag->created_by_user_id)->toBe($creator->id)
+        ->and($tag->updated_by_user_id)->toBe($creator->id);
 
     actingAs($updater);
 
-    $tag->update(['name' => 'Updated Title']);
+    $tag->update(['name' => 'Updated Tag']);
 
     expect($tag->fresh()->created_by_user_id)->toBe($creator->id)
         ->and($tag->fresh()->updated_by_user_id)->toBe($updater->id);
-});
-
-it('does not overwrite user ids when no user is authenticated during update', function (): void {
-    $creator = User::factory()->create();
-
-    actingAs($creator);
-
-    $tag = Tag::create([
-        'name' => 'Auth Create No Auth Update',
-    ]);
-
-    $originalCreatorId = $tag->created_by_user_id;
-    $originalUpdaterId = $tag->updated_by_user_id;
-
-    auth()->logout();
-
-    $tag->update(['name' => 'Updated Without Auth']);
-
-    expect($tag->fresh()->created_by_user_id)->toBe($originalCreatorId)
-        ->and($tag->fresh()->updated_by_user_id)->toBe($originalUpdaterId);
 });

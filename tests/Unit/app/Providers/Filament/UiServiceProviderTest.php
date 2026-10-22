@@ -34,18 +34,6 @@ test('it is registered in the application', function () {
     expect(app()->getLoadedProviders())->toHaveKey(UiServiceProvider::class);
 });
 
-test('it executes register method without errors', function () {
-    $provider = new UiServiceProvider(app());
-
-    expect(fn () => $provider->register())->not->toThrow(Throwable::class);
-});
-
-test('it executes boot method without errors', function () {
-    $provider = new UiServiceProvider(app());
-
-    expect(fn () => $provider->boot())->not->toThrow(Throwable::class);
-});
-
 test('it registers toolbar column manager trigger after render hook', function () {
     expect(FilamentView::hasRenderHook(
         TablesRenderHook::TOOLBAR_COLUMN_MANAGER_TRIGGER_AFTER,

@@ -1,21 +1,25 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 use App\Filament\Exports\PageExporter;
 use App\Models\Page;
 use App\Models\User;
 
-test('page exporter exports page successfully including rich content', function () {
-    $user = User::factory()->create();
+describe('exporting pages', function () {
+    test('page exporter exports page successfully including rich content', function () {
+        $user = User::factory()->create();
 
-    $page = Page::factory()->create([
-        'title' => 'Test Page for Export',
-        'content' => '<p>This is test content.</p>',
-        'created_by_user_id' => $user->id,
-        'updated_by_user_id' => $user->id,
-    ]);
+        $page = Page::factory()->create([
+            'title' => 'Test Page for Export',
+            'content' => '<p>This is test content.</p>',
+            'created_by_user_id' => $user->id,
+            'updated_by_user_id' => $user->id,
+        ]);
 
-    $exportedData = PageExporter::test()->export($page);
+        $exportedData = PageExporter::test()->export($page);
 
-    expect($exportedData[2])->toBe('Test Page for Export');
-    expect($exportedData[4])->toContain('This is test content.');
+        expect($exportedData[2])->toBe('Test Page for Export');
+        expect($exportedData[4])->toContain('This is test content.');
+    });
 });

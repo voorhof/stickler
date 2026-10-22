@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 use App\Filament\Actions\VerifyEmailAction;
 use App\Filament\Resources\Users\Pages\EditUser;
 use App\Models\Permission;
@@ -29,36 +31,42 @@ beforeEach(function () {
     $this->actingAs($this->adminUser);
 });
 
-it('has the correct default name', function () {
-    $action = VerifyEmailAction::make();
-    expect($action->getName())->toBe('verifyEmail');
+describe('action configuration', function () {
+    it('has the correct default name', function () {
+        $action = VerifyEmailAction::make();
+        expect($action->getName())->toBe('verifyEmail');
+    });
 });
 
-it('is hidden if the email is already verified', function () {
-    $action = VerifyEmailAction::make();
-    $user = User::factory()->create(['email_verified_at' => now()]);
+describe('visibility', function () {
+    it('is hidden if the email is already verified', function () {
+        $action = VerifyEmailAction::make();
+        $user = User::factory()->create(['email_verified_at' => now()]);
 
-    $action->record($user);
+        $action->record($user);
 
-    expect($action->isHidden())->toBeTrue();
+        expect($action->isHidden())->toBeTrue();
+    });
+
+    it('is not hidden if the email is not verified', function () {
+        $action = VerifyEmailAction::make();
+        $user = User::factory()->create(['email_verified_at' => null]);
+
+        $action->record($user);
+
+        expect($action->isHidden())->toBeFalse();
+    });
 });
 
-it('is not hidden if the email is not verified', function () {
-    $action = VerifyEmailAction::make();
-    $user = User::factory()->create(['email_verified_at' => null]);
+describe('action execution', function () {
+    it('can verify a user email', function () {
+        $user = User::factory()->create(['email_verified_at' => null]);
 
-    $action->record($user);
+        livewire(EditUser::class, ['record' => $user->getRouteKey()])
+            ->callAction('verifyEmail')
+            ->assertNotified();
 
-    expect($action->isHidden())->toBeFalse();
-});
-
-it('can verify a user email', function () {
-    $user = User::factory()->create(['email_verified_at' => null]);
-
-    livewire(EditUser::class, ['record' => $user->getRouteKey()])
-        ->callAction('verifyEmail')
-        ->assertNotified();
-
-    $user->refresh();
-    expect($user->email_verified_at)->not->toBeNull();
+        $user->refresh();
+        expect($user->email_verified_at)->not->toBeNull();
+    });
 });

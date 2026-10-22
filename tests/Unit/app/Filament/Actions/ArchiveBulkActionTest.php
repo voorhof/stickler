@@ -32,22 +32,26 @@ beforeEach(function () {
     $this->actingAs($this->adminUser);
 });
 
-it('has the correct default name', function () {
-    $action = ArchiveBulkAction::make();
+describe('action configuration', function () {
+    it('has the correct default name', function () {
+        $action = ArchiveBulkAction::make();
 
-    expect($action->getName())->toBe('archiveBulk');
+        expect($action->getName())->toBe('archiveBulk');
+    });
 });
 
-it('archives selected messages by setting archived_at', function () {
-    $messages = Message::factory()->count(2)->create(['archived_at' => null]);
+describe('action execution', function () {
+    it('archives selected messages by setting archived_at', function () {
+        $messages = Message::factory()->count(2)->create(['archived_at' => null]);
 
-    livewire(ListMessages::class)
-        ->callTableBulkAction('archiveBulk', $messages->modelKeys())
-        ->assertNotified();
+        livewire(ListMessages::class)
+            ->callTableBulkAction('archiveBulk', $messages->modelKeys())
+            ->assertNotified();
 
-    foreach ($messages as $message) {
-        $message->refresh();
+        foreach ($messages as $message) {
+            $message->refresh();
 
-        expect($message->archived_at)->not->toBeNull();
-    }
+            expect($message->archived_at)->not->toBeNull();
+        }
+    });
 });

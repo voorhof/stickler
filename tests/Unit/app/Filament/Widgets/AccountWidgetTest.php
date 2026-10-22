@@ -13,15 +13,17 @@ beforeEach(function () {
     Filament::bootCurrentPanel();
 });
 
-it('can be viewed when authenticated', function () {
-    $user = User::factory()->create();
-    $this->actingAs($user);
+describe('widget visibility', function () {
+    it('can be viewed when authenticated', function () {
+        $user = User::factory()->create();
+        $this->actingAs($user);
 
-    expect(AccountWidget::canView())->toBeTrue();
+        expect(AccountWidget::canView())->toBeTrue();
 
-    livewire(AccountWidget::class)->assertOk();
-});
+        livewire(AccountWidget::class)->assertOk();
+    });
 
-it('cannot be viewed when unauthenticated', function () {
-    expect(AccountWidget::canView())->toBeFalse();
+    it('cannot be viewed when unauthenticated', function () {
+        expect(AccountWidget::canView())->toBeFalse();
+    });
 });

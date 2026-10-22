@@ -1,7 +1,5 @@
 <?php
 
-/** @noinspection PhpUnhandledExceptionInspection */
-
 use App\Models\Activity;
 use App\Models\Media;
 use App\Models\Post;

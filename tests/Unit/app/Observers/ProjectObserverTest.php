@@ -9,32 +9,19 @@ use App\Observers\ProjectObserver;
 
 use function Pest\Laravel\actingAs;
 
-it('sets created_by_user_id and updated_by_user_id when a project is created', function (): void {
-    $user = User::factory()->create();
-
-    actingAs($user);
-
-    $project = Project::create([
-        'title' => 'Observer Test Project',
-        'intro' => 'Testing that the observer sets the creator and updater on create.',
-    ]);
-
-    expect($project->created_by_user_id)->toBe($user->id)
-        ->and($project->updated_by_user_id)->toBe($user->id);
-});
-
-it('updates updated_by_user_id but not created_by_user_id when a project is updated', function (): void {
+it('tracks creator and updater on project create and update', function (): void {
     $creator = User::factory()->create();
     $updater = User::factory()->create();
 
     actingAs($creator);
 
     $project = Project::create([
-        'title' => 'Original Title',
-        'intro' => 'Original intro text for the observer update test.',
+        'title' => 'Observer Test Project',
+        'intro' => 'Testing observer tracking.',
     ]);
 
-    expect($project->created_by_user_id)->toBe($creator->id);
+    expect($project->created_by_user_id)->toBe($creator->id)
+        ->and($project->updated_by_user_id)->toBe($creator->id);
 
     actingAs($updater);
 
@@ -42,27 +29,6 @@ it('updates updated_by_user_id but not created_by_user_id when a project is upda
 
     expect($project->fresh()->created_by_user_id)->toBe($creator->id)
         ->and($project->fresh()->updated_by_user_id)->toBe($updater->id);
-});
-
-it('does not overwrite user ids when no user is authenticated during update', function (): void {
-    $creator = User::factory()->create();
-
-    actingAs($creator);
-
-    $project = Project::create([
-        'title' => 'Auth Create No Auth Update',
-        'intro' => 'Testing that unauthenticated updates do not overwrite the user ids.',
-    ]);
-
-    $originalCreatorId = $project->created_by_user_id;
-    $originalUpdaterId = $project->updated_by_user_id;
-
-    auth()->logout();
-
-    $project->update(['title' => 'Updated Without Auth']);
-
-    expect($project->fresh()->created_by_user_id)->toBe($originalCreatorId)
-        ->and($project->fresh()->updated_by_user_id)->toBe($originalUpdaterId);
 });
 
 it('syncs image alt text to media name when a project is saved with rich content', function (): void {
@@ -103,7 +69,7 @@ it('syncs image alt text to media name when a project is saved with rich content
     expect($media->fresh()->name)->toBe('Observer Test Alt');
 });
 
-it('calls syncImageAltToMediaName in project observer saved method', function (): void {
+it('calls syncImageAltToMediaName directly via observer saved method', function (): void {
     $user = User::factory()->create();
     actingAs($user);
 

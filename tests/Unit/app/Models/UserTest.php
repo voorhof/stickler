@@ -1,6 +1,6 @@
 <?php
 
-/** @noinspection PhpUnhandledExceptionInspection */
+/** @noinspection PhpUnhandledExceptionInspection, PhpPossiblePolymorphicInvocationInspection */
 
 use App\Models\Permission;
 use App\Models\Post;
@@ -391,4 +391,29 @@ test('it configures activity log options correctly', function () {
     $options = $user->getActivitylogOptions();
 
     expect($options)->toBeInstanceOf(LogOptions::class);
+});
+
+test('it registers standard media collections', function () {
+    $user = User::factory()->create();
+
+    $user->registerMediaCollections();
+
+    expect(array_keys($user->mediaCollections))->toContain('avatar')
+        ->and(array_keys($user->mediaCollections))->toContain('cover')
+        ->and(array_keys($user->mediaCollections))->toContain('images')
+        ->and(array_keys($user->mediaCollections))->toContain('videos')
+        ->and(array_keys($user->mediaCollections))->toContain('documents')
+        ->and(array_keys($user->mediaCollections))->toContain('content');
+});
+
+test('it registers standard media conversions', function () {
+    $user = User::factory()->create();
+
+    $user->registerAllMediaConversions();
+
+    $names = collect($user->mediaConversions)->map(fn ($c) => $c->getName())->toArray();
+
+    expect($names)->toContain('preview')
+        ->and($names)->toContain('thumb')
+        ->and($names)->toContain('webp');
 });

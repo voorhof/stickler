@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 use App\Filament\Actions\Spatie\HealthCheckAction;
 use App\Models\Permission;
 use App\Models\Role;
@@ -31,34 +33,38 @@ beforeEach(function () {
     $this->actingAs($this->adminUser);
 });
 
-it('has the correct default name', function () {
-    $action = HealthCheckAction::make();
-    expect($action->getName())->toBe('healthCheck');
+describe('action configuration', function () {
+    it('has the correct default name', function () {
+        $action = HealthCheckAction::make();
+        expect($action->getName())->toBe('healthCheck');
+    });
 });
 
-it('can call the healthCheck action', function () {
-    Artisan::shouldReceive('call')->with('health:queue-check-heartbeat')->once();
-    Artisan::shouldReceive('call')->with('health:check')->once();
-    Artisan::shouldReceive('output')->once()->andReturn("Line 1\nResult: Success");
+describe('action execution', function () {
+    it('can call the healthCheck action', function () {
+        Artisan::shouldReceive('call')->with('health:queue-check-heartbeat')->once();
+        Artisan::shouldReceive('call')->with('health:check')->once();
+        Artisan::shouldReceive('output')->once()->andReturn("Line 1\nResult: Success");
 
-    $page = new class extends Page
-    {
-        public function render(): View
+        $page = new class extends Page
         {
-            $checkResults = app(ResultStore::class)->latestResults();
+            public function render(): View
+            {
+                $checkResults = app(ResultStore::class)->latestResults();
 
-            return view('filament.pages.spatie.health', ['checkResults' => $checkResults]);
-        }
+                return view('filament.pages.spatie.health', ['checkResults' => $checkResults]);
+            }
 
-        public function getHeaderActions(): array
-        {
-            return [
-                HealthCheckAction::make(),
-            ];
-        }
-    };
+            public function getHeaderActions(): array
+            {
+                return [
+                    HealthCheckAction::make(),
+                ];
+            }
+        };
 
-    livewire($page::class)
-        ->callAction('healthCheck')
-        ->assertNotified();
+        livewire($page::class)
+            ->callAction('healthCheck')
+            ->assertNotified();
+    });
 });

@@ -1,6 +1,6 @@
 <?php
 
-/** @noinspection PhpUndefinedFieldInspection, PhpPossiblePolymorphicInvocationInspection */
+/** @noinspection PhpPossiblePolymorphicInvocationInspection */
 
 use App\Models\Page;
 use App\Models\User;
@@ -290,4 +290,30 @@ test('page uses interacts with rich content and sets up rich content attributes'
 
     expect($page->hasRichContentAttribute('content'))->toBeTrue()
         ->and($page->getRichContentAttribute('content'))->not->toBeNull();
+});
+
+test('it registers standard media collections', function () {
+    User::factory()->create();
+    $page = Page::factory()->create();
+
+    $page->registerMediaCollections();
+
+    expect(array_keys($page->mediaCollections))->toContain('cover')
+        ->and(array_keys($page->mediaCollections))->toContain('images')
+        ->and(array_keys($page->mediaCollections))->toContain('videos')
+        ->and(array_keys($page->mediaCollections))->toContain('documents')
+        ->and(array_keys($page->mediaCollections))->toContain('content');
+});
+
+test('it registers standard media conversions', function () {
+    User::factory()->create();
+    $page = Page::factory()->create();
+
+    $page->registerAllMediaConversions();
+
+    $names = collect($page->mediaConversions)->map(fn ($c) => $c->getName())->toArray();
+
+    expect($names)->toContain('preview')
+        ->and($names)->toContain('thumb')
+        ->and($names)->toContain('webp');
 });

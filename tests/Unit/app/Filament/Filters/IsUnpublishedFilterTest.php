@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 use App\Filament\Filters\IsUnpublishedFilter;
 use App\Filament\Resources\Posts\Pages\ListPosts;
 use App\Models\Permission;
@@ -29,29 +31,33 @@ beforeEach(function () {
     $this->actingAs($this->adminUser);
 });
 
-it('has the correct default name', function () {
-    $filter = IsUnpublishedFilter::make();
+describe('filter creation', function () {
+    it('has the correct default name', function () {
+        $filter = IsUnpublishedFilter::make();
 
-    expect($filter->getName())->toBe('isUnpublished');
+        expect($filter->getName())->toBe('isUnpublished');
+    });
+
+    it('has the correct label', function () {
+        $filter = IsUnpublishedFilter::make();
+
+        expect($filter->getLabel())->toBe(__('Not published'));
+    });
+
+    it('exists in the posts table', function () {
+        livewire(ListPosts::class)
+            ->assertTableFilterExists('isUnpublished');
+    });
 });
 
-it('has the correct label', function () {
-    $filter = IsUnpublishedFilter::make();
+describe('filter execution', function () {
+    it('filters unpublished records when enabled', function () {
+        $unpublishedPost = Post::factory()->create(['published_at' => null]);
+        $publishedPost = Post::factory()->create(['published_at' => now()]);
 
-    expect($filter->getLabel())->toBe(__('Not published'));
-});
-
-it('exists in the posts table', function () {
-    livewire(ListPosts::class)
-        ->assertTableFilterExists('isUnpublished');
-});
-
-it('filters unpublished records when enabled', function () {
-    $unpublishedPost = Post::factory()->create(['published_at' => null]);
-    $publishedPost = Post::factory()->create(['published_at' => now()]);
-
-    livewire(ListPosts::class)
-        ->filterTable('isUnpublished')
-        ->assertCanSeeTableRecords([$unpublishedPost])
-        ->assertCanNotSeeTableRecords([$publishedPost]);
+        livewire(ListPosts::class)
+            ->filterTable('isUnpublished')
+            ->assertCanSeeTableRecords([$unpublishedPost])
+            ->assertCanNotSeeTableRecords([$publishedPost]);
+    });
 });

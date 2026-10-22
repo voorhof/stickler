@@ -1,6 +1,6 @@
 <?php
 
-/** @noinspection PhpUndefinedFieldInspection */
+/** @noinspection PhpUndefinedFieldInspection,PhpPossiblePolymorphicInvocationInspection */
 
 use App\Models\Project;
 use App\Models\User;
@@ -292,4 +292,30 @@ test('project uses interacts with rich content and sets up rich content attribut
 
     expect($project->hasRichContentAttribute('content'))->toBeTrue()
         ->and($project->getRichContentAttribute('content'))->not->toBeNull();
+});
+
+test('it registers standard media collections', function () {
+    User::factory()->create();
+    $project = Project::factory()->create();
+
+    $project->registerMediaCollections();
+
+    expect(array_keys($project->mediaCollections))->toContain('cover')
+        ->and(array_keys($project->mediaCollections))->toContain('images')
+        ->and(array_keys($project->mediaCollections))->toContain('videos')
+        ->and(array_keys($project->mediaCollections))->toContain('documents')
+        ->and(array_keys($project->mediaCollections))->toContain('content');
+});
+
+test('it registers standard media conversions', function () {
+    User::factory()->create();
+    $project = Project::factory()->create();
+
+    $project->registerAllMediaConversions();
+
+    $names = collect($project->mediaConversions)->map(fn ($c) => $c->getName())->toArray();
+
+    expect($names)->toContain('preview')
+        ->and($names)->toContain('thumb')
+        ->and($names)->toContain('webp');
 });

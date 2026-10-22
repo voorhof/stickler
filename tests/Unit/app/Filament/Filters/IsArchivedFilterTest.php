@@ -31,29 +31,33 @@ beforeEach(function () {
     $this->actingAs($this->adminUser);
 });
 
-it('has the correct default name', function () {
-    $filter = IsArchivedFilter::make();
+describe('filter creation', function () {
+    it('has the correct default name', function () {
+        $filter = IsArchivedFilter::make();
 
-    expect($filter->getName())->toBe('isArchived');
+        expect($filter->getName())->toBe('isArchived');
+    });
+
+    it('returns the title case plural model label from the table', function () {
+        $component = livewire(ListMessages::class)
+            ->assertTableFilterExists('isArchived');
+
+        $table = $component->instance()->getTable();
+        $filter = $table->getFilter('isArchived');
+
+        expect($filter->getTitleCasePluralModelLabel())->toBe(__('Messages'));
+    });
 });
 
-it('returns the title case plural model label from the table', function () {
-    $component = livewire(ListMessages::class)
-        ->assertTableFilterExists('isArchived');
+describe('filter execution', function () {
+    it('filters archived records when enabled', function () {
+        $activeMessage = Message::factory()->create(['archived_at' => null]);
+        $archivedMessage = Message::factory()->create(['archived_at' => now()]);
 
-    $table = $component->instance()->getTable();
-    $filter = $table->getFilter('isArchived');
-
-    expect($filter->getTitleCasePluralModelLabel())->toBe(__('Messages'));
-});
-
-it('filters archived records when enabled', function () {
-    $activeMessage = Message::factory()->create(['archived_at' => null]);
-    $archivedMessage = Message::factory()->create(['archived_at' => now()]);
-
-    livewire(ListMessages::class)
-        ->assertCanSeeTableRecords([$activeMessage])
-        ->assertCanNotSeeTableRecords([$archivedMessage])
-        ->filterTable('isArchived', false)
-        ->assertCanSeeTableRecords([$activeMessage, $archivedMessage]);
+        livewire(ListMessages::class)
+            ->assertCanSeeTableRecords([$activeMessage])
+            ->assertCanNotSeeTableRecords([$archivedMessage])
+            ->filterTable('isArchived', false)
+            ->assertCanSeeTableRecords([$activeMessage, $archivedMessage]);
+    });
 });

@@ -15,13 +15,15 @@ beforeEach(function () {
     app()->setLocale('en');
 });
 
-it('returns a dash when type is blank', function () {
-    expect(formatModelTypeForTest(null))->toBe('-')
-        ->and(formatModelTypeForTest(''))->toBe('-');
-});
+describe('formatting model type', function () {
+    it('returns a dash when type is blank', function () {
+        expect(formatModelTypeForTest(null))->toBe('-')
+            ->and(formatModelTypeForTest(''))->toBe('-');
+    });
 
-it('formats a standard model name correctly', function () {
-    // App\Models\User -> User -> user -> User
-    expect(formatModelTypeForTest('App\Models\User'))->toBe('User')
-        ->and(formatModelTypeForTest('App\Models\Post'))->toBe('Post');
+    it('formats a standard model name correctly', function () {
+        // App\Models\User -> User -> user -> User
+        expect(formatModelTypeForTest('App\Models\User'))->toBe('User')
+            ->and(formatModelTypeForTest('App\Models\Post'))->toBe('Post');
+    });
 });

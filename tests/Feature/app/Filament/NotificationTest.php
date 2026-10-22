@@ -1,6 +1,6 @@
 <?php
 
-/** @noinspection PhpUnhandledExceptionInspection, PhpPossiblePolymorphicInvocationInspection */
+/** @noinspection PhpUnhandledExceptionInspection */
 
 use App\Filament\Actions\HardDeleteAction;
 use App\Filament\Resources\Media\Pages\EditMedia;
@@ -103,130 +103,134 @@ function createMediaRecord(array $attributes = []): Media
     ], $attributes));
 }
 
-test('it stores a database notification when a user is created in filament', function () {
-    livewire(CreateUser::class)
-        ->fillForm([
-            'name' => 'User',
-            'email' => 'notify.user@example.com',
-            'password' => 'password',
-        ])
-        ->call('create')
-        ->assertNotified();
+describe('filament action notifications', function () {
+    test('it stores a database notification when a user is created in filament', function () {
+        livewire(CreateUser::class)
+            ->fillForm([
+                'name' => 'User',
+                'email' => 'notify.user@example.com',
+                'password' => 'password',
+            ])
+            ->call('create')
+            ->assertNotified();
 
-    $createdUser = User::query()->where('email', 'notify.user@example.com')->firstOrFail();
-    $payload = notificationPayload(latestNotificationFor($this->adminUser));
+        $createdUser = User::query()->where('email', 'notify.user@example.com')->firstOrFail();
+        $payload = notificationPayload(latestNotificationFor($this->adminUser));
 
-    expect($payload['title'] ?? null)
-        ->toBe(__('Woohoo! :model :title (ID: :id) has been successfully created!', ['model' => __('User'), 'title' => $createdUser->name, 'id' => $createdUser->id]));
+        expect($payload['title'] ?? null)
+            ->toBe(__('Woohoo! :model :title (ID: :id) has been successfully created!', ['model' => __('User'), 'title' => $createdUser->name, 'id' => $createdUser->id]));
+    });
+
+    test('it stores a database notification when a role is saved in filament', function () {
+        $role = Role::factory()->create(['name' => 'Manager']);
+
+        livewire(EditRole::class, ['record' => $role->getRouteKey()])
+            ->fillForm([
+                'name' => 'Coach',
+            ])
+            ->call('save')
+            ->assertNotified();
+
+        $role->refresh();
+        $payload = notificationPayload(latestNotificationFor($this->adminUser));
+
+        expect($payload['title'] ?? null)
+            ->toBe(__('Ok! :model :title (ID: :id) has been saved.', ['model' => __('Role'), 'title' => $role->name, 'id' => $role->id]));
+    });
+
+    test('it stores a database notification when media is deleted in filament', function () {
+        $media = createMediaRecord();
+
+        livewire(EditMedia::class, ['record' => $media->getRouteKey()])
+            ->callAction(HardDeleteAction::class)
+            ->assertNotified();
+
+        $payload = notificationPayload(latestNotificationFor($this->adminUser));
+
+        expect($payload)
+            ->toHaveKey('title', __('Ooh! :model was permanently purged!', ['model' => __('Media')]))
+            ->toHaveKey('status', 'danger');
+    });
+
+    test('it stores database notifications for bulk deletions in filament', function () {
+        $users = User::factory()->count(2)->create();
+        $roles = Role::factory()->count(2)->create();
+        $media = collect([
+            createMediaRecord(['name' => 'Bulk Media 1', 'file_name' => 'bulk-media-1.jpg']),
+            createMediaRecord(['name' => 'Bulk Media 2', 'file_name' => 'bulk-media-2.jpg']),
+        ]);
+
+        livewire(ListUsers::class)
+            ->callTableBulkAction('softDeleteBulk', $users)
+            ->assertNotified();
+
+        $payloads = notificationPayloadsFor($this->adminUser);
+        expect(collect($payloads)->contains(fn (array $payload): bool => ($payload['title'] ?? null) === __(':count :model items deleted', ['count' => 2, 'model' => __('User')]) && ($payload['status'] ?? null) === 'warning'))
+            ->toBeTrue();
+
+        livewire(ListRoles::class)
+            ->callTableBulkAction('softDeleteBulk', $roles)
+            ->assertNotified();
+
+        $payloads = notificationPayloadsFor($this->adminUser);
+        expect(collect($payloads)->contains(fn (array $payload): bool => ($payload['title'] ?? null) === __(':count :model items deleted', ['count' => 2, 'model' => __('Role')]) && ($payload['status'] ?? null) === 'warning'))
+            ->toBeTrue();
+
+        livewire(ListMedia::class)
+            ->callTableBulkAction('hardDeleteBulk', $media)
+            ->assertNotified();
+
+        $payloads = notificationPayloadsFor($this->adminUser);
+        expect(collect($payloads)->contains(fn (array $payload): bool => ($payload['title'] ?? null) === __(':count :model items permanently deleted', ['count' => 2, 'model' => __('Media')]) && ($payload['status'] ?? null) === 'warning'))
+            ->toBeTrue();
+    });
 });
 
-test('it stores a database notification when a role is saved in filament', function () {
-    $role = Role::factory()->create(['name' => 'Manager']);
+describe('database notification creation', function () {
+    test('it can create a database notification with the expected title payload', function () {
+        $user = User::factory()->create();
 
-    livewire(EditRole::class, ['record' => $role->getRouteKey()])
-        ->fillForm([
-            'name' => 'Coach',
-        ])
-        ->call('save')
-        ->assertNotified();
+        Notification::make()
+            ->title('Unit test notification')
+            ->success()
+            ->sendToDatabase($user, isEventDispatched: true);
 
-    $role->refresh();
-    $payload = notificationPayload(latestNotificationFor($this->adminUser));
+        $notification = DB::table('notifications')
+            ->where('notifiable_type', User::class)
+            ->where('notifiable_id', $user->id)
+            ->latest()
+            ->first();
 
-    expect($payload['title'] ?? null)
-        ->toBe(__('Ok! :model :title (ID: :id) has been saved.', ['model' => __('Role'), 'title' => $role->name, 'id' => $role->id]));
-});
+        expect($notification)->not->toBeNull();
 
-test('it stores a database notification when media is deleted in filament', function () {
-    $media = createMediaRecord();
+        $payload = json_decode($notification->data, true, flags: JSON_THROW_ON_ERROR);
 
-    livewire(EditMedia::class, ['record' => $media->getRouteKey()])
-        ->callAction(HardDeleteAction::class)
-        ->assertNotified();
+        expect($payload)
+            ->toBeArray()
+            ->toHaveKey('title', 'Unit test notification');
+    });
 
-    $payload = notificationPayload(latestNotificationFor($this->adminUser));
+    test('it can create a warning database notification', function () {
+        $user = User::factory()->create();
 
-    expect($payload)
-        ->toHaveKey('title', __('Ooh! :model was permanently purged!', ['model' => __('Media')]))
-        ->toHaveKey('status', 'danger');
-});
+        Notification::make()
+            ->title('Warning notification')
+            ->warning()
+            ->sendToDatabase($user, isEventDispatched: true);
 
-test('it stores database notifications for user, role and media bulk deletions in filament', function () {
-    $users = User::factory()->count(2)->create();
-    $roles = Role::factory()->count(2)->create();
-    $media = collect([
-        createMediaRecord(['name' => 'Bulk Media 1', 'file_name' => 'bulk-media-1.jpg']),
-        createMediaRecord(['name' => 'Bulk Media 2', 'file_name' => 'bulk-media-2.jpg']),
-    ]);
+        $notification = DB::table('notifications')
+            ->where('notifiable_type', User::class)
+            ->where('notifiable_id', $user->id)
+            ->latest()
+            ->first();
 
-    livewire(ListUsers::class)
-        ->callTableBulkAction('softDeleteBulk', $users)
-        ->assertNotified();
+        expect($notification)->not->toBeNull();
 
-    $payloads = notificationPayloadsFor($this->adminUser);
-    expect(collect($payloads)->contains(fn (array $payload): bool => ($payload['title'] ?? null) === __(':count :model items deleted', ['count' => 2, 'model' => __('User')]) && ($payload['status'] ?? null) === 'warning'))
-        ->toBeTrue();
+        $payload = json_decode($notification->data, true, flags: JSON_THROW_ON_ERROR);
 
-    livewire(ListRoles::class)
-        ->callTableBulkAction('softDeleteBulk', $roles)
-        ->assertNotified();
-
-    $payloads = notificationPayloadsFor($this->adminUser);
-    expect(collect($payloads)->contains(fn (array $payload): bool => ($payload['title'] ?? null) === __(':count :model items deleted', ['count' => 2, 'model' => __('Role')]) && ($payload['status'] ?? null) === 'warning'))
-        ->toBeTrue();
-
-    livewire(ListMedia::class)
-        ->callTableBulkAction('hardDeleteBulk', $media)
-        ->assertNotified();
-
-    $payloads = notificationPayloadsFor($this->adminUser);
-    expect(collect($payloads)->contains(fn (array $payload): bool => ($payload['title'] ?? null) === __(':count :model items permanently deleted', ['count' => 2, 'model' => __('Media')]) && ($payload['status'] ?? null) === 'warning'))
-        ->toBeTrue();
-});
-
-test('it can create a database notification with the expected title payload', function () {
-    $user = User::factory()->create();
-
-    Notification::make()
-        ->title('Unit test notification')
-        ->success()
-        ->sendToDatabase($user, isEventDispatched: true);
-
-    $notification = DB::table('notifications')
-        ->where('notifiable_type', User::class)
-        ->where('notifiable_id', $user->id)
-        ->latest()
-        ->first();
-
-    expect($notification)->not->toBeNull();
-
-    $payload = json_decode($notification->data, true, flags: JSON_THROW_ON_ERROR);
-
-    expect($payload)
-        ->toBeArray()
-        ->toHaveKey('title', 'Unit test notification');
-});
-
-test('it can create a warning database notification', function () {
-    $user = User::factory()->create();
-
-    Notification::make()
-        ->title('Warning notification')
-        ->warning()
-        ->sendToDatabase($user, isEventDispatched: true);
-
-    $notification = DB::table('notifications')
-        ->where('notifiable_type', User::class)
-        ->where('notifiable_id', $user->id)
-        ->latest()
-        ->first();
-
-    expect($notification)->not->toBeNull();
-
-    $payload = json_decode($notification->data, true, flags: JSON_THROW_ON_ERROR);
-
-    expect($payload)
-        ->toBeArray()
-        ->toHaveKey('status', 'warning')
-        ->toHaveKey('title', 'Warning notification');
+        expect($payload)
+            ->toBeArray()
+            ->toHaveKey('status', 'warning')
+            ->toHaveKey('title', 'Warning notification');
+    });
 });

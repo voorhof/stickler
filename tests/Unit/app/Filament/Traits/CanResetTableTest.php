@@ -34,95 +34,99 @@ beforeEach(function () {
     $this->actingAs($this->adminUser);
 });
 
-it('has the resetColumnWidths method on list pages', function () {
-    expect(method_exists(ListPosts::class, 'resetColumnWidths'))->toBeTrue();
+describe('trait methods', function () {
+    it('has the resetColumnWidths method on list pages', function () {
+        expect(method_exists(ListPosts::class, 'resetColumnWidths'))->toBeTrue();
+    });
 });
 
-it('can reset column widths from the database', function () {
-    Post::factory()->create();
+describe('resetting column widths', function () {
+    it('can reset column widths from the database', function () {
+        Post::factory()->create();
 
-    TableSetting::create([
-        'user_id' => $this->adminUser->id,
-        'resource' => Post::class,
-        'styles' => ['title' => ['width' => '200']],
-    ]);
+        TableSetting::create([
+            'user_id' => $this->adminUser->id,
+            'resource' => Post::class,
+            'styles' => ['title' => ['width' => '200']],
+        ]);
 
-    $this->assertDatabaseHas('table_settings', [
-        'user_id' => $this->adminUser->id,
-        'resource' => Post::class,
-    ]);
+        $this->assertDatabaseHas('table_settings', [
+            'user_id' => $this->adminUser->id,
+            'resource' => Post::class,
+        ]);
 
-    livewire(ListPosts::class)
-        ->call('resetColumnWidths')
-        ->assertNotified();
+        livewire(ListPosts::class)
+            ->call('resetColumnWidths')
+            ->assertNotified();
 
-    $this->assertDatabaseMissing('table_settings', [
-        'user_id' => $this->adminUser->id,
-        'resource' => Post::class,
-    ]);
-});
+        $this->assertDatabaseMissing('table_settings', [
+            'user_id' => $this->adminUser->id,
+            'resource' => Post::class,
+        ]);
+    });
 
-it('clears the session column widths', function () {
-    Post::factory()->create();
+    it('clears the session column widths', function () {
+        Post::factory()->create();
 
-    session()->put('tables.post_columns_style', ['title' => ['width' => '200']]);
+        session()->put('tables.post_columns_style', ['title' => ['width' => '200']]);
 
-    expect(session()->has('tables.post_columns_style'))->toBeTrue();
+        expect(session()->has('tables.post_columns_style'))->toBeTrue();
 
-    livewire(ListPosts::class)
-        ->call('resetColumnWidths')
-        ->assertNotified();
+        livewire(ListPosts::class)
+            ->call('resetColumnWidths')
+            ->assertNotified();
 
-    expect(session()->has('tables.post_columns_style'))->toBeFalse();
-});
+        expect(session()->has('tables.post_columns_style'))->toBeFalse();
+    });
 
-it('does not affect other users column settings', function () {
-    Post::factory()->create();
+    it('does not affect other users column settings', function () {
+        Post::factory()->create();
 
-    $otherUser = User::factory()->create();
+        $otherUser = User::factory()->create();
 
-    TableSetting::create([
-        'user_id' => $this->adminUser->id,
-        'resource' => Post::class,
-        'styles' => ['title' => ['width' => '200']],
-    ]);
+        TableSetting::create([
+            'user_id' => $this->adminUser->id,
+            'resource' => Post::class,
+            'styles' => ['title' => ['width' => '200']],
+        ]);
 
-    TableSetting::create([
-        'user_id' => $otherUser->id,
-        'resource' => Post::class,
-        'styles' => ['title' => ['width' => '300']],
-    ]);
+        TableSetting::create([
+            'user_id' => $otherUser->id,
+            'resource' => Post::class,
+            'styles' => ['title' => ['width' => '300']],
+        ]);
 
-    livewire(ListPosts::class)
-        ->call('resetColumnWidths')
-        ->assertNotified();
+        livewire(ListPosts::class)
+            ->call('resetColumnWidths')
+            ->assertNotified();
 
-    $this->assertDatabaseMissing('table_settings', [
-        'user_id' => $this->adminUser->id,
-        'resource' => Post::class,
-    ]);
+        $this->assertDatabaseMissing('table_settings', [
+            'user_id' => $this->adminUser->id,
+            'resource' => Post::class,
+        ]);
 
-    $this->assertDatabaseHas('table_settings', [
-        'user_id' => $otherUser->id,
-        'resource' => Post::class,
-    ]);
-});
+        $this->assertDatabaseHas('table_settings', [
+            'user_id' => $otherUser->id,
+            'resource' => Post::class,
+        ]);
+    });
 
-it('resets the table column manager', function () {
-    Post::factory()->create();
+    it('resets the table column manager', function () {
+        Post::factory()->create();
 
-    $sessionKey = 'filament.tables.'.hash('sha256', ListPosts::class).'.columns';
+        $sessionKey = 'filament.tables.'.hash('sha256', ListPosts::class).'.columns';
 
-    session()->put($sessionKey, [
-        ['type' => 'column', 'name' => 'title', 'label' => 'Title', 'isHidden' => true, 'isToggled' => false, 'isToggleable' => true, 'isToggledHiddenByDefault' => true],
-    ]);
-
-    livewire(ListPosts::class)
-        ->call('resetColumnWidths')
-        ->assertNotified();
-
-    expect(session()->get($sessionKey))
-        ->not->toBe([
+        session()->put($sessionKey, [
             ['type' => 'column', 'name' => 'title', 'label' => 'Title', 'isHidden' => true, 'isToggled' => false, 'isToggleable' => true, 'isToggledHiddenByDefault' => true],
         ]);
+
+        livewire(ListPosts::class)
+            ->call('resetColumnWidths')
+            ->assertNotified();
+
+        expect(session()->get($sessionKey))
+            ->not->toBe([
+                ['type' => 'column', 'name' => 'title', 'label' => 'Title', 'isHidden' => true, 'isToggled' => false, 'isToggleable' => true, 'isToggledHiddenByDefault' => true],
+            ]);
+    });
 });

@@ -58,67 +58,71 @@ beforeEach(function () {
     $this->actingAs($this->adminUser);
 });
 
-it('returns correct created notification title with title', function () {
-    $post = new Post(['title' => 'Test Post Title']);
-    $post->id = 1;
+describe('notification titles', function () {
+    it('returns correct created notification title with title', function () {
+        $post = new Post(['title' => 'Test Post Title']);
+        $post->id = 1;
 
-    expect(createdNotificationTitleFor(CreatePost::class, $post))->toBe(__('Woohoo! :model :title (ID: :id) has been successfully created!', [
-        'model' => __('Post'),
-        'title' => 'Test Post Title',
-        'id' => 1,
-    ]));
+        expect(createdNotificationTitleFor(CreatePost::class, $post))->toBe(__('Woohoo! :model :title (ID: :id) has been successfully created!', [
+            'model' => __('Post'),
+            'title' => 'Test Post Title',
+            'id' => 1,
+        ]));
+    });
+
+    it('returns correct created notification title with name when title is absent', function () {
+        $role = new Role(['name' => 'Editor']);
+        $role->id = 2;
+
+        expect(createdNotificationTitleFor(CreateRole::class, $role))->toBe(__('Woohoo! :model :title (ID: :id) has been successfully created!', [
+            'model' => __('Role'),
+            'title' => 'Editor',
+            'id' => 2,
+        ]));
+    });
+
+    it('returns correct created notification title with key when title and name are absent', function () {
+        $post = new Post;
+        $post->id = 123;
+
+        expect(createdNotificationTitleFor(CreatePost::class, $post))->toBe(__('Woohoo! :model :title (ID: :id) has been successfully created!', [
+            'model' => __('Post'),
+            'title' => '123',
+            'id' => 123,
+        ]));
+    });
 });
 
-it('returns correct created notification title with name when title is absent', function () {
-    $role = new Role(['name' => 'Editor']);
-    $role->id = 2;
+describe('after create behavior', function () {
+    it('syncs all permissions when running afterCreate for an Admin role', function () {
+        $role = Role::where('name', 'Admin')->first();
+        $role->permissions()->detach();
+        expect($role->permissions->count())->toBe(0);
 
-    expect(createdNotificationTitleFor(CreateRole::class, $role))->toBe(__('Woohoo! :model :title (ID: :id) has been successfully created!', [
-        'model' => __('Role'),
-        'title' => 'Editor',
-        'id' => 2,
-    ]));
-});
+        callAfterCreateFor(CreateRole::class, $role);
 
-it('returns correct created notification title with key when title and name are absent', function () {
-    $post = new Post;
-    $post->id = 123;
+        expect($role->fresh()->permissions->count())->toBe(Permission::where('guard_name', 'web')->count());
+    });
 
-    expect(createdNotificationTitleFor(CreatePost::class, $post))->toBe(__('Woohoo! :model :title (ID: :id) has been successfully created!', [
-        'model' => __('Post'),
-        'title' => '123',
-        'id' => 123,
-    ]));
-});
+    it('does not sync all permissions when running afterCreate for a non-Admin role', function () {
+        $role = Role::factory()->create(['name' => 'Moderator', 'guard_name' => 'web']);
+        expect($role->permissions->count())->toBe(0);
 
-it('syncs all permissions when running afterCreate for an Admin role', function () {
-    $role = Role::where('name', 'Admin')->first();
-    $role->permissions()->detach();
-    expect($role->permissions->count())->toBe(0);
+        callAfterCreateFor(CreateRole::class, $role);
 
-    callAfterCreateFor(CreateRole::class, $role);
+        expect($role->fresh()->permissions->count())->toBe(0);
+    });
 
-    expect($role->fresh()->permissions->count())->toBe(Permission::where('guard_name', 'web')->count());
-});
+    it('logs activity with properties on afterCreate', function () {
+        $post = Post::factory()->create();
 
-it('does not sync all permissions when running afterCreate for a non-Admin role', function () {
-    $role = Role::factory()->create(['name' => 'Moderator', 'guard_name' => 'web']);
-    expect($role->permissions->count())->toBe(0);
+        callAfterCreateFor(CreatePost::class, $post);
 
-    callAfterCreateFor(CreateRole::class, $role);
+        $activity = Activity::where('subject_type', $post->getMorphClass())
+            ->where('subject_id', $post->getKey())
+            ->latest()
+            ->first();
 
-    expect($role->fresh()->permissions->count())->toBe(0);
-});
-
-it('logs activity with properties on afterCreate', function () {
-    $post = Post::factory()->create();
-
-    callAfterCreateFor(CreatePost::class, $post);
-
-    $activity = Activity::where('subject_type', $post->getMorphClass())
-        ->where('subject_id', $post->getKey())
-        ->latest()
-        ->first();
-
-    expect($activity)->not->toBeNull();
+        expect($activity)->not->toBeNull();
+    });
 });

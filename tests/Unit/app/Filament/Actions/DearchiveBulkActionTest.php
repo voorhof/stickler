@@ -32,23 +32,27 @@ beforeEach(function () {
     $this->actingAs($this->adminUser);
 });
 
-it('has the correct default name', function () {
-    $action = DearchiveBulkAction::make();
+describe('action configuration', function () {
+    it('has the correct default name', function () {
+        $action = DearchiveBulkAction::make();
 
-    expect($action->getName())->toBe('dearchiveBulk');
+        expect($action->getName())->toBe('dearchiveBulk');
+    });
 });
 
-it('dearchives selected messages by setting archived_at to null', function () {
-    $messages = Message::factory()->count(2)->archived()->create();
+describe('action execution', function () {
+    it('dearchives selected messages by setting archived_at to null', function () {
+        $messages = Message::factory()->count(2)->archived()->create();
 
-    livewire(ListMessages::class)
-        ->removeTableFilter('isArchived')
-        ->callTableBulkAction('dearchiveBulk', $messages->modelKeys())
-        ->assertNotified();
+        livewire(ListMessages::class)
+            ->removeTableFilter('isArchived')
+            ->callTableBulkAction('dearchiveBulk', $messages->modelKeys())
+            ->assertNotified();
 
-    foreach ($messages as $message) {
-        $message->refresh();
+        foreach ($messages as $message) {
+            $message->refresh();
 
-        expect($message->archived_at)->toBeNull();
-    }
+            expect($message->archived_at)->toBeNull();
+        }
+    });
 });

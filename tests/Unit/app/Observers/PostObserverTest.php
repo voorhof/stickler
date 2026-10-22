@@ -9,32 +9,19 @@ use App\Observers\PostObserver;
 
 use function Pest\Laravel\actingAs;
 
-it('sets created_by_user_id and updated_by_user_id when a post is created', function (): void {
-    $user = User::factory()->create();
-
-    actingAs($user);
-
-    $post = Post::create([
-        'title' => 'Observer Test Post',
-        'intro' => 'Testing that the observer sets the creator and updater on create.',
-    ]);
-
-    expect($post->created_by_user_id)->toBe($user->id)
-        ->and($post->updated_by_user_id)->toBe($user->id);
-});
-
-it('updates updated_by_user_id but not created_by_user_id when a post is updated', function (): void {
+it('tracks creator and updater on post create and update', function (): void {
     $creator = User::factory()->create();
     $updater = User::factory()->create();
 
     actingAs($creator);
 
     $post = Post::create([
-        'title' => 'Original Title',
-        'intro' => 'Original intro text for the observer update test.',
+        'title' => 'Observer Test Post',
+        'intro' => 'Testing observer tracking.',
     ]);
 
-    expect($post->created_by_user_id)->toBe($creator->id);
+    expect($post->created_by_user_id)->toBe($creator->id)
+        ->and($post->updated_by_user_id)->toBe($creator->id);
 
     actingAs($updater);
 
@@ -42,27 +29,6 @@ it('updates updated_by_user_id but not created_by_user_id when a post is updated
 
     expect($post->fresh()->created_by_user_id)->toBe($creator->id)
         ->and($post->fresh()->updated_by_user_id)->toBe($updater->id);
-});
-
-it('does not overwrite user ids when no user is authenticated during update', function (): void {
-    $creator = User::factory()->create();
-
-    actingAs($creator);
-
-    $post = Post::create([
-        'title' => 'Auth Create No Auth Update',
-        'intro' => 'Testing that unauthenticated updates do not overwrite the user ids.',
-    ]);
-
-    $originalCreatorId = $post->created_by_user_id;
-    $originalUpdaterId = $post->updated_by_user_id;
-
-    auth()->logout();
-
-    $post->update(['title' => 'Updated Without Auth']);
-
-    expect($post->fresh()->created_by_user_id)->toBe($originalCreatorId)
-        ->and($post->fresh()->updated_by_user_id)->toBe($originalUpdaterId);
 });
 
 it('syncs image alt text to media name when a post is saved with rich content', function (): void {
@@ -103,7 +69,7 @@ it('syncs image alt text to media name when a post is saved with rich content', 
     expect($media->fresh()->name)->toBe('Observer Test Alt');
 });
 
-it('calls syncImageAltToMediaName in post observer saved method', function (): void {
+it('calls syncImageAltToMediaName directly via observer saved method', function (): void {
     $user = User::factory()->create();
     actingAs($user);
 

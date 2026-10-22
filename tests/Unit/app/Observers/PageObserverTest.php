@@ -10,32 +10,19 @@ use Illuminate\Support\Carbon;
 
 use function Pest\Laravel\actingAs;
 
-it('sets created_by_user_id and updated_by_user_id when a page is created', function (): void {
-    $user = User::factory()->create();
-
-    actingAs($user);
-
-    $page = Page::create([
-        'title' => 'Observer Test Page',
-        'intro' => 'Testing that the observer sets the creator and updater on create.',
-    ]);
-
-    expect($page->created_by_user_id)->toBe($user->id)
-        ->and($page->updated_by_user_id)->toBe($user->id);
-});
-
-it('updates updated_by_user_id but not created_by_user_id when a page is updated', function (): void {
+it('tracks creator and updater on page create and update', function (): void {
     $creator = User::factory()->create();
     $updater = User::factory()->create();
 
     actingAs($creator);
 
     $page = Page::create([
-        'title' => 'Original Title',
-        'intro' => 'Original intro text for the observer update test.',
+        'title' => 'Observer Test Page',
+        'intro' => 'Testing observer tracking.',
     ]);
 
-    expect($page->created_by_user_id)->toBe($creator->id);
+    expect($page->created_by_user_id)->toBe($creator->id)
+        ->and($page->updated_by_user_id)->toBe($creator->id);
 
     actingAs($updater);
 
@@ -45,14 +32,14 @@ it('updates updated_by_user_id but not created_by_user_id when a page is updated
         ->and($page->fresh()->updated_by_user_id)->toBe($updater->id);
 });
 
-it('does not overwrite user ids when no user is authenticated during update', function (): void {
+it('does not overwrite user ids when no user is authenticated', function (): void {
     $creator = User::factory()->create();
 
     actingAs($creator);
 
     $page = Page::create([
         'title' => 'Auth Create No Auth Update',
-        'intro' => 'Testing that unauthenticated updates do not overwrite the user ids.',
+        'intro' => 'Testing unauthenticated updates.',
     ]);
 
     $originalCreatorId = $page->created_by_user_id;
@@ -66,7 +53,7 @@ it('does not overwrite user ids when no user is authenticated during update', fu
         ->and($page->fresh()->updated_by_user_id)->toBe($originalUpdaterId);
 });
 
-it('appends timestamp suffix to slug when creating a page with an excluded slug', function (): void {
+it('appends timestamp suffix to excluded slug on create', function (): void {
     Carbon::setTestNow('2026-10-16 12:00:00');
 
     $user = User::factory()->create();
@@ -78,7 +65,7 @@ it('appends timestamp suffix to slug when creating a page with an excluded slug'
     $page = Page::create([
         'title' => 'Contact Page',
         'slug' => $excludedSlug,
-        'intro' => 'Testing creating with an excluded slug.',
+        'intro' => 'Testing excluded slug.',
     ]);
 
     expect($page->slug)->toBe($excludedSlug.$expectedSuffix)
@@ -87,7 +74,7 @@ it('appends timestamp suffix to slug when creating a page with an excluded slug'
     Carbon::setTestNow();
 });
 
-it('appends timestamp suffix to slug when updating a page to an excluded slug', function (): void {
+it('appends timestamp suffix to excluded slug on update', function (): void {
     Carbon::setTestNow('2026-10-16 12:00:00');
 
     $user = User::factory()->create();
@@ -96,7 +83,7 @@ it('appends timestamp suffix to slug when updating a page to an excluded slug', 
     $page = Page::create([
         'title' => 'Normal Page',
         'slug' => 'normal-page',
-        'intro' => 'Original intro text.',
+        'intro' => 'Original intro.',
     ]);
 
     expect($page->slug)->toBe('normal-page');
@@ -104,35 +91,31 @@ it('appends timestamp suffix to slug when updating a page to an excluded slug', 
     $excludedSlug = config('sluggable.excluded_from_slug')[0] ?? 'contact';
     $expectedSuffix = now()->format('-y-m-d-H-i-s');
 
-    $page->update([
-        'slug' => $excludedSlug,
-    ]);
+    $page->update(['slug' => $excludedSlug]);
 
     expect($page->fresh()->slug)->toBe($excludedSlug.$expectedSuffix);
 
     Carbon::setTestNow();
 });
 
-it('does not alter slug when creating or updating with a non-excluded slug', function (): void {
+it('does not alter non-excluded slug on create or update', function (): void {
     $user = User::factory()->create();
     actingAs($user);
 
     $page = Page::create([
-        'title' => 'Unique Allowed Title',
+        'title' => 'Unique Title',
         'slug' => 'unique-allowed-slug',
         'intro' => 'Intro text.',
     ]);
 
     expect($page->slug)->toBe('unique-allowed-slug');
 
-    $page->update([
-        'slug' => 'another-unique-allowed-slug',
-    ]);
+    $page->update(['slug' => 'another-unique-slug']);
 
-    expect($page->fresh()->slug)->toBe('another-unique-allowed-slug');
+    expect($page->fresh()->slug)->toBe('another-unique-slug');
 });
 
-it('appends timestamp to excluded slug directly via creating and updating observer methods', function (): void {
+it('appends timestamp to excluded slug via observer methods directly', function (): void {
     Carbon::setTestNow('2026-10-16 12:00:00');
 
     $observer = new PageObserver;
@@ -154,7 +137,26 @@ it('appends timestamp to excluded slug directly via creating and updating observ
     Carbon::setTestNow();
 });
 
-it('syncs image alt text to media name when a page is saved with rich content', function (): void {
+it('does not append suffix when not authenticated but slug is excluded', function (): void {
+    Carbon::setTestNow('2026-10-16 12:00:00');
+
+    auth()->logout();
+
+    $excludedSlug = config('sluggable.excluded_from_slug')[0] ?? 'contact';
+    $expectedSuffix = now()->format('-y-m-d-H-i-s');
+
+    $page = Page::create([
+        'title' => 'Unauth Excluded Slug',
+        'slug' => $excludedSlug,
+        'intro' => 'Testing unauth excluded slug.',
+    ]);
+
+    expect($page->slug)->toBe($excludedSlug.$expectedSuffix);
+
+    Carbon::setTestNow();
+});
+
+it('syncs image alt text to media name when a page is saved', function (): void {
     $user = User::factory()->create();
     actingAs($user);
 
@@ -184,15 +186,12 @@ it('syncs image alt text to media name when a page is saved with rich content', 
 
     expect($media->name)->toBe('original-name.jpg');
 
-    // Trigger saved event by updating page
-    $page->update([
-        'title' => 'Updated Page Title',
-    ]);
+    $page->update(['title' => 'Updated Page Title']);
 
     expect($media->fresh()->name)->toBe('Observer Test Alt');
 });
 
-it('calls syncImageAltToMediaName in page observer saved method', function (): void {
+it('calls syncImageAltToMediaName directly via observer saved method', function (): void {
     $user = User::factory()->create();
     actingAs($user);
 

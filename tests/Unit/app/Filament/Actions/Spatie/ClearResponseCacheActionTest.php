@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 use App\Filament\Actions\Spatie\ClearResponseCacheAction;
 use App\Models\Permission;
 use App\Models\Role;
@@ -30,33 +32,37 @@ beforeEach(function () {
     $this->actingAs($this->adminUser);
 });
 
-it('has the correct default name', function () {
-    $action = ClearResponseCacheAction::make();
-    expect($action->getName())->toBe('clearResponseCache');
+describe('action configuration', function () {
+    it('has the correct default name', function () {
+        $action = ClearResponseCacheAction::make();
+        expect($action->getName())->toBe('clearResponseCache');
+    });
 });
 
-it('can call the clearResponseCache action', function () {
-    Artisan::shouldReceive('call')->with('responsecache:clear')->once();
-    Artisan::shouldReceive('output')->once()->andReturn('Cache cleared successfully!');
+describe('action execution', function () {
+    it('can call the clearResponseCache action', function () {
+        Artisan::shouldReceive('call')->with('responsecache:clear')->once();
+        Artisan::shouldReceive('output')->once()->andReturn('Cache cleared successfully!');
 
-    $page = new class extends Page
-    {
-        public function render(): Illuminate\Contracts\View\View
+        $page = new class extends Page
         {
-            $checkResults = app(ResultStore::class)->latestResults();
+            public function render(): Illuminate\Contracts\View\View
+            {
+                $checkResults = app(ResultStore::class)->latestResults();
 
-            return view('filament.pages.spatie.health', ['checkResults' => $checkResults]);
-        }
+                return view('filament.pages.spatie.health', ['checkResults' => $checkResults]);
+            }
 
-        protected function getHeaderActions(): array
-        {
-            return [
-                ClearResponseCacheAction::make(),
-            ];
-        }
-    };
+            protected function getHeaderActions(): array
+            {
+                return [
+                    ClearResponseCacheAction::make(),
+                ];
+            }
+        };
 
-    livewire($page::class)
-        ->callAction('clearResponseCache')
-        ->assertNotified();
+        livewire($page::class)
+            ->callAction('clearResponseCache')
+            ->assertNotified();
+    });
 });

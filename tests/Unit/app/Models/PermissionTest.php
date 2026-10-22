@@ -1,6 +1,6 @@
 <?php
 
-/** @noinspection PhpUndefinedMethodInspection, PhpPossiblePolymorphicInvocationInspection */
+/** @noinspection PhpPossiblePolymorphicInvocationInspection */
 
 use App\Models\Permission;
 use Spatie\Activitylog\Support\LogOptions;
