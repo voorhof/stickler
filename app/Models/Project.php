@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Observers\ProjectObserver;
 use App\Policies\ProjectPolicy;
+use App\Traits\HasMediaConversions;
+use App\Traits\HasStandardMediaCollections;
 use App\Traits\LogsTrashedActivity;
 use App\Traits\RenderResponsiveRichContent;
 use App\Traits\SortableOnUpdate;
@@ -26,7 +28,6 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 use Spatie\EloquentSortable\Sortable;
 use Spatie\EloquentSortable\SortableTrait;
-use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -86,6 +87,10 @@ class Project extends Model implements HasMedia, HasRichContent, Sortable
     /** @use HasFactory<ProjectFactory> */
     use HasFactory;
 
+    use HasMediaConversions;
+    use HasStandardMediaCollections {
+        HasStandardMediaCollections::registerMediaCollections insteadof InteractsWithMedia;
+    }
     use HasTags;
     use InteractsWithMedia;
     use InteractsWithRichContent;
@@ -147,64 +152,7 @@ class Project extends Model implements HasMedia, HasRichContent, Sortable
      */
     public function registerMediaConversions(?Media $media = null): void
     {
-        // The Collection component will show a preview thumbnail for items in the collection it is showing.
-        // To generate that thumbnail, we must add a conversion like this one to the model.
-        $this->addMediaConversion('preview')
-            ->fit(Fit::Crop, 400, 400)
-            ->nonQueued()
-            ->deferred()
-            ->format('webp')
-            ->performOnCollections('cover', 'images', 'videos', 'documents', 'content')
-            ->pdfPageNumber(1)
-            ->extractVideoFrameAtSecond(1);
-
-        $this->addMediaConversion('thumb')
-            ->fit(Fit::Crop, 40, 40)
-            ->nonQueued()
-            ->deferred()
-            ->format('webp')
-            ->performOnCollections('cover', 'images', 'videos', 'documents', 'content')
-            ->pdfPageNumber(1)
-            ->extractVideoFrameAtSecond(1);
-
-        $this->addMediaConversion('webp')
-            ->deferred()
-            ->format('webp')
-            ->withResponsiveImages()
-            ->performOnCollections('cover', 'images', 'content');
-    }
-
-    /**
-     * Media Collections are used to group media items together.
-     * You can define as many collections as needed.
-     */
-    public function registerMediaCollections(): void
-    {
-        // Cover image single-file collection
-        $this->addMediaCollection('cover')
-            ->useDisk(config('media-library.disk_name'))
-            ->singleFile()
-            ->withResponsiveImages()
-            ->useFallbackUrl('/art/placeholders/pietje-200.png')
-            ->useFallbackPath(public_path('/art/placeholders/pietje-200.png'));
-
-        // Images multi-file collection
-        $this->addMediaCollection('images')
-            ->useDisk(config('media-library.disk_name'))
-            ->withResponsiveImages();
-
-        // Videos multi-file collection
-        $this->addMediaCollection('videos')
-            ->useDisk(config('media-library.disk_name'));
-
-        // Documents multi-file collection
-        $this->addMediaCollection('documents')
-            ->useDisk(config('media-library.disk_name'));
-
-        // Rich content collection
-        $this->addMediaCollection('content')
-            ->useDisk(config('media-library.disk_name'))
-            ->withResponsiveImages();
+        $this->registerStandardMediaConversions(['cover', 'images', 'videos', 'documents', 'content']);
     }
 
     /**
