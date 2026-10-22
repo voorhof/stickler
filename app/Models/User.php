@@ -1,10 +1,11 @@
 <?php
 
-/** @noinspection PhpUnused */
-
 namespace App\Models;
 
 use App\Observers\UserObserver;
+use App\Policies\UserPolicy;
+use App\Traits\HasMediaConversions;
+use App\Traits\HasStandardMediaCollections;
 use App\Traits\LogsTrashedActivity;
 use App\Traits\SortableOnUpdate;
 use App\Traits\TracksCreatorAndUpdater;
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\RouteKey;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -28,7 +30,6 @@ use Spatie\Activitylog\Models\Concerns\HasActivity;
 use Spatie\Activitylog\Support\LogOptions;
 use Spatie\EloquentSortable\Sortable;
 use Spatie\EloquentSortable\SortableTrait;
-use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media as BaseMedia;
@@ -81,6 +82,7 @@ use Spatie\Sluggable\Attributes\Sluggable;
     onUpdate: false,
 )]
 #[ObservedBy(UserObserver::class)]
+#[UsePolicy(UserPolicy::class)]
 class User extends Authenticatable implements FilamentUser, HasMedia, HasName, MustVerifyEmail, Sortable
 {
     use HasActivity;
@@ -88,7 +90,11 @@ class User extends Authenticatable implements FilamentUser, HasMedia, HasName, M
     /** @use HasFactory<UserFactory> */
     use HasFactory;
 
+    use HasMediaConversions;
     use HasRoles;
+    use HasStandardMediaCollections {
+        HasStandardMediaCollections::registerMediaCollections insteadof InteractsWithMedia;
+    }
     use InteractsWithMedia;
     use LogsTrashedActivity;
     use Notifiable;
@@ -200,60 +206,17 @@ class User extends Authenticatable implements FilamentUser, HasMedia, HasName, M
      */
     public function registerMediaConversions(?BaseMedia $media = null): void
     {
-        // The Collection component will show a preview thumbnail for items in the collection it is showing.
-        // To generate that thumbnail, we must add a conversion like this one to the model.
-        $this->addMediaConversion('preview')
-            ->fit(Fit::Crop, 400, 400)
-            ->nonQueued()
-            ->deferred()
-            ->format('webp')
-            ->performOnCollections('avatar', 'images', 'videos', 'documents')
-            ->pdfPageNumber(1)
-            ->extractVideoFrameAtSecond(1);
-
-        $this->addMediaConversion('thumb')
-            ->fit(Fit::Crop, 40, 40)
-            ->nonQueued()
-            ->deferred()
-            ->format('webp')
-            ->performOnCollections('avatar', 'images', 'videos', 'documents')
-            ->pdfPageNumber(1)
-            ->extractVideoFrameAtSecond(1);
-
-        $this->addMediaConversion('webp')
-            ->deferred()
-            ->format('webp')
-            ->withResponsiveImages()
-            ->performOnCollections('avatar', 'images');
+        $this->registerStandardMediaConversions(['avatar', 'images', 'videos', 'documents']);
     }
 
     /**
-     * Media Collections are used to group media items together.
-     * You can define as many collections as needed.
+     * Get the collection names that should receive the webp responsive image conversion.
+     *
+     * @return array<string>
      */
-    public function registerMediaCollections(): void
+    protected function webpCollections(): array
     {
-        $useFallbackUrl = 'https://ui-avatars.com/api/?name='.(mb_substr($this->name, 0, 1) ?: 'X').'&format=svg&color=FFFFFF&background=0b0809';
-
-        // Avatar single-file collection
-        $this->addMediaCollection('avatar')
-            ->useDisk(config('media-library.disk_name'))
-            ->singleFile()
-            ->withResponsiveImages()
-            ->useFallbackUrl($useFallbackUrl);
-
-        // Images multi-file collection
-        $this->addMediaCollection('images')
-            ->useDisk(config('media-library.disk_name'))
-            ->withResponsiveImages();
-
-        // Videos multi-file collection
-        $this->addMediaCollection('videos')
-            ->useDisk(config('media-library.disk_name'));
-
-        // Documents multi-file collection
-        $this->addMediaCollection('documents')
-            ->useDisk(config('media-library.disk_name'));
+        return ['avatar', 'images'];
     }
 
     /*
