@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Observers\UserObserver;
 use App\Traits\LogsTrashedActivity;
 use App\Traits\SortableOnUpdate;
+use App\Traits\TracksCreatorAndUpdater;
 use Database\Factories\UserFactory;
 use DateTime;
 use Filament\Models\Contracts\FilamentUser;
@@ -20,7 +21,6 @@ use Illuminate\Database\Eloquent\Attributes\RouteKey;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -95,6 +95,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, HasName, M
     use SoftDeletes;
     use SortableOnUpdate;
     use SortableTrait;
+    use TracksCreatorAndUpdater;
 
     /**
      * The model's default values for attributes.
@@ -282,151 +283,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, HasName, M
     */
 
     /**
-     * Get the media created by the user.
-     */
-    public function createdMedia(): HasMany
-    {
-        return $this->hasMany(Media::class, 'created_by_user_id', 'id')
-            ->chaperone('creator');
-    }
-
-    /**
-     * Get the media updated by the user.
-     */
-    public function updatedMedia(): HasMany
-    {
-        return $this->hasMany(Media::class, 'updated_by_user_id', 'id')
-            ->chaperone('updater');
-    }
-
-    /**
-     * Get the messages created by the user.
-     */
-    public function createdMessages(): HasMany
-    {
-        return $this->hasMany(Message::class, 'created_by_user_id', 'id')
-            ->chaperone('creator');
-    }
-
-    /**
-     * Get the messages updated by the user.
-     */
-    public function updatedMessages(): HasMany
-    {
-        return $this->hasMany(Message::class, 'updated_by_user_id', 'id')
-            ->chaperone('updater');
-    }
-
-    /**
-     * Get the posts created by the user.
-     */
-    public function createdPosts(): HasMany
-    {
-        return $this->hasMany(Post::class, 'created_by_user_id', 'id')
-            ->chaperone('creator');
-    }
-
-    /**
-     * Get the posts updated by the user.
-     */
-    public function updatedPosts(): HasMany
-    {
-        return $this->hasMany(Post::class, 'updated_by_user_id', 'id')
-            ->chaperone('updater');
-    }
-
-    /**
-     * Get the pages created by the user.
-     */
-    public function createdPages(): HasMany
-    {
-        return $this->hasMany(Page::class, 'created_by_user_id', 'id')
-            ->chaperone('creator');
-    }
-
-    /**
-     * Get the pages updated by the user.
-     */
-    public function updatedPages(): HasMany
-    {
-        return $this->hasMany(Page::class, 'updated_by_user_id', 'id')
-            ->chaperone('updater');
-    }
-
-    /**
-     * Get the projects created by the user.
-     */
-    public function createdProjects(): HasMany
-    {
-        return $this->hasMany(Project::class, 'created_by_user_id', 'id')
-            ->chaperone('creator');
-    }
-
-    /**
-     * Get the projects updated by the user.
-     */
-    public function updatedProjects(): HasMany
-    {
-        return $this->hasMany(Project::class, 'updated_by_user_id', 'id')
-            ->chaperone('updater');
-    }
-
-    /**
-     * Get the roles created by the user.
-     */
-    public function createdRoles(): HasMany
-    {
-        return $this->hasMany(Role::class, 'created_by_user_id', 'id')
-            ->chaperone('creator');
-    }
-
-    /**
-     * Get the roles updated by the user.
-     */
-    public function updatedRoles(): HasMany
-    {
-        return $this->hasMany(Role::class, 'updated_by_user_id', 'id')
-            ->chaperone('updater');
-    }
-
-    /**
-     * Get the tags created by the user.
-     */
-    public function createdTags(): HasMany
-    {
-        return $this->hasMany(Tag::class, 'created_by_user_id', 'id')
-            ->chaperone('creator');
-    }
-
-    /**
-     * Get the tags updated by the user.
-     */
-    public function updatedTags(): HasMany
-    {
-        return $this->hasMany(Tag::class, 'updated_by_user_id', 'id')
-            ->chaperone('updater');
-    }
-
-    /**
-     * Get the users created by the user.
-     */
-    public function createdUsers(): HasMany
-    {
-        return $this->hasMany(self::class, 'created_by_user_id', 'id')
-            ->chaperone('creator');
-    }
-
-    /**
-     * Get the users updated by the user.
-     */
-    public function updatedUsers(): HasMany
-    {
-        return $this->hasMany(self::class, 'updated_by_user_id', 'id')
-            ->chaperone('updater');
-    }
-
-    /**
-     * Get the user that created the user.
+     * Get the user that created this user.
      */
     public function creator(): BelongsTo
     {
@@ -437,7 +294,7 @@ class User extends Authenticatable implements FilamentUser, HasMedia, HasName, M
     }
 
     /**
-     * Get the user that updated the user.
+     * Get the user that updated this user.
      */
     public function updater(): BelongsTo
     {

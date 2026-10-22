@@ -15,12 +15,12 @@ return [
         'admin' => [
             'name' => env('ST_ADMIN_NAME', 'John Doe'),
             'email' => env('ST_ADMIN_EMAIL', 'admin@example.com'),
-            'password' => env('ST_ADMIN_PASSWORD', 'password'),
+            'password' => env('ST_ADMIN_PASSWORD'),
         ],
         'ceo' => [
             'name' => env('ST_CEO_NAME', 'Jane Ceo'),
             'email' => env('ST_CEO_EMAIL', 'ceo@example.com'),
-            'password' => env('ST_CEO_PASSWORD', 'password'),
+            'password' => env('ST_CEO_PASSWORD'),
         ],
     ],
 
