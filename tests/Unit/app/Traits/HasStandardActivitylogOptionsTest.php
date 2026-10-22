@@ -1,4 +1,4 @@
-<?php /** @noinspection PhpUndefinedFieldInspection */
+<?php
 
 /** @noinspection PhpUnhandledExceptionInspection */
 
@@ -9,21 +9,33 @@ use App\Models\User;
 use Spatie\Activitylog\Support\LogOptions;
 
 test('it returns log options instance', function () {
-    $post = Post::factory()->create();
+    $user = User::factory()->create();
+    $post = Post::factory()->create([
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
 
     expect($post->getActivitylogOptions())->toBeInstanceOf(LogOptions::class);
 });
 
 test('it logs only fillable attributes by default', function () {
-    $post = Post::factory()->create();
+    $user = User::factory()->create();
+    $post = Post::factory()->create([
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
 
     $options = $post->getActivitylogOptions();
 
-    expect($options->logOnlyFillable)->toBeTrue();
+    expect($options->logFillable)->toBeTrue();
 });
 
 test('it logs only dirty attributes', function () {
-    $post = Post::factory()->create();
+    $user = User::factory()->create();
+    $post = Post::factory()->create([
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
 
     $options = $post->getActivitylogOptions();
 
@@ -31,15 +43,23 @@ test('it logs only dirty attributes', function () {
 });
 
 test('it does not log empty changes', function () {
-    $post = Post::factory()->create();
+    $user = User::factory()->create();
+    $post = Post::factory()->create([
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
 
     $options = $post->getActivitylogOptions();
 
-    expect($options->doNotLogWhenNoChanges)->toBeTrue();
+    expect($options->logEmptyChanges)->toBeFalse();
 });
 
 test('it ignores updated_at changes by default', function () {
-    $post = Post::factory()->create();
+    $user = User::factory()->create();
+    $post = Post::factory()->create([
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
 
     $options = $post->getActivitylogOptions();
 
@@ -47,7 +67,11 @@ test('it ignores updated_at changes by default', function () {
 });
 
 test('it sets description for event', function () {
-    $post = Post::factory()->create();
+    $user = User::factory()->create();
+    $post = Post::factory()->create([
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
 
     $options = $post->getActivitylogOptions();
 
@@ -59,7 +83,7 @@ test('user model excludes password from logging', function () {
 
     $options = $user->getActivitylogOptions();
 
-    expect($options->logExcept)->toContain('password');
+    expect($options->logExceptAttributes)->toContain('password');
 });
 
 test('user model ignores updated_by_user_id changes', function () {
@@ -71,40 +95,61 @@ test('user model ignores updated_by_user_id changes', function () {
 });
 
 test('media model logs all attributes', function () {
-    User::factory()->create();
-    $post = Post::factory()->create();
-    $media = Media::factory()->create([
+    $user = User::factory()->create();
+    $post = Post::factory()->create([
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
+    $media = Media::create([
         'model_id' => $post->id,
         'model_type' => Post::class,
         'collection_name' => 'images',
         'name' => 'test.jpg',
         'file_name' => 'test.jpg',
+        'disk' => 'public',
+        'size' => 1024,
+        'manipulations' => '[]',
+        'custom_properties' => '{}',
+        'generated_conversions' => '[]',
+        'responsive_images' => '[]',
     ]);
 
     $options = $media->getActivitylogOptions();
 
-    expect($options->logOnlyFillable)->toBeFalse();
+    expect($options->logFillable)->toBeFalse();
 });
 
 test('media model excludes generated conversions from logging', function () {
-    User::factory()->create();
-    $post = Post::factory()->create();
-    $media = Media::factory()->create([
+    $user = User::factory()->create();
+    $post = Post::factory()->create([
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
+    $media = Media::create([
         'model_id' => $post->id,
         'model_type' => Post::class,
         'collection_name' => 'images',
         'name' => 'test.jpg',
         'file_name' => 'test.jpg',
+        'disk' => 'public',
+        'size' => 1024,
+        'manipulations' => '[]',
+        'custom_properties' => '{}',
+        'generated_conversions' => '[]',
+        'responsive_images' => '[]',
     ]);
 
     $options = $media->getActivitylogOptions();
 
-    expect($options->logExcept)->toContain('generated_conversions')
-        ->and($options->logExcept)->toContain('responsive_images');
+    expect($options->logExceptAttributes)->toContain('generated_conversions')
+        ->and($options->logExceptAttributes)->toContain('responsive_images');
 });
 
 test('activity model uses custom log name', function () {
-    $activity = Activity::factory()->create();
+    $activity = Activity::create([
+        'log_name' => 'default',
+        'description' => 'Test activity',
+    ]);
 
     $options = $activity->getActivitylogOptions();
 
@@ -112,15 +157,21 @@ test('activity model uses custom log name', function () {
 });
 
 test('activity model logs all attributes', function () {
-    $activity = Activity::factory()->create();
+    $activity = Activity::create([
+        'log_name' => 'default',
+        'description' => 'Test activity',
+    ]);
 
     $options = $activity->getActivitylogOptions();
 
-    expect($options->logOnlyFillable)->toBeFalse();
+    expect($options->logFillable)->toBeFalse();
 });
 
 test('activity model ignores updated_by changes', function () {
-    $activity = Activity::factory()->create();
+    $activity = Activity::create([
+        'log_name' => 'default',
+        'description' => 'Test activity',
+    ]);
 
     $options = $activity->getActivitylogOptions();
 
@@ -128,12 +179,24 @@ test('activity model ignores updated_by changes', function () {
 });
 
 test('it works across all standard model types', function () {
-    User::factory()->create();
+    $user = User::factory()->create();
 
-    $post = Post::factory()->create();
-    $page = App\Models\Page::factory()->create();
-    $project = App\Models\Project::factory()->create();
-    $message = App\Models\Message::factory()->create();
+    $post = Post::factory()->create([
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
+    $page = App\Models\Page::factory()->create([
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
+    $project = App\Models\Project::factory()->create([
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
+    $message = App\Models\Message::factory()->create([
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
     $role = App\Models\Role::factory()->create();
     $tag = App\Models\Tag::factory()->create();
     $permission = App\Models\Permission::factory()->create();
