@@ -4,102 +4,49 @@ namespace App\Policies;
 
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 
-class RolePolicy
+class RolePolicy extends BasePolicy
 {
     /**
-     * Determine whether the user can view any roles.
-     */
-    public function viewAny(User $user): bool
-    {
-        return $user->can('view roles');
-    }
-
-    /**
-     * Determine whether the user can view the role.
-     */
-    public function view(User $user): bool
-    {
-        return $this->viewAny($user);
-    }
-
-    /**
-     * Determine whether the user can create roles.
-     */
-    public function create(User $user): bool
-    {
-        return $user->can('create roles');
-    }
-
-    /**
      * Determine whether the user can update the role.
+     * Admin roles can only be updated by Admin users.
      */
-    public function update(User $user, Role $role): bool
+    public function update(?User $user = null, ?Model $model = null): bool
     {
-        if ($role->name === 'Admin') {
+        if ($model instanceof Role && $model->name === 'Admin') {
             return $user->hasRole(['Admin']);
         }
 
-        return $user->can('update roles');
-    }
-
-    /**
-     * Determine whether the user can reorder the role.
-     */
-    public function reorder(User $user): bool
-    {
-        return $user->can('update roles');
-    }
-
-    /**
-     * Determine whether the user can delete any roles.
-     */
-    public function deleteAny(User $user): bool
-    {
-        return $user->can('delete roles');
+        return parent::update($user);
     }
 
     /**
      * Determine whether the user can delete the role.
+     * Admin roles cannot be deleted.
      */
-    public function delete(User $user, Role $role): bool
+    public function delete(?User $user = null, ?Model $model = null): bool
     {
-        if ($role->name === 'Admin') {
+        if ($model instanceof Role && $model->name === 'Admin') {
             return false;
         }
 
-        return $user->can('delete roles');
-    }
-
-    /**
-     * Determine whether the user can restore any roles.
-     */
-    public function restoreAny(User $user): bool
-    {
-        return $this->deleteAny($user);
+        return parent::delete($user);
     }
 
     /**
      * Determine whether the user can restore the role.
      */
-    public function restore(User $user, Role $role): bool
+    public function restore(?User $user = null, ?Model $model = null): bool
     {
-        return $this->delete($user, $role);
-    }
-
-    /**
-     * Determine whether the user can permanently delete any roles.
-     */
-    public function forceDeleteAny(User $user): bool
-    {
-        return $this->deleteAny($user);
+        return $this->delete($user, $model);
     }
 
     /**
      * Determine whether the user can permanently delete the role.
      */
-    public function forceDelete(User $user, Role $role): bool
+    public function forceDelete(?User $user = null, ?Model $model = null): bool
     {
-        return $this->delete($user, $role);
+        return $this->delete($user, $model);
     }
 }
