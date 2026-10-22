@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Observers\RoleObserver;
 use App\Policies\RolePolicy;
+use App\Traits\HasCreatorAndUpdater;
 use App\Traits\LogsTrashedActivity;
 use App\Traits\SortableOnUpdate;
 use Database\Factories\RoleFactory;
@@ -49,6 +50,8 @@ use Spatie\Permission\Models\Role as SpatieRole;
 #[UsePolicy(RolePolicy::class)]
 class Role extends SpatieRole implements Sortable
 {
+    use HasCreatorAndUpdater;
+
     /** @use HasFactory<RoleFactory> */
     use HasFactory;
 
@@ -100,35 +103,5 @@ class Role extends SpatieRole implements Sortable
                 'updated_at',
             ])
             ->setDescriptionForEvent(fn (string $eventName) => __('This item has been :event', ['event' => __($eventName)]));
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Eloquent Relationships
-    |--------------------------------------------------------------------------
-    */
-
-    /**
-     * Get the user that created the role.
-     */
-    public function creator(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by_user_id')
-            ->withTrashed()
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
-    }
-
-    /**
-     * Get the user that updated the role.
-     */
-    public function updater(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'updated_by_user_id')
-            ->withTrashed()
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
     }
 }

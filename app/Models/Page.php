@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Observers\PageObserver;
 use App\Policies\PagePolicy;
+use App\Traits\HasCreatorAndUpdater;
 use App\Traits\HasMediaConversions;
 use App\Traits\HasStandardMediaCollections;
 use App\Traits\LogsTrashedActivity;
@@ -80,6 +81,8 @@ use Spatie\Tags\HasTags;
 #[UsePolicy(PagePolicy::class)]
 class Page extends Model implements HasMedia, HasRichContent, Sortable
 {
+    use HasCreatorAndUpdater;
+
     /** @use HasFactory<PageFactory> */
     use HasFactory;
 
@@ -176,35 +179,5 @@ class Page extends Model implements HasMedia, HasRichContent, Sortable
                 'updated_at',
             ])
             ->setDescriptionForEvent(fn (string $eventName) => __('This item has been :event', ['event' => __($eventName)]));
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Eloquent Relationships
-    |--------------------------------------------------------------------------
-    */
-
-    /**
-     * Get the user that created the page.
-     */
-    public function creator(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by_user_id')
-            ->withTrashed()
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
-    }
-
-    /**
-     * Get the user that updated the page.
-     */
-    public function updater(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'updated_by_user_id')
-            ->withTrashed()
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
     }
 }

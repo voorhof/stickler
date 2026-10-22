@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Observers\TagObserver;
 use App\Policies\TagPolicy;
+use App\Traits\HasCreatorAndUpdater;
 use App\Traits\LogsTrashedActivity;
 use App\Traits\SortableOnUpdate;
 use Database\Factories\TagFactory;
@@ -67,6 +68,8 @@ use Spatie\Tags\Tag as BaseTag;
 #[UsePolicy(TagPolicy::class)]
 class Tag extends BaseTag implements Sortable
 {
+    use HasCreatorAndUpdater;
+
     /** @use HasFactory<TagFactory> */
     use HasFactory;
 
@@ -166,29 +169,5 @@ class Tag extends BaseTag implements Sortable
     {
         return $this->morphedByMany(Project::class, 'taggable')
             ->orderBy('order_column');
-    }
-
-    /**
-     * Get the user that created the tag.
-     */
-    public function creator(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by_user_id')
-            ->withTrashed()
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
-    }
-
-    /**
-     * Get the user that updated the tag.
-     */
-    public function updater(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'updated_by_user_id')
-            ->withTrashed()
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
     }
 }

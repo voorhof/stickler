@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Observers\ProjectObserver;
 use App\Policies\ProjectPolicy;
+use App\Traits\HasCreatorAndUpdater;
 use App\Traits\HasMediaConversions;
 use App\Traits\HasStandardMediaCollections;
 use App\Traits\LogsTrashedActivity;
@@ -84,6 +85,8 @@ use Spatie\Tags\HasTags;
 #[UsePolicy(ProjectPolicy::class)]
 class Project extends Model implements HasMedia, HasRichContent, Sortable
 {
+    use HasCreatorAndUpdater;
+
     /** @use HasFactory<ProjectFactory> */
     use HasFactory;
 
@@ -180,35 +183,5 @@ class Project extends Model implements HasMedia, HasRichContent, Sortable
                 'updated_at',
             ])
             ->setDescriptionForEvent(fn (string $eventName) => __('This item has been :event', ['event' => __($eventName)]));
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Eloquent Relationships
-    |--------------------------------------------------------------------------
-    */
-
-    /**
-     * Get the user that created the project.
-     */
-    public function creator(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by_user_id')
-            ->withTrashed()
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
-    }
-
-    /**
-     * Get the user that updated the project.
-     */
-    public function updater(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'updated_by_user_id')
-            ->withTrashed()
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
     }
 }

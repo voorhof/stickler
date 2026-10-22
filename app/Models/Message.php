@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Observers\MessageObserver;
 use App\Policies\MessagePolicy;
+use App\Traits\HasCreatorAndUpdater;
 use App\Traits\LogsTrashedActivity;
 use App\Traits\SortableOnUpdate;
 use Database\Factories\MessageFactory;
@@ -86,6 +87,8 @@ use Spatie\Sluggable\Attributes\Sluggable;
 #[UsePolicy(MessagePolicy::class)]
 class Message extends Model implements Sortable
 {
+    use HasCreatorAndUpdater;
+
     /** @use HasFactory<MessageFactory> */
     use HasFactory;
 
@@ -178,35 +181,5 @@ class Message extends Model implements Sortable
                 'updated_at',
             ])
             ->setDescriptionForEvent(fn (string $eventName) => __('This item has been :event', ['event' => __($eventName)]));
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Eloquent Relationships
-    |--------------------------------------------------------------------------
-    */
-
-    /**
-     * Get the user that created the message.
-     */
-    public function creator(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by_user_id')
-            ->withTrashed()
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
-    }
-
-    /**
-     * Get the user that updated the message.
-     */
-    public function updater(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'updated_by_user_id')
-            ->withTrashed()
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
     }
 }

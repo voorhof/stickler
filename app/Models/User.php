@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Observers\UserObserver;
 use App\Policies\UserPolicy;
+use App\Traits\HasCreatorAndUpdater;
 use App\Traits\HasMediaConversions;
 use App\Traits\HasStandardMediaCollections;
 use App\Traits\LogsTrashedActivity;
@@ -86,6 +87,7 @@ use Spatie\Sluggable\Attributes\Sluggable;
 class User extends Authenticatable implements FilamentUser, HasMedia, HasName, MustVerifyEmail, Sortable
 {
     use HasActivity;
+    use HasCreatorAndUpdater;
 
     /** @use HasFactory<UserFactory> */
     use HasFactory;
@@ -246,24 +248,20 @@ class User extends Authenticatable implements FilamentUser, HasMedia, HasName, M
     */
 
     /**
-     * Get the user that created this user.
+     * Get the class name for the creator/updater relationship.
+     *
+     * @return class-string<self>
      */
-    public function creator(): BelongsTo
+    protected function creatorClass(): string
     {
-        return $this->belongsTo(self::class, 'created_by_user_id')
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
+        return self::class;
     }
 
     /**
-     * Get the user that updated this user.
+     * Determine whether to include soft-deleted users in the relationship.
      */
-    public function updater(): BelongsTo
+    protected function creatorWithTrashed(): bool
     {
-        return $this->belongsTo(self::class, 'updated_by_user_id')
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
+        return false;
     }
 }

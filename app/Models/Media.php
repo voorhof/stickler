@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Observers\MediaObserver;
 use App\Policies\MediaPolicy;
+use App\Traits\HasCreatorAndUpdater;
 use App\Traits\SortableOnUpdate;
 use DateTime;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -59,6 +60,7 @@ use Spatie\Tags\HasTags;
 #[UsePolicy(MediaPolicy::class)]
 class Media extends BaseMedia implements Sortable
 {
+    use HasCreatorAndUpdater;
     use HasTags;
     use LogsActivity;
     use SortableOnUpdate;
@@ -168,29 +170,5 @@ class Media extends BaseMedia implements Sortable
     {
         return $this->morphTo()
             ->withTrashed();
-    }
-
-    /**
-     * Get the user that created the media.
-     */
-    public function creator(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by_user_id')
-            ->withTrashed()
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
-    }
-
-    /**
-     * Get the user that updated the media.
-     */
-    public function updater(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'updated_by_user_id')
-            ->withTrashed()
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
     }
 }

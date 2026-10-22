@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Observers\PostObserver;
 use App\Policies\PostPolicy;
+use App\Traits\HasCreatorAndUpdater;
 use App\Traits\HasMediaConversions;
 use App\Traits\HasStandardMediaCollections;
 use App\Traits\LogsTrashedActivity;
@@ -80,6 +81,8 @@ use Spatie\Tags\HasTags;
 #[UsePolicy(PostPolicy::class)]
 class Post extends Model implements HasMedia, HasRichContent, Sortable
 {
+    use HasCreatorAndUpdater;
+
     /** @use HasFactory<PostFactory> */
     use HasFactory;
 
@@ -176,35 +179,5 @@ class Post extends Model implements HasMedia, HasRichContent, Sortable
                 'updated_at',
             ])
             ->setDescriptionForEvent(fn (string $eventName) => __('This item has been :event', ['event' => __($eventName)]));
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Eloquent Relationships
-    |--------------------------------------------------------------------------
-    */
-
-    /**
-     * Get the user that created the post.
-     */
-    public function creator(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by_user_id')
-            ->withTrashed()
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
-    }
-
-    /**
-     * Get the user that updated the post.
-     */
-    public function updater(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'updated_by_user_id')
-            ->withTrashed()
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
     }
 }
