@@ -17,34 +17,34 @@
     <div class="offcanvas-body d-flex flex-column">
         <nav class="nav flex-column">
             <a @class([
-                'nav-link link-body-emphasis mb-1 js-home-link',
+                'nav-link link-body-emphasis text-uppercase mb-1 js-home-link',
                 'active' => request()->routeIs('welcome.index'),
             ])
-               href="{{ route('welcome.index') }}">HOME</a>
+               href="{{ route('welcome.index') }}">{{ __('Home') }}</a>
 
             <a @class([
-                'nav-link link-body-emphasis',
-                'active' => request()->routeIs('pages.*'),
-            ])
-               href="{{ route('pages.index') }}">PAGES</a>
-
-            <a @class([
-                'nav-link link-body-emphasis',
+                'nav-link link-body-emphasis text-uppercase',
                 'active' => request()->routeIs('posts.*'),
             ])
-               href="{{ route('posts.index') }}">POSTS</a>
+               href="{{ route('posts.index') }}">{{ __('Blogposts') }}</a>
 
             <a @class([
-                'nav-link link-body-emphasis',
+                'nav-link link-body-emphasis text-uppercase',
                 'active' => request()->routeIs('projects.*'),
             ])
-               href="{{ route('projects.index') }}">PROJECTS</a>
+               href="{{ route('projects.index') }}">{{ __('Projects') }}</a>
 
             <a @class([
-                'nav-link link-body-emphasis',
+                'nav-link link-body-emphasis text-uppercase',
+                'active' => request()->routeIs('pages.*'),
+            ])
+               href="{{ route('pages.index') }}">{{ __('Pages') }}</a>
+
+            <a @class([
+                'nav-link link-body-emphasis text-uppercase',
                 'active' => request()->routeIs('contact.index'),
             ])
-               href="{{ route('contact.index') }}">CONTACT</a>
+               href="{{ route('contact.index') }}">{{ __('Contact') }}</a>
 
             {{-- Theme switcher --}}
             <div class="dropdown-center">
