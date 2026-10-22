@@ -6,6 +6,7 @@ use App\Observers\PostObserver;
 use App\Policies\PostPolicy;
 use App\Traits\HasCreatorAndUpdater;
 use App\Traits\HasMediaConversions;
+use App\Traits\HasStandardActivitylogOptions;
 use App\Traits\HasStandardMediaCollections;
 use App\Traits\LogsTrashedActivity;
 use App\Traits\RenderResponsiveRichContent;
@@ -26,7 +27,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
-use Spatie\Activitylog\Support\LogOptions;
 use Spatie\EloquentSortable\Sortable;
 use Spatie\EloquentSortable\SortableTrait;
 use Spatie\MediaLibrary\HasMedia;
@@ -87,8 +87,10 @@ class Post extends Model implements HasMedia, HasRichContent, Sortable
     use HasFactory;
 
     use HasMediaConversions;
+    use HasStandardActivitylogOptions;
     use HasStandardMediaCollections {
         HasStandardMediaCollections::registerMediaCollections insteadof InteractsWithMedia;
+        HasStandardActivitylogOptions::getActivitylogOptions insteadof LogsActivity;
     }
     use HasTags;
     use InteractsWithMedia;
@@ -161,23 +163,5 @@ class Post extends Model implements HasMedia, HasRichContent, Sortable
     {
         $this->registerRichContent('content')
             ->fileAttachmentProvider(SpatieMediaLibraryFileAttachmentProvider::make());
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Spatie Activitylog
-    |--------------------------------------------------------------------------
-    */
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logFillable()
-            ->logOnlyDirty()
-            ->dontLogEmptyChanges()
-            ->dontLogIfAttributesChangedOnly([
-                'updated_at',
-            ])
-            ->setDescriptionForEvent(fn (string $eventName) => __('This item has been :event', ['event' => __($eventName)]));
     }
 }

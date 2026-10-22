@@ -6,6 +6,7 @@ use App\Observers\UserObserver;
 use App\Policies\UserPolicy;
 use App\Traits\HasCreatorAndUpdater;
 use App\Traits\HasMediaConversions;
+use App\Traits\HasStandardActivitylogOptions;
 use App\Traits\HasStandardMediaCollections;
 use App\Traits\LogsTrashedActivity;
 use App\Traits\SortableOnUpdate;
@@ -28,7 +29,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Activitylog\Models\Concerns\HasActivity;
-use Spatie\Activitylog\Support\LogOptions;
 use Spatie\EloquentSortable\Sortable;
 use Spatie\EloquentSortable\SortableTrait;
 use Spatie\MediaLibrary\HasMedia;
@@ -94,6 +94,9 @@ class User extends Authenticatable implements FilamentUser, HasMedia, HasName, M
 
     use HasMediaConversions;
     use HasRoles;
+    use HasStandardActivitylogOptions {
+        HasStandardActivitylogOptions::getActivitylogOptions insteadof HasActivity;
+    }
     use HasStandardMediaCollections {
         HasStandardMediaCollections::registerMediaCollections insteadof InteractsWithMedia;
     }
@@ -227,18 +230,32 @@ class User extends Authenticatable implements FilamentUser, HasMedia, HasName, M
     |--------------------------------------------------------------------------
     */
 
-    public function getActivitylogOptions(): LogOptions
+    /**
+     * Determine whether to log only fillable attributes.
+     */
+    protected function activitylogFillable(): bool
     {
-        return LogOptions::defaults()
-            ->logFillable()
-            ->logExcept(['password', 'updated_at'])
-            ->logOnlyDirty()
-            ->dontLogEmptyChanges()
-            ->dontLogIfAttributesChangedOnly([
-                'updated_at',
-                'updated_by_user_id',
-            ])
-            ->setDescriptionForEvent(fn (string $eventName) => __('This item has been :event', ['event' => __($eventName)]));
+        return true;
+    }
+
+    /**
+     * Get the attributes that should be excluded from logging.
+     *
+     * @return array<string>
+     */
+    protected function activitylogExcept(): array
+    {
+        return ['password', 'updated_at'];
+    }
+
+    /**
+     * Get the attributes that should be ignored when determining if changes occurred.
+     *
+     * @return array<string>
+     */
+    protected function activitylogIgnoreChanges(): array
+    {
+        return ['updated_at', 'updated_by_user_id'];
     }
 
     /*

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Observers\MessageObserver;
 use App\Policies\MessagePolicy;
 use App\Traits\HasCreatorAndUpdater;
+use App\Traits\HasStandardActivitylogOptions;
 use App\Traits\LogsTrashedActivity;
 use App\Traits\SortableOnUpdate;
 use Database\Factories\MessageFactory;
@@ -20,7 +21,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
-use Spatie\Activitylog\Support\LogOptions;
 use Spatie\EloquentSortable\Sortable;
 use Spatie\EloquentSortable\SortableTrait;
 use Spatie\Sluggable\Attributes\Sluggable;
@@ -92,6 +92,9 @@ class Message extends Model implements Sortable
     /** @use HasFactory<MessageFactory> */
     use HasFactory;
 
+    use HasStandardActivitylogOptions {
+        HasStandardActivitylogOptions::getActivitylogOptions insteadof LogsActivity;
+    }
     use LogsActivity;
     use LogsTrashedActivity;
     use SoftDeletes;
@@ -163,23 +166,5 @@ class Message extends Model implements Sortable
         return Attribute::make(
             get: fn () => "$this->subject",
         )->shouldCache();
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Spatie Activitylog
-    |--------------------------------------------------------------------------
-    */
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logFillable()
-            ->logOnlyDirty()
-            ->dontLogEmptyChanges()
-            ->dontLogIfAttributesChangedOnly([
-                'updated_at',
-            ])
-            ->setDescriptionForEvent(fn (string $eventName) => __('This item has been :event', ['event' => __($eventName)]));
     }
 }
