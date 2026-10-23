@@ -11,7 +11,10 @@ use Spatie\Honeypot\ProtectAgainstSpam;
 use Spatie\HttpLogger\Middlewares\HttpLogger;
 
 /**
- * GET routes with Cache-Control header
+ * GET routes with Cache-Control header and TrackPageView middleware
+ *
+ * Note: Add extra added routes you want to keep counts for,
+ * to $trackedRouteNames inside the TrackPageView class.
  */
 Route::middleware('cache.headers:public;max_age=60;s_maxage=300;stale_while_revalidate=600;etag')->group(function () {
     /**

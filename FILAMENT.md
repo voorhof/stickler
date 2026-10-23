@@ -260,6 +260,55 @@ The button label and modal heading use the `"Source code"` translation key in `l
 - `tests/Feature/app/Filament/Resources/PostResourceTest.php`: opens and submits the action on the Edit Post page.
 
 
+## Page Views
+
+Public page views are tracked on the server, without cookies or a consent banner.
+The admin panel shows the results in a dashboard widget and in a view-only resource.
+
+### Tracking: PageView model and TrackPageView middleware
+
+- `App\Models\PageView` stores one row per visit in the `page_views` table: `path`, `route_name`, `referrer_host`, `visitor_hash`, `viewed_on` and `created_at`. The table has no `updated_at` column.
+- `App\Http\Middleware\TrackPageView` is registered with `prepend` in `bootstrap/app.php`, so it runs before `CacheResponse`. Cached responses are therefore still counted.
+- Only successful `GET` requests (status 200) on these route names are tracked: `welcome.index`, `contact.index`, `terms.*`, `posts.*`, `projects.*` and `pages.*`. Admin and other routes are never tracked.
+- The visitor is stored as `hash_hmac('sha256', ip|user-agent, app.key|date)`. The salt changes every day, so the same visitor cannot be followed across days. The raw IP address is never stored.
+- Only the referrer host is stored, never the full referrer URL. The referrer is `null` for internal navigation.
+
+To add tracking for another public page, add its route name to `$trackedRouteNames` in `TrackPageView`.
+
+### Dashboard widget: PageViewsWidget
+
+Located at `app/Filament/Widgets/PageViewsWidget.php`, this stats widget shows two numbers for today:
+- **Page views today**: the number of rows with `viewed_on` equal to today.
+- **Unique visitors today**: the number of distinct `visitor_hash` values for today.
+
+Both labels use the `Page views today` and `Unique visitors today` keys in `lang/en.json` and `lang/nl.json`.
+
+### Resource: PageViewResource
+
+Located at `app/Filament/Resources/PageViews/PageViewResource.php`, this view-only resource lists the public pages in the **Settings** navigation group:
+
+- `getEloquentQuery()` groups the rows by `path` and `route_name`. The list shows one row per page with the total views (`views`) and unique visitors (`unique_visitors`).
+- The table is defined in `app/Filament/Resources/PageViews/Tables/PageViewsTable.php`. It has columns for path, route name (hidden by default), page views and unique visitors. The default sort is views, descending.
+- The **Viewed on** filter has **From** and **Until** date pickers. It filters on the `viewed_on` column, so the counts follow the selected period.
+- The resource has only the list page (`ListPageViews`). Creating and editing are disabled through `PageViewPolicy`, which always returns `false` for `create()` and `update()`.
+- Access requires the `view pageviews` permission. The permission is added in `database/seeders/AdminUserAndRoleSeeder.php` next to the activity permissions.
+
+Existing admin users do not receive the new permission automatically. Re-run the seeder or assign `view pageviews` manually.
+
+### Limitations
+
+- Bot traffic is not filtered, so the numbers can be inflated.
+- The resource has no detail view per page.
+- Before production use, the privacy policy should mention this processing. A pseudonymised hash can still be personal data under the GDPR, so a legal review is recommended.
+
+### Tests
+
+- `tests/Unit/app/Http/Middleware/TrackPageViewTest.php`: tracked routes, the hashed visitor, and the excluded requests.
+- `tests/Unit/app/Filament/Widgets/PageViewsWidgetTest.php`: the stats and labels.
+- `tests/Unit/app/Models/PageViewTest.php`: the model and table.
+- `tests/Unit/app/Policies/PageViewPolicyTest.php`: the create/update block and the permission check.
+- `tests/Feature/app/Filament/Resources/PageViewResourceTest.php`: the grouped counts, the date filter, the permission gate, and the create/update block.
+
 ## Plugins
 
 List of plugins used in this project.  

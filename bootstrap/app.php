@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\TrackPageView;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -25,6 +26,11 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Cookieless page view tracking: prepended so it still runs when CacheResponse serves a cached response
+        $middleware->web(prepend: [
+            TrackPageView::class,
+        ]);
+
         // Spatie Response Cache: cache all successful GET requests that return text based content (HTML, JSON, etc.)
         $middleware->web(append: [
             CacheResponse::class,
