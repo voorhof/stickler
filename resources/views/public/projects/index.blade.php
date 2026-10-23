@@ -128,21 +128,15 @@
                     @foreach ($projects as $project)
                         <div class="col-lg-4 col-md-6 col-12">
                             <a class="c-project-card" href="{{ route('projects.show', $project) }}">
-                                @php
-                                    $coverMedia = $project->getFirstMedia('cover');
-                                @endphp
-
                                 <div class="c-project-image-wrapper">
-                                    @if ($coverMedia)
-                                        <img
-                                            class="c-project-image"
-                                            src="{{ $coverMedia->getUrl('preview') }}"
-                                            alt="{{ $project->title }}"
-                                            loading="lazy"
-                                            width="400"
-                                            height="400"
-                                        />
-                                    @endif
+                                    <img
+                                        class="c-project-image"
+                                        src="{{ $project->getFirstMediaUrl('cover', 'preview') }}"
+                                        alt="{{ $project->title }}"
+                                        loading="lazy"
+                                        width="400"
+                                        height="400"
+                                    />
                                 </div>
 
                                 <div class="c-project-body">

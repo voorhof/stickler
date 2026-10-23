@@ -133,7 +133,7 @@
                             href="{{ route('filament.admin.resources.pages.edit', $page) }}"
                             class="c-page-show-edit-link"
                         >
-                            {{ __('Edit :model', ['model' => 'page']) }}
+                            {{ __('Edit :model', ['model' => __('Page')]) }}
                         </a>
                     @endcan
                 </div>
@@ -156,7 +156,9 @@
             @endphp
 
             @if ($coverMedia)
-                <div class="c-page-show-cover">{{ $coverMedia->img('webp', ['alt' => $page->title]) }}</div>
+                <div class="c-page-show-cover">
+                    {{ $coverMedia->img('webp', ['alt' => $page->title]) }}
+                </div>
             @endif
 
             <div class="c-page-show-content">
@@ -169,7 +171,7 @@
                         <line x1="19" y1="12" x2="5" y2="12" />
                         <polyline points="12 19 5 12 12 5" />
                     </svg>
-                    {{ __('Terug naar overzicht') }}
+                    {{ __('Back to overview') }}
                 </a>
             </div>
         </div>

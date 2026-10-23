@@ -112,20 +112,14 @@
                             @foreach ($posts as $post)
                                 <li class="mb-3">
                                     <a class="c-post-card" href="{{ route('posts.show', $post) }}">
-                                        @php
-                                            $coverMedia = $post->getFirstMedia('cover');
-                                        @endphp
-
-                                        @if ($coverMedia)
-                                            <img
-                                                class="c-post-preview"
-                                                src="{{ $coverMedia->getUrl('preview') }}"
-                                                alt="{{ $post->title }}"
-                                                loading="lazy"
-                                                width="120"
-                                                height="90"
-                                            />
-                                        @endif
+                                        <img
+                                            class="c-post-preview"
+                                            src="{{ $post->getFirstMediaUrl('cover', 'preview') }}"
+                                            alt="{{ $post->title }}"
+                                            loading="lazy"
+                                            width="120"
+                                            height="90"
+                                        />
 
                                         <div class="c-post-content">
                                             <h2 class="c-post-title">{{ $post->title }}</h2>

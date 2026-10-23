@@ -149,20 +149,14 @@
                     @foreach ($pages as $page)
                         <li>
                             <a class="c-page-card" href="{{ route('pages.show', $page) }}">
-                                @php
-                                    $coverMedia = $page->getFirstMedia('cover');
-                                @endphp
-
-                                @if ($coverMedia)
-                                    <img
-                                        class="c-page-accent-image"
-                                        src="{{ $coverMedia->getUrl('preview') }}"
-                                        alt=""
-                                        loading="lazy"
-                                        width="6"
-                                        height="200"
-                                    />
-                                @endif
+                                <img
+                                    class="c-page-accent-image"
+                                    src="{{ $page->getFirstMediaUrl('cover', 'preview') }}"
+                                    alt="{{ $page->title }}"
+                                    loading="lazy"
+                                    width="6"
+                                    height="200"
+                                />
 
                                 <div class="c-page-content">
                                     <h2 class="c-page-title">{{ $page->title }}</h2>

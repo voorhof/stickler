@@ -121,7 +121,7 @@
                             href="{{ route('filament.admin.resources.posts.edit', $post) }}"
                             class="c-post-show-edit-link"
                         >
-                            {{ __('Edit :model', ['model' => 'post']) }}
+                            {{ __('Edit :model', ['model' => __('Blogpost')]) }}
                         </a>
                     @endcan
                 </div>
@@ -157,7 +157,7 @@
                         <line x1="19" y1="12" x2="5" y2="12" />
                         <polyline points="12 19 5 12 12 5" />
                     </svg>
-                    {{ __('Terug naar overzicht') }}
+                    {{ __('Back to overview') }}
                 </a>
             </div>
         </div>
