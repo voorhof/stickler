@@ -165,6 +165,11 @@
                         </div>
                     @endforeach
                 </div>
+
+                <div>
+                    <hr />
+                    {{ $projects->links() }}
+                </div>
             @else
                 <div class="c-projects-empty">
                     <p class="lead mb-0">{{ __('No projects available yet.') }}</p>

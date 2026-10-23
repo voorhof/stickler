@@ -147,6 +147,11 @@
                                 </li>
                             @endforeach
                         </ul>
+
+                        <div>
+                            <hr />
+                            {{ $posts->links() }}
+                        </div>
                     @else
                         <div class="c-posts-empty">
                             <p class="lead mb-0">{{ __('No blogposts available yet.') }}</p>

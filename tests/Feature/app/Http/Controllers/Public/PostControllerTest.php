@@ -3,7 +3,7 @@
 use App\Http\Controllers\Public\PostController;
 use App\Models\Post;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 use Laravel\Head\Facades\Head;
 
@@ -38,11 +38,12 @@ describe('posts index', function () {
 
         $response->assertSuccessful()
             ->assertViewIs('public.posts.index')
-            ->assertViewHas('posts', function (Collection $posts) use ($publishedPost1, $publishedPost2, $futurePost, $unpublishedPost) {
+            ->assertViewHas('posts', function (LengthAwarePaginator $posts) use ($publishedPost1, $publishedPost2, $futurePost, $unpublishedPost) {
                 expect($posts->pluck('id')->all())->toBe([$publishedPost2->id, $publishedPost1->id])
                     ->and($posts->contains($futurePost))->toBeFalse()
                     ->and($posts->contains($unpublishedPost))->toBeFalse()
-                    ->and($posts->first()->relationLoaded('media'))->toBeTrue();
+                    ->and($posts->first()->relationLoaded('media'))->toBeTrue()
+                    ->and($posts->perPage())->toBe(6);
 
                 return true;
             })
@@ -135,6 +136,7 @@ describe('controller methods', function () {
 
         expect($view->name())->toBe('public.posts.index')
             ->and($view->getData())->toHaveKey('posts')
+            ->and($view->getData()['posts'])->toBeInstanceOf(LengthAwarePaginator::class)
             ->and($view->getData()['posts']->pluck('id')->all())->toContain($post->id);
     });
 

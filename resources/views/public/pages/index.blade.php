@@ -184,6 +184,11 @@
                         </li>
                     @endforeach
                 </ul>
+
+                <div>
+                    <hr />
+                    {{ $pages->links() }}
+                </div>
             @else
                 <div class="c-pages-empty">
                     <p class="lead mb-0">{{ __('No pages available yet.') }}</p>

@@ -56,7 +56,7 @@ class SendMessageReplyMailAction extends Action
                 ->performedOn($message)
                 ->event('updated')
                 ->withProperties(['message' => $message])
-                ->log(__('This item has been :event', ['event' => strtolower(__('Replied'))]));
+                ->log(__('This item has been :event', ['event' => mb_strtolower(__('Replied'))]));
 
             // Create notification
             Notification::make()

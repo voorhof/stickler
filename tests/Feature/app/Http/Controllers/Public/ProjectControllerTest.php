@@ -3,7 +3,7 @@
 use App\Http\Controllers\Public\ProjectController;
 use App\Models\Project;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 use Laravel\Head\Facades\Head;
 
@@ -38,11 +38,12 @@ describe('projects index', function () {
 
         $response->assertSuccessful()
             ->assertViewIs('public.projects.index')
-            ->assertViewHas('projects', function (Collection $projects) use ($publishedProject1, $publishedProject2, $futureProject, $unpublishedProject) {
+            ->assertViewHas('projects', function (LengthAwarePaginator $projects) use ($publishedProject1, $publishedProject2, $futureProject, $unpublishedProject) {
                 expect($projects->pluck('id')->all())->toBe([$publishedProject2->id, $publishedProject1->id])
                     ->and($projects->contains($futureProject))->toBeFalse()
                     ->and($projects->contains($unpublishedProject))->toBeFalse()
-                    ->and($projects->first()->relationLoaded('media'))->toBeTrue();
+                    ->and($projects->first()->relationLoaded('media'))->toBeTrue()
+                    ->and($projects->perPage())->toBe(6);
 
                 return true;
             })
@@ -135,6 +136,7 @@ describe('controller methods', function () {
 
         expect($view->name())->toBe('public.projects.index')
             ->and($view->getData())->toHaveKey('projects')
+            ->and($view->getData()['projects'])->toBeInstanceOf(LengthAwarePaginator::class)
             ->and($view->getData()['projects']->pluck('id')->all())->toContain($project->id);
     });
 
