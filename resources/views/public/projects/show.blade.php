@@ -117,7 +117,9 @@
                 background-color: var(--st-project-show-btn-bg);
                 color: var(--st-project-show-btn-color);
                 text-decoration: none;
-                transition: background-color 0.2s ease, color 0.2s ease;
+                transition:
+                    background-color 0.2s ease,
+                    color 0.2s ease;
                 margin-top: 2.5rem;
             }
 
@@ -148,7 +150,10 @@
         <div class="container-xl">
             <div class="c-project-show-header">
                 @can('update projects')
-                    <a href="{{ route('filament.admin.resources.projects.edit', $project) }}" class="c-project-show-edit-link">
+                    <a
+                        href="{{ route('filament.admin.resources.projects.edit', $project) }}"
+                        class="c-project-show-edit-link"
+                    >
                         {{ __('Edit :model', ['model' => 'project']) }}
                     </a>
                 @endcan
@@ -159,32 +164,28 @@
             @endphp
 
             <div class="c-project-show-banner">
-                @if($coverMedia)
+                @if ($coverMedia)
                     {{ $coverMedia->img('webp', ['alt' => $project->title]) }}
                 @endif
 
                 <div class="c-project-show-banner-overlay">
-                    <h1 class="c-project-show-title">
-                        {{ $project->title }}
-                    </h1>
+                    <h1 class="c-project-show-title">{{ $project->title }}</h1>
                 </div>
             </div>
 
             <div class="c-project-show-body">
-                @if($project->intro)
-                    <p class="c-project-show-intro">
-                        {{ $project->intro }}
-                    </p>
+                @if ($project->intro)
+                    <p class="c-project-show-intro">{{ $project->intro }}</p>
                 @endif
 
                 <div class="c-project-show-meta">
-                    @if($project->published_at)
+                    @if ($project->published_at)
                         <time datetime="{{ $project->published_at->toIso8601String() }}">
                             {{ $project->published_at->format('d M Y') }}
                         </time>
                     @endif
 
-                    @if($project->website_url)
+                    @if ($project->website_url)
                         <a
                             class="c-project-show-website-btn"
                             href="{{ $project->website_url }}"
@@ -192,19 +193,24 @@
                             rel="noopener noreferrer"
                         >
                             {{ $project->website_title ?: __('Visit site') }}
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                                <polyline points="15 3 21 3 21 9" />
+                                <line x1="10" y1="14" x2="21" y2="3" />
+                            </svg>
                         </a>
                     @endif
                 </div>
 
-                @if($project->content)
-                    <div class="c-rich-content">
-                        {!! $project->renderResponsiveRichContent() !!}
-                    </div>
+                @if ($project->content)
+                    <div class="c-rich-content">{!! $project->renderResponsiveRichContent() !!}</div>
                 @endif
 
                 <a href="{{ route('projects.index') }}" class="c-project-show-back-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12" />
+                        <polyline points="12 19 5 12 12 5" />
+                    </svg>
                     {{ __('Terug naar overzicht') }}
                 </a>
             </div>

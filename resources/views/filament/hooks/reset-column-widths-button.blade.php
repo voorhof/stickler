@@ -1,4 +1,4 @@
-@if(method_exists($this, 'resetColumnWidths'))
+@if (method_exists($this, 'resetColumnWidths'))
     <x-filament::icon-button
         wire:click="resetColumnWidths"
         icon="heroicon-o-arrow-path"

@@ -103,7 +103,9 @@
                 background-color: var(--st-page-show-btn-bg);
                 color: var(--st-page-show-btn-color);
                 text-decoration: none;
-                transition: background-color 0.2s ease, color 0.2s ease;
+                transition:
+                    background-color 0.2s ease,
+                    color 0.2s ease;
                 margin-top: 2.5rem;
             }
 
@@ -124,24 +126,23 @@
         <div class="container-xl">
             <div class="c-page-show-header">
                 <div class="c-page-show-title-row">
-                    <h1 class="c-page-show-title">
-                        {{ $page->title }}
-                    </h1>
+                    <h1 class="c-page-show-title">{{ $page->title }}</h1>
 
                     @can('update projects')
-                        <a href="{{ route('filament.admin.resources.pages.edit', $page) }}" class="c-page-show-edit-link">
+                        <a
+                            href="{{ route('filament.admin.resources.pages.edit', $page) }}"
+                            class="c-page-show-edit-link"
+                        >
                             {{ __('Edit :model', ['model' => 'page']) }}
                         </a>
                     @endcan
                 </div>
 
-                @if($page->intro)
-                    <p class="c-page-show-intro">
-                        {{ $page->intro }}
-                    </p>
+                @if ($page->intro)
+                    <p class="c-page-show-intro">{{ $page->intro }}</p>
                 @endif
 
-                @if($page->published_at)
+                @if ($page->published_at)
                     <div class="c-page-show-meta">
                         <time datetime="{{ $page->published_at->toIso8601String() }}">
                             {{ $page->published_at->format('d M Y') }}
@@ -154,21 +155,20 @@
                 $coverMedia = $page->getFirstMedia('cover');
             @endphp
 
-            @if($coverMedia)
-                <div class="c-page-show-cover">
-                    {{ $coverMedia->img('webp', ['alt' => $page->title]) }}
-                </div>
+            @if ($coverMedia)
+                <div class="c-page-show-cover">{{ $coverMedia->img('webp', ['alt' => $page->title]) }}</div>
             @endif
 
             <div class="c-page-show-content">
-                @if($page->content)
-                    <div class="c-rich-content">
-                        {!! $page->renderResponsiveRichContent() !!}
-                    </div>
+                @if ($page->content)
+                    <div class="c-rich-content">{!! $page->renderResponsiveRichContent() !!}</div>
                 @endif
 
                 <a href="{{ route('pages.index') }}" class="c-page-show-back-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12" />
+                        <polyline points="12 19 5 12 12 5" />
+                    </svg>
                     {{ __('Terug naar overzicht') }}
                 </a>
             </div>

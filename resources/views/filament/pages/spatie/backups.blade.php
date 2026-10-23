@@ -2,12 +2,16 @@
     {{ $this->content }}
 
     <x-filament::modal id="backup-option" width="lg">
-        <x-slot name="heading">
-            {{ __('backups.backup_option_select') }}
-        </x-slot>
+        <x-slot name="heading">{{ __('backups.backup_option_select') }}</x-slot>
         <x-slot name="footer">
-            <div class="fi-sc fi-sc-has-gap fi-grid lg:fi-grid-cols"
-                 style="--cols-lg: repeat(3, minmax(0, 1fr)); --cols-default: repeat(1, minmax(0, 1fr)); --spacing: .1rem;">
+            <div
+                class="fi-sc fi-sc-has-gap fi-grid lg:fi-grid-cols"
+                style="
+                    --cols-lg: repeat(3, minmax(0, 1fr));
+                    --cols-default: repeat(1, minmax(0, 1fr));
+                    --spacing: 0.1rem;
+                "
+            >
                 <x-filament::button wire:click="create('only-db')" color="primary" outlined>
                     {{ __('backups.backup_option_db') }}
                 </x-filament::button>

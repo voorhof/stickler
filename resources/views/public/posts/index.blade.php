@@ -14,7 +14,7 @@
                 --st-post-meta-color: var(--st-secondary-color);
             }
 
-            [data-theme=dark] {
+            [data-theme='dark'] {
                 --st-post-card-hover-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
             }
 
@@ -35,7 +35,10 @@
                 background-color: var(--st-post-card-bg);
                 text-decoration: none;
                 color: var(--st-post-title-color);
-                transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+                transition:
+                    box-shadow 0.2s ease,
+                    border-color 0.2s ease,
+                    transform 0.15s ease;
             }
 
             .c-post-card:hover {
@@ -104,16 +107,16 @@
                         @lang('Blogposts')
                     </h1>
 
-                    @if($posts->isNotEmpty())
+                    @if ($posts->isNotEmpty())
                         <ul class="c-posts-list">
-                            @foreach($posts as $post)
+                            @foreach ($posts as $post)
                                 <li class="mb-3">
                                     <a class="c-post-card" href="{{ route('posts.show', $post) }}">
                                         @php
                                             $coverMedia = $post->getFirstMedia('cover');
                                         @endphp
 
-                                        @if($coverMedia)
+                                        @if ($coverMedia)
                                             <img
                                                 class="c-post-preview"
                                                 src="{{ $coverMedia->getUrl('preview') }}"
@@ -125,18 +128,17 @@
                                         @endif
 
                                         <div class="c-post-content">
-                                            <h2 class="c-post-title">
-                                                {{ $post->title }}
-                                            </h2>
+                                            <h2 class="c-post-title">{{ $post->title }}</h2>
 
-                                            @if($post->intro)
-                                                <p class="c-post-intro">
-                                                    {{ $post->intro }}
-                                                </p>
+                                            @if ($post->intro)
+                                                <p class="c-post-intro">{{ $post->intro }}</p>
                                             @endif
 
-                                            @if($post->published_at)
-                                                <time class="c-post-date" datetime="{{ $post->published_at->toIso8601String() }}">
+                                            @if ($post->published_at)
+                                                <time
+                                                    class="c-post-date"
+                                                    datetime="{{ $post->published_at->toIso8601String() }}"
+                                                >
                                                     {{ $post->published_at->format('d M Y') }}
                                                 </time>
                                             @endif

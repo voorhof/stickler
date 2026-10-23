@@ -13,7 +13,7 @@
                 --st-page-meta-color: var(--st-secondary-color);
             }
 
-            [data-theme=dark] {
+            [data-theme='dark'] {
                 --st-page-card-hover-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.3);
             }
 
@@ -37,7 +37,10 @@
                 background-color: var(--st-page-card-bg);
                 text-decoration: none;
                 color: var(--st-page-title-color);
-                transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+                transition:
+                    box-shadow 0.2s ease,
+                    border-color 0.2s ease,
+                    transform 0.15s ease;
                 overflow: hidden;
             }
 
@@ -83,7 +86,9 @@
             .c-page-card:hover .c-page-accent-image {
                 width: calc(100% + 2px);
                 opacity: 0.06;
-                transition: width 0.3s ease, opacity 0.3s ease;
+                transition:
+                    width 0.3s ease,
+                    opacity 0.3s ease;
             }
 
             .c-page-content {
@@ -139,16 +144,16 @@
                 @lang('Pages')
             </h1>
 
-            @if($pages->isNotEmpty())
+            @if ($pages->isNotEmpty())
                 <ul class="c-pages-grid">
-                    @foreach($pages as $page)
+                    @foreach ($pages as $page)
                         <li>
                             <a class="c-page-card" href="{{ route('pages.show', $page) }}">
                                 @php
                                     $coverMedia = $page->getFirstMedia('cover');
                                 @endphp
 
-                                @if($coverMedia)
+                                @if ($coverMedia)
                                     <img
                                         class="c-page-accent-image"
                                         src="{{ $coverMedia->getUrl('preview') }}"
@@ -160,18 +165,17 @@
                                 @endif
 
                                 <div class="c-page-content">
-                                    <h2 class="c-page-title">
-                                        {{ $page->title }}
-                                    </h2>
+                                    <h2 class="c-page-title">{{ $page->title }}</h2>
 
-                                    @if($page->intro)
-                                        <p class="c-page-intro">
-                                            {{ $page->intro }}
-                                        </p>
+                                    @if ($page->intro)
+                                        <p class="c-page-intro">{{ $page->intro }}</p>
                                     @endif
 
-                                    @if($page->published_at)
-                                        <time class="c-page-date" datetime="{{ $page->published_at->toIso8601String() }}">
+                                    @if ($page->published_at)
+                                        <time
+                                            class="c-page-date"
+                                            datetime="{{ $page->published_at->toIso8601String() }}"
+                                        >
                                             {{ $page->published_at->format('d M Y') }}
                                         </time>
                                     @endif

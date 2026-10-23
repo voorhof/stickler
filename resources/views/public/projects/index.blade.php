@@ -13,7 +13,7 @@
                 --st-project-meta-color: var(--st-secondary-color);
             }
 
-            [data-theme=dark] {
+            [data-theme='dark'] {
                 --st-project-card-hover-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
             }
 
@@ -28,7 +28,10 @@
                 background-color: var(--st-project-card-bg);
                 text-decoration: none;
                 color: var(--st-project-title-color);
-                transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+                transition:
+                    box-shadow 0.2s ease,
+                    border-color 0.2s ease,
+                    transform 0.15s ease;
                 overflow: hidden;
             }
 
@@ -120,9 +123,9 @@
                 @lang('Projects')
             </h1>
 
-            @if($projects->isNotEmpty())
+            @if ($projects->isNotEmpty())
                 <div class="row g-4">
-                    @foreach($projects as $project)
+                    @foreach ($projects as $project)
                         <div class="col-lg-4 col-md-6 col-12">
                             <a class="c-project-card" href="{{ route('projects.show', $project) }}">
                                 @php
@@ -130,7 +133,7 @@
                                 @endphp
 
                                 <div class="c-project-image-wrapper">
-                                    @if($coverMedia)
+                                    @if ($coverMedia)
                                         <img
                                             class="c-project-image"
                                             src="{{ $coverMedia->getUrl('preview') }}"
@@ -143,18 +146,17 @@
                                 </div>
 
                                 <div class="c-project-body">
-                                    <h2 class="c-project-title">
-                                        {{ $project->title }}
-                                    </h2>
+                                    <h2 class="c-project-title">{{ $project->title }}</h2>
 
-                                    @if($project->intro)
-                                        <p class="c-project-intro">
-                                            {{ $project->intro }}
-                                        </p>
+                                    @if ($project->intro)
+                                        <p class="c-project-intro">{{ $project->intro }}</p>
                                     @endif
 
-                                    @if($project->published_at)
-                                        <time class="c-project-date" datetime="{{ $project->published_at->toIso8601String() }}">
+                                    @if ($project->published_at)
+                                        <time
+                                            class="c-project-date"
+                                            datetime="{{ $project->published_at->toIso8601String() }}"
+                                        >
                                             {{ $project->published_at->format('d M Y') }}
                                         </time>
                                     @endif

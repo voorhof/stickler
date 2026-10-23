@@ -46,7 +46,9 @@
                 border-radius: var(--st-border-radius-lg);
                 background-color: var(--st-welcome-card-bg);
                 text-decoration: none;
-                transition: border-color 0.2s ease, box-shadow 0.2s ease;
+                transition:
+                    border-color 0.2s ease,
+                    box-shadow 0.2s ease;
             }
 
             .c-welcome-card:hover {
@@ -102,33 +104,30 @@
 
                 <div class="c-welcome-grid">
                     <a href="{{ route('posts.index') }}" class="c-welcome-card">
-                        <svg class="c-welcome-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                        <h2 class="c-welcome-card-title">
-                            {{ __('Blogposts') }}
-                        </h2>
-                        <p class="c-welcome-card-desc">
-                            {{ __('Read our latest articles') }}
-                        </p>
+                        <svg class="c-welcome-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 20h9" />
+                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                        </svg>
+                        <h2 class="c-welcome-card-title">{{ __('Blogposts') }}</h2>
+                        <p class="c-welcome-card-desc">{{ __('Read our latest articles') }}</p>
                     </a>
 
                     <a href="{{ route('projects.index') }}" class="c-welcome-card">
-                        <svg class="c-welcome-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-                        <h2 class="c-welcome-card-title">
-                            {{ __('Projects') }}
-                        </h2>
-                        <p class="c-welcome-card-desc">
-                            {{ __('Explore our work') }}
-                        </p>
+                        <svg class="c-welcome-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                        </svg>
+                        <h2 class="c-welcome-card-title">{{ __('Projects') }}</h2>
+                        <p class="c-welcome-card-desc">{{ __('Explore our work') }}</p>
                     </a>
 
                     <a href="{{ route('pages.index') }}" class="c-welcome-card">
-                        <svg class="c-welcome-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
-                        <h2 class="c-welcome-card-title">
-                            {{ __('Pages') }}
-                        </h2>
-                        <p class="c-welcome-card-desc">
-                            {{ __('Browse all pages') }}
-                        </p>
+                        <svg class="c-welcome-card-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                            <polyline points="14 2 14 8 20 8" />
+                        </svg>
+                        <h2 class="c-welcome-card-title">{{ __('Pages') }}</h2>
+                        <p class="c-welcome-card-desc">{{ __('Browse all pages') }}</p>
                     </a>
                 </div>
             </div>
