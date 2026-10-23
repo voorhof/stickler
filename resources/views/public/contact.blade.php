@@ -8,7 +8,7 @@
                 </div>
             </div>
 
-            <div class="row justify-content-center">
+            <div class="row justify-content-center mb-5">
                 <div class="col-md ps-xl-5 mb-md-0 mb-5 ps-4">
                     <h2 class="mb-3">Contact details</h2>
                     <address class="lead">
@@ -109,7 +109,8 @@
                                 />
                                 <label for="nameInput">
                                     @lang('Name')
-                                    <span class="opacity-50">*</span></label>
+                                    <span class="opacity-50">*</span>
+                                </label>
                                 @error('name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -193,6 +194,58 @@
                     @endif
                 </div>
             </div>
+
+            @if ($openingHours)
+                <div class="row border-top mb-5 pt-5">
+                    <div class="col-md-auto ps-xl-5 ps-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h2 class="h4 mb-0">
+                                    @if ($openingHours->isOpen())
+                                        <span class="text-success">●</span>
+                                    @else
+                                        <span class="text-danger">●</span>
+                                    @endif
+                                    {{ __('filament-business-hours::filament-business-hours.navigation.label') }}
+                                </h2>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table">
+                                    <tbody>
+                                        @foreach ($weekdays as $day)
+                                            @php
+                                                $hoursForDay = $openingHours->forDay($day);
+                                                $isToday = mb_strtolower(now()->format('l')) === $day;
+                                            @endphp
+                                            <tr @if ($isToday) class="table-active" @endif>
+                                                <td>
+                                                    <strong>{{ __('filament-business-hours::filament-business-hours.days.' . $day) }}</strong>
+                                                    @if ($isToday)
+                                                        <br />
+                                                        <span class="badge bg-primary"
+                                                            ><small
+                                                                >{{ __('filament-query-builder::query-builder.operators.date.presets.today') }}</small
+                                                            ></span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if (count($hoursForDay) > 0)
+                                                        @foreach ($hoursForDay as $range)
+                                                            <div>{{ $range->format('H:i', ' %s - %s ') }}</div>
+                                                        @endforeach
+                                                    @else
+                                                        <span class="text-muted">{{ __('filament-business-hours::filament-business-hours.grid.closed') }}</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
     </section>
 
