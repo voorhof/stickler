@@ -89,6 +89,186 @@ test('it displays upcoming exceptional hours and vacation periods on the contact
     $this->travelBack();
 });
 
+test('it caches business hours until the record is saved', function () {
+    $this->travelTo('2026-01-10 10:00:00');
+
+    $record = BusinessHours::query()->create([
+        'key' => 'default',
+        'timezone' => null,
+        'overflow' => false,
+        'hours' => [
+            'monday' => ['08:00-12:00'],
+            'tuesday' => ['08:00-12:00'],
+            'wednesday' => ['08:00-12:00'],
+            'thursday' => ['08:00-12:00'],
+            'friday' => ['08:00-12:00'],
+            'saturday' => [],
+            'sunday' => [],
+        ],
+        'exceptions' => [
+            '2026-01-15' => ['hours' => [], 'data' => 'Inventory'],
+        ],
+    ]);
+
+    $this->get(route('contact.index'))->assertSee('Inventory');
+
+    BusinessHours::query()
+        ->whereKey($record->getKey())
+        ->toBase()
+        ->update(['exceptions' => json_encode(['2026-01-15' => ['hours' => [], 'data' => 'Stocktake']])]);
+
+    $this->get(route('contact.index'))
+        ->assertSee('Inventory')
+        ->assertDontSee('Stocktake');
+
+    $record->update(['exceptions' => ['2026-01-15' => ['hours' => [], 'data' => 'Stocktake']]]);
+
+    $this->get(route('contact.index'))
+        ->assertSee('Stocktake')
+        ->assertDontSee('Inventory');
+
+    $this->travelBack();
+});
+
+function createContactBusinessHours(string $key, array $exceptions = [], ?string $timezone = null): BusinessHours
+{
+    return BusinessHours::query()->create([
+        'key' => $key,
+        'timezone' => $timezone,
+        'overflow' => false,
+        'hours' => [
+            'monday' => ['08:00-12:00'],
+            'tuesday' => ['08:00-12:00'],
+            'wednesday' => ['08:00-12:00'],
+            'thursday' => ['08:00-12:00'],
+            'friday' => ['08:00-12:00'],
+            'saturday' => [],
+            'sunday' => [],
+        ],
+        'exceptions' => $exceptions,
+    ]);
+}
+
+test('it passes no special opening hours when there is no business hours record', function () {
+    $this->get(route('contact.index'))
+        ->assertViewHas('specialOpeningHours', fn (array $value): bool => $value === []);
+});
+
+test('it uses the business hours timezone to determine the upcoming window', function () {
+    $this->travelTo('2026-01-11 02:00:00');
+
+    createContactBusinessHours('default', [
+        '2026-01-10' => ['hours' => [], 'data' => 'Evening closure'],
+    ], 'America/New_York');
+
+    $this->get(route('contact.index'))
+        ->assertSee('Evening closure')
+        ->assertViewHas('specialOpeningHours', fn (array $value): bool => count($value) === 1
+            && $value[0]['date']->format('d/m/Y') === '10/01/2026');
+
+    $this->travelBack();
+});
+
+test('it excludes single dates and periods that have already passed', function () {
+    $this->travelTo('2026-01-10 10:00:00');
+
+    createContactBusinessHours('default', [
+        '2026-01-07' => ['hours' => [], 'data' => 'Past single'],
+        '2026-01-01 to 2026-01-05' => ['hours' => [], 'data' => 'Past holiday'],
+    ]);
+
+    $this->get(route('contact.index'))
+        ->assertDontSee('Past single')
+        ->assertDontSee('Past holiday')
+        ->assertViewHas('specialOpeningHours', fn (array $value): bool => $value === []);
+
+    $this->travelBack();
+});
+
+test('it shows a recurring exception inside the window with the recurring flag', function () {
+    $this->travelTo('2026-01-10 10:00:00');
+
+    createContactBusinessHours('default', [
+        '01-12' => ['hours' => ['09:00-10:00'], 'data' => 'Annual check'],
+    ]);
+
+    $this->get(route('contact.index'))
+        ->assertSee('Annual check')
+        ->assertViewHas('specialOpeningHours', fn (array $value): bool => count($value) === 1
+            && $value[0]['date']->format('d/m/Y') === '12/01/2026'
+            && $value[0]['endDate'] === null
+            && $value[0]['hours'] === ['09:00-10:00']
+            && $value[0]['label'] === 'Annual check'
+            && $value[0]['recurring'] === true);
+
+    $this->travelBack();
+});
+
+test('it moves a recurring exception that already passed this year into next year', function () {
+    $this->travelTo('2026-12-28 10:00:00');
+
+    createContactBusinessHours('default', [
+        '01-02' => ['hours' => [], 'data' => 'New year check'],
+    ]);
+
+    $this->get(route('contact.index'))
+        ->assertSee('New year check')
+        ->assertViewHas('specialOpeningHours', fn (array $value): bool => count($value) === 1
+            && $value[0]['date']->format('d/m/Y') === '02/01/2027'
+            && $value[0]['recurring'] === true);
+
+    $this->travelBack();
+});
+
+test('it excludes a recurring exception whose next occurrence is outside the window', function () {
+    $this->travelTo('2026-01-10 10:00:00');
+
+    createContactBusinessHours('default', [
+        '01-05' => ['hours' => [], 'data' => 'Past annual'],
+    ]);
+
+    $this->get(route('contact.index'))
+        ->assertDontSee('Past annual')
+        ->assertViewHas('specialOpeningHours', fn (array $value): bool => $value === []);
+
+    $this->travelBack();
+});
+
+test('it exposes the date, hours, label and non recurring flag of a single date exception', function () {
+    $this->travelTo('2026-01-10 10:00:00');
+
+    createContactBusinessHours('default', [
+        '2026-01-13' => ['hours' => ['10:00-12:00'], 'data' => 'Today only'],
+    ]);
+
+    $this->get(route('contact.index'))
+        ->assertSee('Today only')
+        ->assertViewHas('specialOpeningHours', fn (array $value): bool => count($value) === 1
+            && $value[0]['date']->format('Y-m-d') === '2026-01-13'
+            && $value[0]['endDate'] === null
+            && $value[0]['hours'] === ['10:00-12:00']
+            && $value[0]['label'] === 'Today only'
+            && $value[0]['recurring'] === false);
+
+    $this->travelBack();
+});
+
+test('it uses the configured filament business hours record', function () {
+    $this->travelTo('2026-01-10 10:00:00');
+
+    config()->set('filament-business-hours.record', 'seasonal');
+
+    createContactBusinessHours('seasonal', [
+        '2026-01-15' => ['hours' => [], 'data' => 'Seasonal closure'],
+    ]);
+
+    $this->get(route('contact.index'))
+        ->assertSee('Seasonal closure')
+        ->assertViewHas('openingHours', fn ($value) => $value instanceof OpeningHours);
+
+    $this->travelBack();
+});
+
 test('it can store a contact message successfully', function () {
     Mail::fake();
 
@@ -252,7 +432,7 @@ test('it limits too many requests', function () {
     $response->assertTooManyRequests();
     $this->assertDatabaseMissing('messages', [
         'name' => 'Jane Doe4',
-        'email' => 'jan43@example.com',
+        'email' => 'jane4@example.com',
         'subject' => 'Inquiry4',
         'message' => 'Hello, I have a question4.',
     ]);

@@ -6,34 +6,35 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Public\StoreMessageRequest;
 use App\Mail\ContactMessageReceived;
 use App\Models\Message;
+use App\Services\Spatie\BusinessHoursCacheService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
-use LaBoiteACode\FilamentBusinessHours\Models\BusinessHours;
 use LaBoiteACode\FilamentBusinessHours\Support\ExceptionEntry;
 use LaBoiteACode\FilamentBusinessHours\Support\ExceptionType;
 use LaBoiteACode\FilamentBusinessHours\Support\Weekdays;
 use Laravel\Head\Facades\Head;
+use Spatie\OpeningHours\OpeningHours;
 
 class ContactController extends Controller
 {
     /**
      * Show the contact page.
      */
-    public function index(): View
+    public function index(BusinessHoursCacheService $businessHoursCache): View
     {
         Head::title('Contact')
             ->description('Contact details '.config('app.name'));
 
-        $businessHours = BusinessHours::resolve(config('filament-business-hours.record', 'default'));
-        $openingHours = $businessHours->exists ? $businessHours->toOpeningHours() : null;
-        $today = CarbonImmutable::now($businessHours->timezone ?: config('app.timezone'));
+        $businessHours = $businessHoursCache->resolve(config('filament-business-hours.record', 'default'));
+        $definition = $businessHours['definition'];
+        $today = CarbonImmutable::now($definition['timezone'] ?? config('app.timezone'));
 
         return view('public.contact', [
-            'openingHours' => $openingHours,
-            'specialOpeningHours' => $businessHours->exists
-                ? $this->upcomingExceptions($businessHours->exceptions, $today)
+            'openingHours' => $businessHours['exists'] ? OpeningHours::create($definition) : null,
+            'specialOpeningHours' => $businessHours['exists']
+                ? $this->upcomingExceptions($definition['exceptions'], $today)
                 : [],
             'today' => $today,
             'weekdays' => Weekdays::DAYS,
@@ -56,7 +57,7 @@ class ContactController extends Controller
             $isRecurring = $entry->type === ExceptionType::Recurring;
             $date = match ($entry->type) {
                 ExceptionType::Date => $parseDate((string) $entry->date),
-                ExceptionType::Recurring => $parseDate($windowStart->year.'-'.(string) $entry->date),
+                ExceptionType::Recurring => $parseDate($windowStart->year.'-'.$entry->date),
                 ExceptionType::Period => $parseDate((string) $entry->from),
             };
             $endDate = $entry->type === ExceptionType::Period ? $parseDate((string) $entry->until) : null;
