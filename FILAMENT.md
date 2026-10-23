@@ -14,15 +14,15 @@ It's not necessary to run these commands again for local development since they 
 We just provide them here for reference.
 
 ```bash
-composer require filament/filament:"~5.7"
+composer require filament/filament:"^5.10"
 php artisan filament:install --panels
 php artisan vendor:publish --tag=filament-config
 php artisan icons:cache
 php artisan make:filament-resource User --generate --soft-deletes
 php artisan make:provider Filament/UiServiceProvider        
 ```
-- Required the `filament/filament` package, version 5.7 at the time of writing.
-- Install command created the default admin panel at `App\Providers\Filament\AdminPanelProvider.php`.
+- Required the `filament/filament` package, version 5.10 at the time of writing.
+- Install command created the default admin panel at `app/Providers/Filament/AdminPanelProvider.php`.
 - Published the config file, located in `config/filament.php`.
 - Cached the Filament icons using `icons:cache` command.
 - Resource files created for the `User` model in the `app/Filament/Resources/Users` directory.
@@ -204,22 +204,37 @@ this class implements Filament's `RichContentPlugin` contract and provides:
 
 ### Registration
 
-The plugin is registered globally for every `RichEditor` inside the `UiServiceProvider`,
+The plugin is registered globally for every `RichEditor` inside the `UiServiceProvider` (`app/Providers/Filament/UiServiceProvider.php`),
 and the button is added as its own group in the toolbar:
 
 ```php
 use App\Filament\RichEditor\Plugins\SourceCodePlugin;
+use Filament\Forms\Components\RichEditor;
 
 RichEditor::configureUsing(function (RichEditor $richEditor): void {
     $richEditor
         ->toolbarButtons([
-            // ... other toolbar groups
+            ['undo', 'redo'],
+            [ToolbarButtonGroup::make(__('Paragraph'), ['paragraph', 'h2', 'h3', 'h4'])],
+            [ToolbarButtonGroup::make(__('Alignment'), ['alignStart', 'alignCenter', 'alignEnd', 'alignJustify'])],
+            ['bold', 'italic', 'underline', 'strike', 'link', 'textColor', 'highlight'],
+            ['blockquote', 'codeBlock', ToolbarButtonGroup::make('Lists', ['bulletList', 'orderedList'])],
             ['attachFiles'],
             [SourceCodePlugin::NAME],
         ])
+        ->floatingToolbars([
+            'paragraph' => [
+                'bold', 'italic', 'underline', 'strike', 'link', 'textColor',
+            ],
+            'heading' => [
+                'h2', 'h3', 'h4',
+            ],
+        ])
+        ->maxHeight('80svh')
         ->plugins([
             SourceCodePlugin::make(),
-        ]);
+        ])
+        ->columnSpanFull();
 });
 ```
 
@@ -265,19 +280,10 @@ The plug-in is configured in the `plugins()` array of the panel method in the `A
 ```php
 use Asmit\ResizedColumn\ResizedColumnPlugin;
 
-class AdminPanelProvider extends PanelProvider
-{
-    public function panel(Panel $panel): Panel
-    {
-        return $panel
-            // ... other configuration
-            ->plugins([
-                // ... other plugins
-                ResizedColumnPlugin::make()
-                    ->preserveOnDB(), // Enable database storage (optional)
-            ]);
-    }
-}
+->plugins([
+    ResizedColumnPlugin::make()
+        ->preserveOnDB(),
+]);
 ```
 
 To use the ‘Resize Columns’ feature, you must include the `HasResizableColumn` trait 
@@ -324,6 +330,54 @@ class ListUsers extends ListRecords
     use HasResizableColumn;
 }
 ````
+
+### Filament Business Hours
+[GitHub](https://github.com/La-boite-a-code/Filament-Business-Hours)
+
+The **Filament Business Hours** plugin provides a visual interface for managing opening hours in the admin panel.
+It stores the schedules in the `business_hours` table and uses `spatie/opening-hours` for opening-hours calculations.
+
+The plugin publishes the following project files:
+
+- Configuration: `config/filament-business-hours.php`
+- Migration: `0001_01_03_000000_create_business_hours_table.php`
+- Translations: `lang/vendor/filament-business-hours/`
+- Frontend assets: `public/css/laboiteacode/filament-business-hours/` and `public/js/laboiteacode/filament-business-hours/`
+
+It is registered in `app/Providers/Filament/AdminPanelProvider.php` under the **Settings** navigation group.
+Access is limited to users who have the `edit settings` permission:
+
+```php
+use LaBoiteACode\FilamentBusinessHours\FilamentBusinessHoursPlugin;
+
+->plugins([
+    // ... other plugins
+    FilamentBusinessHoursPlugin::make()
+        ->navigationGroup(__('Settings'))
+        ->navigationSort(9200)
+        ->canAccessUsing(fn (): bool => auth()->user()?->can('edit settings') ?? false),
+]);
+```
+
+The custom `database/seeders/BusinessHoursSeeder.php` seeds a `default` schedule with Monday through Friday
+open from `08:00-12:00` and `13:00-18:00`; Saturday and Sunday are closed. The seeder is included in
+`DatabaseSeeder` and can be rerun safely because it upserts the `default` record.
+
+The public contact page reads the configured record from `config('filament-business-hours.record', 'default')`:
+
+```php
+use LaBoiteACode\FilamentBusinessHours\Models\BusinessHours;
+use LaBoiteACode\FilamentBusinessHours\Support\Weekdays;
+
+$openingHours = BusinessHours::openingHours(config('filament-business-hours.record', 'default'));
+
+return view('public.contact', [
+    'openingHours' => $openingHours,
+    'weekdays' => Weekdays::DAYS,
+]);
+```
+
+The contact view displays each day's translated name, opening periods, open/closed status, and a highlight for the current day.
 
 
 ### Spatie Media Library
