@@ -112,7 +112,7 @@
                                     <span class="opacity-50">*</span>
                                 </label>
                                 @error('name')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
@@ -132,7 +132,7 @@
                                     @lang('Email')
                                     <span class="opacity-50">*</span></label>
                                 @error('email')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
@@ -149,7 +149,7 @@
                                 />
                                 <label for="phoneInput">@lang('Phone')</label>
                                 @error('phone')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
@@ -168,7 +168,7 @@
                                     @lang('Subject')
                                     <span class="opacity-50">*</span></label>
                                 @error('subject')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
@@ -185,7 +185,7 @@
                                     @lang('Message')
                                     <span class="opacity-50">*</span></label>
                                 @error('message')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
@@ -196,54 +196,98 @@
             </div>
 
             @if ($openingHours)
-                <div class="row border-top mb-5 pt-5">
+                <div class="row border-top pt-5">
                     <div class="col-md-auto ps-xl-5 ps-4">
-                        <div class="card">
+                        <div class="card mb-5">
                             <div class="card-header">
                                 <h2 class="h4 mb-0">
-                                    <span @class([
-                                        'text-success' => $openingHours->isOpen(),
-                                        'text-danger' => ! $openingHours->isOpen(),
-                                        'fs-3',
-                                    ])>●</span>
+                                    <span
+                                        @class([
+                                            'text-success' => $openingHours->isOpen(),
+                                            'text-danger' => ! $openingHours->isOpen(),
+                                            'fs-3',
+                                        ])
+                                    >●</span>
                                     {{ __('filament-business-hours::filament-business-hours.navigation.label') }}
                                 </h2>
                             </div>
                             <div class="card-body p-0">
-                                <table class="table">
+                                <table class="table mb-0">
                                     <tbody>
-                                        @foreach ($weekdays as $day)
-                                            @php
-                                                $hoursForDay = $openingHours->forDay($day);
-                                                $isToday = mb_strtolower(now()->format('l')) === $day;
-                                            @endphp
-                                            <tr @if ($isToday) class="table-active" @endif>
-                                                <td>
-                                                    <strong>{{ __('filament-business-hours::filament-business-hours.days.' . $day) }}</strong>
-                                                    @if ($isToday)
-                                                        <br />
-                                                        <span class="badge bg-primary"
-                                                            ><small
-                                                                >{{ __('filament-query-builder::query-builder.operators.date.presets.today') }}</small
-                                                            ></span>
-                                                    @endif
-                                                </td>
-                                                <td>
-                                                    @if (count($hoursForDay) > 0)
-                                                        @foreach ($hoursForDay as $range)
-                                                            <div>{{ $range->format('H:i', ' %s - %s ') }}</div>
-                                                        @endforeach
-                                                    @else
-                                                        <span class="text-muted">{{ __('filament-business-hours::filament-business-hours.grid.closed') }}</span>
-                                                    @endif
-                                                </td>
-                                            </tr>
-                                        @endforeach
+                                    @foreach ($weekdays as $day)
+                                        @php
+                                            $isToday = mb_strtolower($today->format('l')) === $day;
+                                            $hoursForDay = $isToday ? $openingHours->forDate($today) : $openingHours->forDay($day);
+                                        @endphp
+                                        <tr @if ($isToday) class="table-active" @endif>
+                                            <td>
+                                                <strong>{{ __('filament-business-hours::filament-business-hours.days.' . $day) }}</strong>
+                                                @if ($isToday)
+                                                    <br />
+                                                    <span class="badge bg-primary"
+                                                    ><small
+                                                        >{{ __('filament-query-builder::query-builder.operators.date.presets.today') }}</small
+                                                        ></span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if (count($hoursForDay) > 0)
+                                                    @foreach ($hoursForDay as $range)
+                                                        <div>{{ $range->format('H:i', ' %s - %s ') }}</div>
+                                                    @endforeach
+                                                @else
+                                                    <span class="text-muted">{{ __('filament-business-hours::filament-business-hours.grid.closed') }}</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
+
+                    @if ($specialOpeningHours)
+                        <div class="col-md-auto">
+                            <div class="card mb-5">
+                                <div class="card-header">
+                                    <h2 class="h4 mb-0">{{ __('Special closing times') }}</h2>
+                                </div>
+                                <div class="card-body p-0 pt-2">
+                                    <ul class="list-group list-group-flush">
+                                        @foreach ($specialOpeningHours as $exception)
+                                            <li class="list-group-item">
+                                                <div class="d-flex justify-content-between flex-wrap gap-2">
+                                                    <strong>
+                                                        {{ $exception['date']->format('d/m/Y') }}
+                                                        @if ($exception['endDate'])
+                                                            - {{ $exception['endDate']->format('d/m/Y') }}
+                                                        @endif
+                                                    </strong>
+
+                                                    @if ($exception['recurring'])
+                                                        <span class="badge bg-secondary">{{ __('Annually') }}</span>
+                                                    @endif
+                                                </div>
+
+                                                @if ($exception['label'])
+                                                    <div class="text-muted">{{ $exception['label'] }}</div>
+                                                @endif
+
+                                                @if (count($exception['hours']) > 0)
+                                                    @foreach ($exception['hours'] as $range)
+                                                        <div>{{ str_replace('-', ' - ', $range) }}</div>
+                                                    @endforeach
+                                                @else
+                                                    <span class="text-muted">{{ __('filament-business-hours::filament-business-hours.grid.closed') }}</span>
+                                                @endif
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             @endif
         </div>

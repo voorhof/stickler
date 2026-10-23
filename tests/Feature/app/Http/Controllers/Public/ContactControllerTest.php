@@ -5,6 +5,7 @@ use App\Models\Message;
 use Database\Seeders\BusinessHoursSeeder;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
+use LaBoiteACode\FilamentBusinessHours\Models\BusinessHours;
 use LaBoiteACode\FilamentBusinessHours\Support\Weekdays;
 use Spatie\Honeypot\Events\SpamDetectedEvent;
 use Spatie\OpeningHours\OpeningHours;
@@ -38,6 +39,54 @@ test('it displays business hours on the contact page', function () {
         ->assertSee('Openingstijden')
         ->assertSee(__('filament-business-hours::filament-business-hours.days.monday'))
         ->assertSee(__('filament-business-hours::filament-business-hours.days.saturday'));
+});
+
+test('it displays upcoming exceptional hours and vacation periods on the contact page', function () {
+    $this->travelTo('2026-01-10 10:00:00');
+
+    BusinessHours::query()->create([
+        'key' => 'default',
+        'timezone' => null,
+        'overflow' => false,
+        'hours' => [
+            'monday' => ['08:00-12:00'],
+            'tuesday' => ['08:00-12:00'],
+            'wednesday' => ['08:00-12:00'],
+            'thursday' => ['08:00-12:00'],
+            'friday' => ['08:00-12:00'],
+            'saturday' => [],
+            'sunday' => [],
+        ],
+        'exceptions' => [
+            '2026-01-08 to 2026-01-12' => ['hours' => [], 'data' => 'Short closure'],
+            '2026-01-13' => ['hours' => ['10:00-12:00'], 'data' => 'Today only'],
+            '2026-01-15' => ['hours' => ['10:00-14:00'], 'data' => 'Inventory'],
+            '2026-01-24' => ['hours' => ['09:00-10:00'], 'data' => 'Boundary'],
+            '2026-01-25' => ['hours' => [], 'data' => 'Too far ahead'],
+            '12-24' => ['hours' => [], 'data' => 'Christmas'],
+            '2026-02-01 to 2026-02-07' => ['hours' => [], 'data' => 'Winter holiday'],
+        ],
+    ]);
+
+    $response = $this->get(route('contact.index'));
+
+    $response->assertSuccessful()
+        ->assertSee('10:00 - 12:00')
+        ->assertSee('Inventory')
+        ->assertSee('Short closure')
+        ->assertSee('08/01/2026')
+        ->assertSee('12/01/2026')
+        ->assertSee('Boundary')
+        ->assertDontSee('Too far ahead')
+        ->assertDontSee('Christmas')
+        ->assertDontSee('Winter holiday')
+        ->assertViewHas('specialOpeningHours', function (array $value): bool {
+            return count($value) === 4
+                && $value[0]['endDate']->format('d/m/Y') === '12/01/2026'
+                && $value[3]['label'] === 'Boundary';
+        });
+
+    $this->travelBack();
 });
 
 test('it can store a contact message successfully', function () {
