@@ -2,15 +2,42 @@
 
 use App\Mail\ContactMessageReceived;
 use App\Models\Message;
+use Database\Seeders\BusinessHoursSeeder;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
+use LaBoiteACode\FilamentBusinessHours\Support\Weekdays;
 use Spatie\Honeypot\Events\SpamDetectedEvent;
+use Spatie\OpeningHours\OpeningHours;
 
-test('it can view the contact page', function () {
+test('it can view the contact page without business hours', function () {
     $response = $this->get(route('contact.index'));
 
     $response->assertSuccessful()
-        ->assertViewIs('public.contact');
+        ->assertViewIs('public.contact')
+        ->assertViewHas('openingHours', fn ($value) => $value === null)
+        ->assertViewHas('weekdays', Weekdays::DAYS);
+});
+
+test('it can view the contact page with business hours', function () {
+    (new BusinessHoursSeeder)->run();
+
+    $response = $this->get(route('contact.index'));
+
+    $response->assertSuccessful()
+        ->assertViewIs('public.contact')
+        ->assertViewHas('openingHours', fn ($value) => $value instanceof OpeningHours)
+        ->assertViewHas('weekdays', Weekdays::DAYS);
+});
+
+test('it displays business hours on the contact page', function () {
+    (new BusinessHoursSeeder)->run();
+
+    $response = $this->get(route('contact.index'));
+
+    $response->assertSuccessful()
+        ->assertSee('Openingstijden')
+        ->assertSee(__('filament-business-hours::filament-business-hours.days.monday'))
+        ->assertSee(__('filament-business-hours::filament-business-hours.days.saturday'));
 });
 
 test('it can store a contact message successfully', function () {

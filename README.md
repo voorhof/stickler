@@ -1017,6 +1017,93 @@ Schedule::command('backup:run --only-files --filename=files-'.app()->environment
     ->weeklyOn(Illuminate\Console\Scheduling\Schedule::SUNDAY);
 ```
 
+
+### Spatie Opening Hours
+
+[Documentation](https://filamentphp.com/plugins/la-boite-a-code-business-hours)  
+[GitHub](https://github.com/spatie/opening-hours)
+
+This package provides a data structure for opening hours, with support for weekly schedules, exceptional dates, and vacation periods.
+
+The `OpeningHours` class is used throughout the application to check if a business is open at a given time, retrieve hours for a specific day, and format time ranges.
+
+
+### Filament Business Hours Plugin
+
+[GitHub](https://github.com/La-boite-a-code/Filament-Business-Hours)
+
+This Filament plugin provides a visual interface for managing opening hours in the admin panel.
+It stores opening hours data in the `business_hours` table and uses `spatie/opening-hours` under the hood.
+
+**Config** file was published to `config/filament-business-hours.php`.
+
+**Migration** file was published to `0001_01_03_000000_create_business_hours_table.php`.
+
+**Translation** files were published to `lang/vendor/filament-business-hours/`.
+
+The plugin is registered in `app/Providers/Filament/AdminPanelProvider.php`:
+
+```php
+use LaBoiteACode\FilamentBusinessHours\FilamentBusinessHoursPlugin;
+
+return Panel::make()
+    ->plugin(FilamentBusinessHoursPlugin::make());
+```
+
+A custom **seeder** `BusinessHoursSeeder.php` was created to seed default business hours (Monday–Friday, 08:00–12:00 and 13:00–18:00):
+
+```php
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+class BusinessHoursSeeder extends Seeder
+{
+    public function run(): void
+    {
+        DB::table('business_hours')->upsert([
+            [
+                'key' => 'default',
+                'timezone' => null,
+                'overflow' => false,
+                'hours' => json_encode([
+                    'monday' => ['08:00-12:00', '13:00-18:00'],
+                    'tuesday' => ['08:00-12:00', '13:00-18:00'],
+                    'wednesday' => ['08:00-12:00', '13:00-18:00'],
+                    'thursday' => ['08:00-12:00', '13:00-18:00'],
+                    'friday' => ['08:00-12:00', '13:00-18:00'],
+                    'saturday' => [],
+                    'sunday' => [],
+                ]),
+                'exceptions' => json_encode([]),
+            ],
+        ], ['key']);
+    }
+}
+```
+
+#### Displaying Business Hours on the Contact Page
+
+The `ContactController` fetches opening hours from the database and passes them to the view:
+
+```php
+use LaBoiteACode\FilamentBusinessHours\Models\BusinessHours;
+use LaBoiteACode\FilamentBusinessHours\Support\Weekdays;
+
+$openingHours = BusinessHours::openingHours(config('filament-business-hours.record', 'default'));
+
+return view('public.contact', [
+    'openingHours' => $openingHours,
+    'weekdays' => Weekdays::DAYS,
+]);
+```
+
+The contact view (`resources/views/public/contact.blade.php`) displays a weekly hours table with:
+- Open/closed status indicator (green/red dot)
+- Today's row highlighted with a "Today" badge
+- Translated day names using the `filament-business-hours` translation keys
+- "Closed" displayed for days with no hours
+
+
 ### Spatie Honeypot
 [GitHub](https://github.com/spatie/laravel-honeypot)
 

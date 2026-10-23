@@ -9,6 +9,8 @@ use App\Models\Message;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
+use LaBoiteACode\FilamentBusinessHours\Models\BusinessHours;
+use LaBoiteACode\FilamentBusinessHours\Support\Weekdays;
 use Laravel\Head\Facades\Head;
 
 class ContactController extends Controller
@@ -21,7 +23,12 @@ class ContactController extends Controller
         Head::title('Contact')
             ->description('Contact details '.config('app.name'));
 
-        return view('public.contact');
+        $openingHours = BusinessHours::openingHours(config('filament-business-hours.record', 'default'));
+
+        return view('public.contact', [
+            'openingHours' => $openingHours,
+            'weekdays' => Weekdays::DAYS,
+        ]);
     }
 
     /**
