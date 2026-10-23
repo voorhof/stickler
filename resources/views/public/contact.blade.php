@@ -8,7 +8,7 @@
                 </div>
             </div>
 
-            <div class="row justify-content-center mb-5">
+            <div class="row justify-content-center">
                 <div class="col-md ps-xl-5 mb-md-0 mb-5 ps-4">
                     <h2 class="mb-3">Contact details</h2>
                     <address class="lead">
