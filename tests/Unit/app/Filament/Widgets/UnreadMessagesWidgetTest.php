@@ -31,34 +31,38 @@ beforeEach(function () {
     $this->actingAs($this->adminUser);
 });
 
-it('displays the correct number of unread messages', function () {
-    Message::factory()->count(3)->create(['read' => false]);
-    Message::factory()->count(2)->create(['read' => true]);
+describe('widget display', function () {
+    it('displays the correct number of unread messages', function () {
+        Message::factory()->count(3)->create(['read' => false]);
+        Message::factory()->count(2)->create(['read' => true]);
 
-    livewire(UnreadMessagesWidget::class)
-        ->assertOk()
-        ->assertSee('3');
+        livewire(UnreadMessagesWidget::class)
+            ->assertOk()
+            ->assertSee('3');
+    });
+
+    it('links to the messages list with the unread filter active and the archived filter disabled', function () {
+        Message::factory()->count(2)->create(['read' => false]);
+
+        $expectedUrl = MessageResource::getUrl('index', [
+            'filters' => [
+                'isUnRead' => ['isActive' => true],
+                'isArchived' => ['isArchived' => false],
+                'trashed' => ['value' => 1],
+            ],
+        ]);
+
+        livewire(UnreadMessagesWidget::class)
+            ->assertSee($expectedUrl);
+    });
 });
 
-it('links to the messages list with the unread filter active and the archived filter disabled', function () {
-    Message::factory()->count(2)->create(['read' => false]);
+describe('color logic', function () {
+    it('sets the color to primary when there are unread messages', function () {
+        expect(UnreadMessagesWidget::getStatColor(1))->toBe('primary');
+    });
 
-    $expectedUrl = MessageResource::getUrl('index', [
-        'filters' => [
-            'isUnRead' => ['isActive' => true],
-            'isArchived' => ['isArchived' => false],
-            'trashed' => ['value' => 1],
-        ],
-    ]);
-
-    livewire(UnreadMessagesWidget::class)
-        ->assertSee($expectedUrl);
-});
-
-it('sets the color to primary when there are unread messages', function () {
-    expect(UnreadMessagesWidget::getStatColor(1))->toBe('primary');
-});
-
-it('sets the color to success when there are no unread messages', function () {
-    expect(UnreadMessagesWidget::getStatColor(0))->toBe('success');
+    it('sets the color to success when there are no unread messages', function () {
+        expect(UnreadMessagesWidget::getStatColor(0))->toBe('success');
+    });
 });

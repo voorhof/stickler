@@ -1,63 +1,61 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', $user?->locale ?? 'nl_BE') }}" data-theme="auto">
 <head>
-    <meta charset="utf-8">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta charset="utf-8" />
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
     @stack('scripts-head-top')
     <script>
         {{-- Set the initial theme before main app.js loads to prevent a flash of the wrong theme on page load/navigation. --}}
         (() => {
-            let storedTheme = null
+            let storedTheme = null;
 
             try {
-                storedTheme = localStorage.getItem('color-scheme-theme')
+                storedTheme = localStorage.getItem('color-scheme-theme');
             } catch {
-                console.error('Failed to retrieve stored theme from localStorage.')
+                console.error('Failed to retrieve stored theme from localStorage.');
             }
 
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-            const theme = !storedTheme || storedTheme === 'auto' || storedTheme === 'system'
-                ? (prefersDark ? 'dark' : 'light')
-                : storedTheme
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme =
+                !storedTheme || storedTheme === 'auto' || storedTheme === 'system'
+                    ? prefersDark
+                        ? 'dark'
+                        : 'light'
+                    : storedTheme;
 
-            document.documentElement.setAttribute('data-theme', theme)
-        })()
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
     </script>
     {{-- Laravel HeadServiceProvider  --}}
     @head
     {{-- Styles / Scripts --}}
     @fonts
-    @if(file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
+    @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
         @vite(['resources/scss/app.scss', 'resources/js/app.js'])
     @endif
     @stack('scripts-head-bottom')
 </head>
 <body>
-@stack('scripts-body-top')
+    @stack('scripts-body-top')
 
-<a href="#main"
-   class="btn btn-secondary btn-skip">
-    {{ __('Skip to main content') }}
-</a>
+    <a href="#main" class="btn btn-secondary btn-skip"> {{ __('Skip to main content') }} </a>
 
-<div id="app">
-    <x-navbar />
+    <div id="app">
+        <x-navbar />
 
-    <x-offcanvas />
+        <x-offcanvas />
 
-    <x-header />
+        <x-header />
 
-    <main id="main">
-        {{ $slot }}
-    </main>
+        <main id="main">{{ $slot }}</main>
 
-    <x-footer />
-</div>
+        <x-footer />
+    </div>
 
-<x-footer-pietje />
+    <x-footer-pietje />
 
-@include('cookie-consent::index')
-@stack('modals-bottom')
-@stack('scripts-body-bottom')
+    @include('cookie-consent::index')
+    @stack('modals-bottom')
+    @stack('scripts-body-bottom')
 </body>
 </html>

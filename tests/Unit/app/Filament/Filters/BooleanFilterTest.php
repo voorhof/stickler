@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 use App\Filament\Filters\BooleanFilter;
 use App\Models\Permission;
 use App\Models\Role;
@@ -25,15 +27,17 @@ beforeEach(function () {
     $this->actingAs($this->adminUser);
 });
 
-it('has no default name', function () {
-    $filter = BooleanFilter::make('test');
+describe('filter creation', function () {
+    it('has no default name', function () {
+        $filter = BooleanFilter::make('test');
 
-    expect($filter->getName())->toBe('test');
-});
+        expect($filter->getName())->toBe('test');
+    });
 
-it('can set the operator via fluent method', function () {
-    $filter = BooleanFilter::make('test')
-        ->operator(false);
+    it('can set the operator via fluent method', function () {
+        $filter = BooleanFilter::make('test')
+            ->operator(false);
 
-    expect($filter)->toBeInstanceOf(BooleanFilter::class);
+        expect($filter)->toBeInstanceOf(BooleanFilter::class);
+    });
 });

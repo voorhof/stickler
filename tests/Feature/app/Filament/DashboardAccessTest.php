@@ -1,7 +1,5 @@
 <?php
 
-/** @noinspection PhpUndefinedMethodInspection */
-
 use App\Filament\Pages\Dashboard;
 use App\Models\Permission;
 use App\Models\Role;
@@ -26,67 +24,71 @@ beforeEach(function () {
     $adminRole->givePermissionTo($accessAdminPermission);
 });
 
-it('redirects guest users to the login page', function () {
-    get('/admin')
-        ->assertRedirect('/admin/login');
+describe('authentication', function () {
+    test('it redirects guest users to the login page', function () {
+        get('/admin')
+            ->assertRedirect('/admin/login');
+    });
+
+    test('it can load the login page', function () {
+        get('/admin/login')
+            ->assertSuccessful()
+            ->assertSeeLivewire(Login::class);
+    });
+
+    test('it can login through the admin panel login page', function () {
+        $adminUser = User::factory()->create(['password' => 'password']);
+        $adminUser->assignRole('Admin');
+
+        livewire(Login::class)
+            ->fillForm([
+                'email' => $adminUser->email,
+                'password' => 'password',
+            ])
+            ->call('authenticate')
+            ->assertRedirect('/admin');
+
+        assertAuthenticated();
+    });
+
+    test('it can logout of the admin panel', function () {
+        $adminUser = User::factory()->create();
+        $adminUser->assignRole('Admin');
+
+        actingAs($adminUser)
+            ->post('/admin/logout')
+            ->assertRedirect('/admin/login');
+
+        assertGuest();
+    });
 });
 
-it('can load the login page', function () {
-    get('/admin/login')
-        ->assertSuccessful()
-        ->assertSeeLivewire(Login::class);
-});
+describe('dashboard access', function () {
+    test('it grants dashboard access to users with admin panel permission when authenticated', function () {
+        $adminUser = User::factory()->create();
+        $adminUser->assignRole('Admin');
 
-it('can login through the admin panel login page', function () {
-    $adminUser = User::factory()->create(['password' => 'password']);
-    $adminUser->assignRole('Admin');
+        $this->actingAs($adminUser)
+            ->get('/admin')
+            ->assertSuccessful()
+            ->assertSeeLivewire(Dashboard::class);
+    });
 
-    livewire(Login::class)
-        ->fillForm([
-            'email' => $adminUser->email,
-            'password' => 'password',
-        ])
-        ->call('authenticate')
-        ->assertRedirect('/admin');
+    test('it redirects unverified users to the email verification prompt', function () {
+        $adminUser = User::factory()->unverified()->create();
+        $adminUser->assignRole('Admin');
 
-    assertAuthenticated();
-});
+        $this->actingAs($adminUser)
+            ->get('/admin')
+            ->assertRedirect('/admin/email-verification/prompt');
+    });
 
-it('can logout of the admin panel', function () {
-    $adminUser = User::factory()->create();
-    $adminUser->assignRole('Admin');
+    test('it denies dashboard access to users without admin panel permission', function () {
+        $noAdminUser = User::factory()->create();
+        $noAdminUser->assignRole('No admin');
 
-    actingAs($adminUser)
-        ->post('/admin/logout')
-        ->assertRedirect('/admin/login');
-
-    assertGuest();
-});
-
-it('grants dashboard access to users with admin panel permission when authenticated', function () {
-    $adminUser = User::factory()->create();
-    $adminUser->assignRole('Admin');
-
-    $this->actingAs($adminUser)
-        ->get('/admin')
-        ->assertSuccessful()
-        ->assertSeeLivewire(Dashboard::class);
-});
-
-it('redirects unverified users to the email verification prompt', function () {
-    $adminUser = User::factory()->unverified()->create();
-    $adminUser->assignRole('Admin');
-
-    $this->actingAs($adminUser)
-        ->get('/admin')
-        ->assertRedirect('/admin/email-verification/prompt');
-});
-
-it('denies dashboard access to users without admin panel permission', function () {
-    $noAdminUser = User::factory()->create();
-    $noAdminUser->assignRole('No admin');
-
-    $this->actingAs($noAdminUser)
-        ->get('/admin')
-        ->assertForbidden();
+        $this->actingAs($noAdminUser)
+            ->get('/admin')
+            ->assertForbidden();
+    });
 });

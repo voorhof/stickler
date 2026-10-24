@@ -1,8 +1,12 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 use App\Filament\Actions\HardDeleteBulkAction;
 
-it('has the correct default name', function () {
-    $action = HardDeleteBulkAction::make();
-    expect($action->getName())->toBe('hardDeleteBulk');
+describe('action configuration', function () {
+    it('has the correct default name', function () {
+        $action = HardDeleteBulkAction::make();
+        expect($action->getName())->toBe('hardDeleteBulk');
+    });
 });

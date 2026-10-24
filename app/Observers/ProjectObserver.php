@@ -4,35 +4,13 @@ namespace App\Observers;
 
 use App\Models\Project;
 use App\Observers\Traits\SyncsRichContentImageAltText;
+use App\Observers\Traits\TracksCreatorAndUpdaterObserver;
 use Exception;
-use Illuminate\Support\Facades\Auth;
 
 class ProjectObserver
 {
     use SyncsRichContentImageAltText;
-
-    /**
-     * Handle the Project "creating" event.
-     * Sets the creator and initial updater to the authenticated user.
-     */
-    public function creating(Project $project): void
-    {
-        if (Auth::check()) {
-            $project->created_by_user_id = Auth::id();
-            $project->updated_by_user_id = Auth::id();
-        }
-    }
-
-    /**
-     * Handle the Project "updating" event.
-     * Updates the updater to the current authenticated user.
-     */
-    public function updating(Project $project): void
-    {
-        if (Auth::check()) {
-            $project->updated_by_user_id = Auth::id();
-        }
-    }
+    use TracksCreatorAndUpdaterObserver;
 
     /**
      * Copy each rich-content image's `alt` text into the `name`

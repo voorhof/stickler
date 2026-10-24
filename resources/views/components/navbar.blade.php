@@ -1,16 +1,17 @@
 <nav class="c-navbar navbar">
     <div class="container-xl">
-        <a class="navbar-brand js-home-link"
-           href="{{ route('welcome.index') }}">
+        <a class="navbar-brand js-home-link" href="{{ route('welcome.index') }}">
             <x-logo />
         </a>
 
-        <button class="navbar-toggler"
-                type="button"
-                data-toggle="offcanvas"
-                data-target="#offcanvasNav"
-                aria-controls="offcanvasNav"
-                aria-label="Toggle offcanvas navigation">
+        <button
+            class="navbar-toggler"
+            type="button"
+            data-toggle="offcanvas"
+            data-target="#offcanvasNav"
+            aria-controls="offcanvasNav"
+            aria-label="Toggle offcanvas navigation"
+        >
             <span class="navbar-toggler-icon"></span>
         </button>
     </div>

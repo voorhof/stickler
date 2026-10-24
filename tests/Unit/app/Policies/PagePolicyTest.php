@@ -8,156 +8,24 @@ beforeEach(function () {
     $this->policy = new PagePolicy;
 });
 
-test('viewAny allows users with view pages permission', function () {
+test('page policy delegates all methods to base policy', function () {
     Permission::create(['name' => 'view pages']);
-    $user = User::factory()->create();
-    $user->givePermissionTo('view pages');
-
-    expect($this->policy->viewAny($user))->toBeTrue();
-});
-
-test('viewAny forbids users without view pages permission', function () {
-    $user = User::factory()->create();
-
-    expect($this->policy->viewAny($user))->toBeFalse();
-});
-
-test('view allows users with view pages permission', function () {
-    Permission::create(['name' => 'view pages']);
-    $user = User::factory()->create();
-    $user->givePermissionTo('view pages');
-
-    expect($this->policy->view($user))->toBeTrue();
-});
-
-test('view forbids users without view pages permission', function () {
-    $user = User::factory()->create();
-
-    expect($this->policy->view($user))->toBeFalse();
-});
-
-test('create allows users with create pages permission', function () {
     Permission::create(['name' => 'create pages']);
-    $user = User::factory()->create();
-    $user->givePermissionTo('create pages');
-
-    expect($this->policy->create($user))->toBeTrue();
-});
-
-test('create forbids users without create pages permission', function () {
-    $user = User::factory()->create();
-
-    expect($this->policy->create($user))->toBeFalse();
-});
-
-test('update allows users with update pages permission', function () {
     Permission::create(['name' => 'update pages']);
-    $user = User::factory()->create();
-    $user->givePermissionTo('update pages');
-
-    expect($this->policy->update($user))->toBeTrue();
-});
-
-test('update forbids users without update pages permission', function () {
-    $user = User::factory()->create();
-
-    expect($this->policy->update($user))->toBeFalse();
-});
-
-test('reorder allows users with update pages permission', function () {
-    Permission::create(['name' => 'update pages']);
-    $user = User::factory()->create();
-    $user->givePermissionTo('update pages');
-
-    expect($this->policy->reorder($user))->toBeTrue();
-});
-
-test('reorder forbids users without update pages permission', function () {
-    $user = User::factory()->create();
-
-    expect($this->policy->reorder($user))->toBeFalse();
-});
-
-test('deleteAny allows users with delete pages permission', function () {
     Permission::create(['name' => 'delete pages']);
+
     $user = User::factory()->create();
-    $user->givePermissionTo('delete pages');
+    $user->givePermissionTo('view pages', 'create pages', 'update pages', 'delete pages');
 
-    expect($this->policy->deleteAny($user))->toBeTrue();
-});
-
-test('deleteAny forbids users without delete pages permission', function () {
-    $user = User::factory()->create();
-
-    expect($this->policy->deleteAny($user))->toBeFalse();
-});
-
-test('delete delegates to deleteAny and allows users with delete pages permission', function () {
-    Permission::create(['name' => 'delete pages']);
-    $user = User::factory()->create();
-    $user->givePermissionTo('delete pages');
-
-    expect($this->policy->delete($user))->toBeTrue();
-});
-
-test('delete delegates to deleteAny and forbids users without delete pages permission', function () {
-    $user = User::factory()->create();
-
-    expect($this->policy->delete($user))->toBeFalse();
-});
-
-test('restoreAny delegates to deleteAny and allows users with delete pages permission', function () {
-    Permission::create(['name' => 'delete pages']);
-    $user = User::factory()->create();
-    $user->givePermissionTo('delete pages');
-
-    expect($this->policy->restoreAny($user))->toBeTrue();
-});
-
-test('restoreAny forbids users without delete pages permission', function () {
-    $user = User::factory()->create();
-
-    expect($this->policy->restoreAny($user))->toBeFalse();
-});
-
-test('restore delegates to delete and allows users with delete pages permission', function () {
-    Permission::create(['name' => 'delete pages']);
-    $user = User::factory()->create();
-    $user->givePermissionTo('delete pages');
-
-    expect($this->policy->restore($user))->toBeTrue();
-});
-
-test('restore forbids users without delete pages permission', function () {
-    $user = User::factory()->create();
-
-    expect($this->policy->restore($user))->toBeFalse();
-});
-
-test('forceDeleteAny delegates to deleteAny and allows users with delete pages permission', function () {
-    Permission::create(['name' => 'delete pages']);
-    $user = User::factory()->create();
-    $user->givePermissionTo('delete pages');
-
-    expect($this->policy->forceDeleteAny($user))->toBeTrue();
-});
-
-test('forceDeleteAny forbids users without delete pages permission', function () {
-    $user = User::factory()->create();
-
-    expect($this->policy->forceDeleteAny($user))->toBeFalse();
-});
-
-test('forceDelete delegates to delete and allows users with delete pages permission', function () {
-    Permission::create(['name' => 'delete pages']);
-    $user = User::factory()->create();
-    $user->givePermissionTo('delete pages');
-
-    expect($this->policy->forceDelete($user))->toBeTrue();
-});
-
-test('forceDelete forbids users without delete pages permission', function () {
-    $user = User::factory()->create();
-
-    expect($this->policy->forceDelete($user))->toBeFalse();
+    expect($this->policy->viewAny($user))->toBeTrue()
+        ->and($this->policy->view($user))->toBeTrue()
+        ->and($this->policy->create($user))->toBeTrue()
+        ->and($this->policy->update($user))->toBeTrue()
+        ->and($this->policy->reorder($user))->toBeTrue()
+        ->and($this->policy->deleteAny($user))->toBeTrue()
+        ->and($this->policy->delete($user))->toBeTrue()
+        ->and($this->policy->restoreAny($user))->toBeTrue()
+        ->and($this->policy->restore($user))->toBeTrue()
+        ->and($this->policy->forceDeleteAny($user))->toBeTrue()
+        ->and($this->policy->forceDelete($user))->toBeTrue();
 });

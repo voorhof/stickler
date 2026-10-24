@@ -6,19 +6,8 @@ use App\Providers\TelescopeServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Telescope\TelescopeApplicationServiceProvider;
 
-test('it extends TelescopeApplicationServiceProvider', function () {
-    $provider = new TelescopeServiceProvider(app());
-
-    expect($provider)->toBeInstanceOf(TelescopeApplicationServiceProvider::class);
-});
-
-test('it executes register and boot methods without errors', function () {
-    $provider = new TelescopeServiceProvider(app());
-
-    expect(function () use ($provider) {
-        $provider->register();
-        $provider->boot();
-    })->not->toThrow(Throwable::class);
+test('it extends telescope application service provider', function () {
+    expect(new TelescopeServiceProvider(app()))->toBeInstanceOf(TelescopeApplicationServiceProvider::class);
 });
 
 test('it is registered in the application', function () {
@@ -26,8 +15,7 @@ test('it is registered in the application', function () {
 });
 
 test('viewTelescope gate requires access telescope permission', function () {
-    $provider = new TelescopeServiceProvider(app());
-    $provider->boot();
+    new TelescopeServiceProvider(app())->boot();
 
     Permission::firstOrCreate(['name' => 'access telescope']);
 

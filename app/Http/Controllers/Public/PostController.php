@@ -16,7 +16,7 @@ class PostController extends Controller
         $posts = Post::where('published_at', '<=', now())
             ->with('media')
             ->orderBy('order_column', 'asc')
-            ->get();
+            ->paginate(6);
 
         Head::title(__('Blogposts'))
             ->description(__('Blogposts').' '.config('app.name'));

@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasStandardActivitylogOptions;
 use Database\Factories\PermissionFactory;
 use DateTime;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
-use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Permission\Models\Permission as SpatiePermission;
 
 /**
@@ -27,6 +27,9 @@ class Permission extends SpatiePermission
     /** @use HasFactory<PermissionFactory> */
     use HasFactory;
 
+    use HasStandardActivitylogOptions {
+        HasStandardActivitylogOptions::getActivitylogOptions insteadof LogsActivity;
+    }
     use LogsActivity;
 
     /*
@@ -44,23 +47,5 @@ class Permission extends SpatiePermission
         return Attribute::make(
             get: fn () => "$this->name",
         )->shouldCache();
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Spatie Activitylog
-    |--------------------------------------------------------------------------
-    */
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logFillable()
-            ->logOnlyDirty()
-            ->dontLogEmptyChanges()
-            ->dontLogIfAttributesChangedOnly([
-                'updated_at',
-            ])
-            ->setDescriptionForEvent(fn (string $eventName) => __('This item has been :event', ['event' => __($eventName)]));
     }
 }

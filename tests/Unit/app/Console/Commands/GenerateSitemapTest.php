@@ -6,30 +6,34 @@ use Illuminate\Support\Facades\Storage;
 use Spatie\Sitemap\Sitemap;
 use Spatie\Sitemap\SitemapGenerator;
 
-test('it extends command', function () {
-    $command = new GenerateSitemap;
+describe('class structure', function () {
+    test('it extends command', function () {
+        $command = new GenerateSitemap;
 
-    expect($command)->toBeInstanceOf(Command::class);
+        expect($command)->toBeInstanceOf(Command::class);
+    });
+
+    test('it has correct signature and description', function () {
+        $command = new GenerateSitemap;
+
+        expect($command->getName())->toBe('sitemap:generate')
+            ->and($command->getDescription())->toBe('Generate the sitemap.');
+    });
 });
 
-test('it has correct signature and description', function () {
-    $command = new GenerateSitemap;
+describe('command execution', function () {
+    test('it executes the command successfully and generates sitemap file', function () {
+        Storage::fake('public');
 
-    expect($command->getName())->toBe('sitemap:generate')
-        ->and($command->getDescription())->toBe('Generate the sitemap.');
-});
+        $sitemapGenerator = Mockery::mock(SitemapGenerator::class);
+        $sitemapGenerator->shouldReceive('setUrl')->andReturnSelf();
+        $sitemapGenerator->shouldReceive('getSitemap')->andReturn(new Sitemap);
+        $this->app->instance(SitemapGenerator::class, $sitemapGenerator);
 
-test('it executes the command successfully and generates sitemap file', function () {
-    Storage::fake('public');
+        $this->artisan('sitemap:generate')
+            ->expectsOutput('Sitemap generated!')
+            ->assertSuccessful();
 
-    $sitemapGenerator = Mockery::mock(SitemapGenerator::class);
-    $sitemapGenerator->shouldReceive('setUrl')->andReturnSelf();
-    $sitemapGenerator->shouldReceive('getSitemap')->andReturn(new Sitemap);
-    $this->app->instance(SitemapGenerator::class, $sitemapGenerator);
-
-    $this->artisan('sitemap:generate')
-        ->expectsOutput('Sitemap generated!')
-        ->assertSuccessful();
-
-    Storage::disk('public')->assertExists('sitemap.xml');
+        Storage::disk('public')->assertExists('sitemap.xml');
+    });
 });

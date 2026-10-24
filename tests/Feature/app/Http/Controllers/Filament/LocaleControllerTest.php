@@ -19,33 +19,35 @@ beforeEach(function () {
     $adminRole->givePermissionTo('access admin');
 });
 
-test('it updates locale successfully when authenticated and locale is supported', function () {
-    $user = User::factory()->create(['locale' => 'en_US']);
-    $user->assignRole('Admin');
-    $this->actingAs($user);
+describe('locale updates', function () {
+    test('it updates locale successfully when authenticated and locale is supported', function () {
+        $user = User::factory()->create(['locale' => 'en_US']);
+        $user->assignRole('Admin');
+        $this->actingAs($user);
 
-    $response = $this->get(route('filament.admin.locale.update', ['locale' => 'nl_BE']));
+        $response = $this->get(route('filament.admin.locale.update', ['locale' => 'nl_BE']));
 
-    $response->assertRedirect();
-    expect($user->fresh()->locale)->toBe('nl_BE')
-        ->and(app()->getLocale())->toBe('nl');
-});
+        $response->assertRedirect();
+        expect($user->fresh()->locale)->toBe('nl_BE')
+            ->and(app()->getLocale())->toBe('nl');
+    });
 
-test('it returns 404 when locale is unsupported', function () {
-    $user = User::factory()->create();
-    $user->assignRole('Admin');
-    $this->actingAs($user);
+    test('it returns 404 when locale is unsupported', function () {
+        $user = User::factory()->create();
+        $user->assignRole('Admin');
+        $this->actingAs($user);
 
-    $response = $this->get(route('filament.admin.locale.update', ['locale' => 'fr_FR']));
+        $response = $this->get(route('filament.admin.locale.update', ['locale' => 'fr_FR']));
 
-    $response->assertStatus(404);
-});
+        $response->assertStatus(404);
+    });
 
-test('it aborts 403 when unauthenticated in controller', function () {
-    $request = Request::create('/admin/locale/nl_BE');
-    $controller = new LocaleController;
+    test('it aborts 403 when unauthenticated in controller', function () {
+        $request = Request::create('/admin/locale/nl_BE');
+        $controller = new LocaleController;
 
-    $this->expectException(HttpException::class);
+        $this->expectException(HttpException::class);
 
-    $controller->update($request, 'nl_BE');
+        $controller->update($request, 'nl_BE');
+    });
 });

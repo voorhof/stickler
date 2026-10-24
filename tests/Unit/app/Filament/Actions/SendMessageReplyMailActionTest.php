@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 use App\Filament\Actions\SendMessageReplyMailAction;
 use App\Filament\Resources\Messages\Pages\EditMessage;
 use App\Mail\ContactMessageReply;
@@ -33,37 +35,43 @@ beforeEach(function () {
     $this->actingAs($adminUser);
 });
 
-it('has the correct default name', function () {
-    $action = SendMessageReplyMailAction::make();
-    expect($action->getName())->toBe('sendMessageReply');
+describe('action configuration', function () {
+    it('has the correct default name', function () {
+        $action = SendMessageReplyMailAction::make();
+        expect($action->getName())->toBe('sendMessageReply');
+    });
 });
 
-it('is hidden if the record does not have a reply', function () {
-    $action = SendMessageReplyMailAction::make();
-    $message = Message::factory()->create(['reply' => null]);
+describe('visibility', function () {
+    it('is hidden if the record does not have a reply', function () {
+        $action = SendMessageReplyMailAction::make();
+        $message = Message::factory()->create(['reply' => null]);
 
-    $action->record($message);
+        $action->record($message);
 
-    expect($action->isHidden())->toBeTrue();
+        expect($action->isHidden())->toBeTrue();
+    });
+
+    it('is not hidden if the record has a reply', function () {
+        $action = SendMessageReplyMailAction::make();
+        $message = Message::factory()->create(['reply' => 'reply text']);
+
+        $action->record($message);
+
+        expect($action->isHidden())->toBeFalse();
+    });
 });
 
-it('is not hidden if the record has a reply', function () {
-    $action = SendMessageReplyMailAction::make();
-    $message = Message::factory()->create(['reply' => 'reply text']);
+describe('action execution', function () {
+    it('sends the reply email and notifies the user', function () {
+        Mail::fake();
 
-    $action->record($message);
+        $message = Message::factory()->create(['reply' => 'reply text']);
 
-    expect($action->isHidden())->toBeFalse();
-});
+        livewire(EditMessage::class, ['record' => $message->getRouteKey()])
+            ->callAction(TestAction::make('sendMessageReply')->schemaComponent())
+            ->assertNotified();
 
-it('sends the reply email and notifies the user', function () {
-    Mail::fake();
-
-    $message = Message::factory()->create(['reply' => 'reply text']);
-
-    livewire(EditMessage::class, ['record' => $message->getRouteKey()])
-        ->callAction(TestAction::make('sendMessageReply')->schemaComponent())
-        ->assertNotified();
-
-    Mail::assertQueued(ContactMessageReply::class, fn (ContactMessageReply $mail): bool => $mail->hasTo($message->email));
+        Mail::assertQueued(ContactMessageReply::class, fn (ContactMessageReply $mail): bool => $mail->hasTo($message->email));
+    });
 });

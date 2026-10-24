@@ -97,6 +97,9 @@ class AdminUserAndRoleSeeder extends Seeder
         Permission::create(['name' => 'view activities']);
         Permission::create(['name' => 'delete activities']);
 
+        Permission::create(['name' => 'view pageviews']);
+        Permission::create(['name' => 'delete pageviews']);
+
         // Update the cache to know about the newly created permissions (required if using WithoutModelEvents in seeders)
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 

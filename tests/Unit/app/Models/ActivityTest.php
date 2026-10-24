@@ -1,7 +1,5 @@
 <?php
 
-/** @noinspection PhpPossiblePolymorphicInvocationInspection */
-
 use App\Models\Activity;
 use App\Models\Post;
 use App\Models\User;

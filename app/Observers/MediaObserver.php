@@ -4,34 +4,13 @@ namespace App\Observers;
 
 use App\Actions\RichContent\RemoveImageFromRichContent;
 use App\Models\Media;
+use App\Observers\Traits\TracksCreatorAndUpdaterObserver;
 use Exception;
-use Illuminate\Support\Facades\Auth;
 use Spatie\MediaLibrary\HasMedia;
 
 class MediaObserver
 {
-    /**
-     * Handle the Media "creating" event.
-     * Sets the creator and initial updater to the authenticated user.
-     */
-    public function creating(Media $media): void
-    {
-        if (Auth::check()) {
-            $media->created_by_user_id = Auth::id();
-            $media->updated_by_user_id = Auth::id();
-        }
-    }
-
-    /**
-     * Handle the Media "updating" event.
-     * Updates the updater to the current authenticated user.
-     */
-    public function updating(Media $media): void
-    {
-        if (Auth::check()) {
-            $media->updated_by_user_id = Auth::id();
-        }
-    }
+    use TracksCreatorAndUpdaterObserver;
 
     /**
      * Handle the Media "deleted" event.

@@ -10,96 +10,96 @@ Provides upload-localization compatibility for FilePond in multi-regional setups
             en_us: 'en',
             en_uk: 'en',
             en_gb: 'en',
-        }
+        };
 
         const normalizeLocale = (locale) => {
             if (typeof locale !== 'string') {
-                return null
+                return null;
             }
 
-            return locale.replace('-', '_').toLowerCase()
-        }
+            return locale.replace('-', '_').toLowerCase();
+        };
 
         const resolveLocaleAlias = (locale) => {
-            const normalizedLocale = normalizeLocale(locale)
+            const normalizedLocale = normalizeLocale(locale);
 
-            return normalizedLocale ? localeAliases[normalizedLocale] ?? null : null
-        }
+            return normalizedLocale ? (localeAliases[normalizedLocale] ?? null) : null;
+        };
 
         const wrapFileUploadFactory = (factory) => {
             if (typeof factory !== 'function') {
-                return factory
+                return factory;
             }
 
             if (factory.__hasFileUploadLocaleAliasWrapper) {
-                return factory
+                return factory;
             }
 
             const wrappedFactory = (config = {}) => {
-                const localeAlias = resolveLocaleAlias(config.locale)
+                const localeAlias = resolveLocaleAlias(config.locale);
 
                 if (localeAlias) {
-                    config.locale = localeAlias
+                    config.locale = localeAlias;
                 }
 
-                return factory(config)
-            }
+                return factory(config);
+            };
 
-            wrappedFactory.__hasFileUploadLocaleAliasWrapper = true
+            wrappedFactory.__hasFileUploadLocaleAliasWrapper = true;
 
-            return wrappedFactory
-        }
+            return wrappedFactory;
+        };
 
         const wrapAlpineData = (alpineData) => {
             if (typeof alpineData !== 'function') {
-                return alpineData
+                return alpineData;
             }
 
             if (alpineData.__hasFileUploadLocaleAliasWrapper) {
-                return alpineData
+                return alpineData;
             }
 
             const wrappedData = function (name, callback) {
                 if (name === 'fileUploadFormComponent' && typeof callback === 'function') {
-                    return alpineData.call(this, name, wrapFileUploadFactory(callback))
+                    return alpineData.call(this, name, wrapFileUploadFactory(callback));
                 }
 
-                return alpineData.call(this, name, callback)
-            }
+                return alpineData.call(this, name, callback);
+            };
 
-            wrappedData.__hasFileUploadLocaleAliasWrapper = true
+            wrappedData.__hasFileUploadLocaleAliasWrapper = true;
 
-            return wrappedData
-        }
+            return wrappedData;
+        };
 
         const installWrapper = () => {
             if (typeof window.Alpine?.data === 'function') {
-                window.Alpine.data = wrapAlpineData(window.Alpine.data)
+                window.Alpine.data = wrapAlpineData(window.Alpine.data);
 
-                return true
+                return true;
             }
 
-            return false
-        }
+            return false;
+        };
 
         if (installWrapper()) {
-            return
+            return;
         }
 
-        let alpineInstance = null
+        let alpineInstance = null;
 
         Object.defineProperty(window, 'Alpine', {
             configurable: true,
             get: () => alpineInstance,
             set: (value) => {
-                alpineInstance = value
+                alpineInstance = value;
 
                 if (typeof value?.data === 'function') {
-                    value.data = wrapAlpineData(value.data)
+                    value.data = wrapAlpineData(value.data);
                 }
             },
-        })
+        });
 
-        document.addEventListener('livewire:navigated', installWrapper)
-    })()
+        document.addEventListener('livewire:navigated', installWrapper);
+    })();
 </script>

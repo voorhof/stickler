@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 use App\Filament\Actions\Laravel\OptimizeClearAction;
 use App\Models\Permission;
 use App\Models\Role;
@@ -32,32 +34,36 @@ beforeEach(function () {
     $this->actingAs($this->adminUser);
 });
 
-it('has the correct default name', function () {
-    $action = OptimizeClearAction::make();
-    expect($action->getName())->toBe('optimizeClear');
+describe('action configuration', function () {
+    it('has the correct default name', function () {
+        $action = OptimizeClearAction::make();
+        expect($action->getName())->toBe('optimizeClear');
+    });
 });
 
-it('can call the optimizeClear action', function () {
-    Artisan::shouldReceive('call')->with('optimize:clear')->once();
+describe('action execution', function () {
+    it('can call the optimizeClear action', function () {
+        Artisan::shouldReceive('call')->with('optimize:clear')->once();
 
-    $page = new class extends Page
-    {
-        public function render(): View
+        $page = new class extends Page
         {
-            $checkResults = app(ResultStore::class)->latestResults();
+            public function render(): View
+            {
+                $checkResults = app(ResultStore::class)->latestResults();
 
-            return view('filament.pages.spatie.health', ['checkResults' => $checkResults]);
-        }
+                return view('filament.pages.spatie.health', ['checkResults' => $checkResults]);
+            }
 
-        public function getHeaderActions(): array
-        {
-            return [
-                OptimizeClearAction::make(),
-            ];
-        }
-    };
+            public function getHeaderActions(): array
+            {
+                return [
+                    OptimizeClearAction::make(),
+                ];
+            }
+        };
 
-    livewire($page::class)
-        ->callAction('optimizeClear')
-        ->assertNotified();
+        livewire($page::class)
+            ->callAction('optimizeClear')
+            ->assertNotified();
+    });
 });

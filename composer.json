@@ -25,6 +25,8 @@
         "filament/spatie-laravel-media-library-plugin": "^5.10",
         "filament/spatie-laravel-settings-plugin": "^5.10",
         "filament/spatie-laravel-tags-plugin": "^5.10",
+        "jaybizzle/crawler-detect": "^1.4",
+        "laboiteacode/filament-business-hours": "^1.0",
         "laravel/framework": "^13.38",
         "laravel/head": "^0.2.2",
         "laravel/telescope": "^5.26",
@@ -46,6 +48,7 @@
         "spatie/laravel-sitemap": "^8.2",
         "spatie/laravel-sluggable": "^4.0",
         "spatie/laravel-tags": "^4.12",
+        "spatie/opening-hours": "^4.2",
         "spatie/pdf-to-image": "^3.5",
         "spatie/security-advisories-health-check": "^1.3"
     },

@@ -14,6 +14,8 @@ class PageObserver
     /**
      * Handle the Page "creating" event.
      * Sets the creator and initial updater to the authenticated user.
+     *
+     * @throws Exception
      */
     public function creating(Page $page): void
     {
@@ -32,6 +34,8 @@ class PageObserver
     /**
      * Handle the Page "updating" event.
      * Updates the updater to the current authenticated user.
+     *
+     * @throws Exception
      */
     public function updating(Page $page): void
     {

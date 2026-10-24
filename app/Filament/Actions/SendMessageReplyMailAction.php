@@ -51,6 +51,13 @@ class SendMessageReplyMailAction extends Action
             // Send mail with temporary password to the user
             Mail::queue(new ContactMessageReply($message));
 
+            // Log an activity that the message has been replied to
+            activity()
+                ->performedOn($message)
+                ->event('updated')
+                ->withProperties(['message' => $message])
+                ->log(__('This item has been :event', ['event' => mb_strtolower(__('Replied'))]));
+
             // Create notification
             Notification::make()
                 ->title(__('Send email'))

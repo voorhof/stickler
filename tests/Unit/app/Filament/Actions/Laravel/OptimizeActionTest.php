@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 use App\Filament\Actions\Laravel\OptimizeAction;
 use App\Models\Permission;
 use App\Models\Role;
@@ -32,32 +34,36 @@ beforeEach(function () {
     $this->actingAs($this->adminUser);
 });
 
-it('has the correct default name', function () {
-    $action = OptimizeAction::make();
-    expect($action->getName())->toBe('optimize');
+describe('action configuration', function () {
+    it('has the correct default name', function () {
+        $action = OptimizeAction::make();
+        expect($action->getName())->toBe('optimize');
+    });
 });
 
-it('can call the optimize action', function () {
-    Artisan::shouldReceive('call')->with('optimize')->once();
+describe('action execution', function () {
+    it('can call the optimize action', function () {
+        Artisan::shouldReceive('call')->with('optimize')->once();
 
-    $page = new class extends Page
-    {
-        public function render(): View
+        $page = new class extends Page
         {
-            $checkResults = app(ResultStore::class)->latestResults();
+            public function render(): View
+            {
+                $checkResults = app(ResultStore::class)->latestResults();
 
-            return view('filament.pages.spatie.health', ['checkResults' => $checkResults]);
-        }
+                return view('filament.pages.spatie.health', ['checkResults' => $checkResults]);
+            }
 
-        public function getHeaderActions(): array
-        {
-            return [
-                OptimizeAction::make(),
-            ];
-        }
-    };
+            public function getHeaderActions(): array
+            {
+                return [
+                    OptimizeAction::make(),
+                ];
+            }
+        };
 
-    livewire($page::class)
-        ->callAction('optimize')
-        ->assertNotified();
+        livewire($page::class)
+            ->callAction('optimize')
+            ->assertNotified();
+    });
 });

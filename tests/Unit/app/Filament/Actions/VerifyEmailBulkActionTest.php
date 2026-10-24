@@ -31,22 +31,26 @@ beforeEach(function () {
     $this->actingAs($this->adminUser);
 });
 
-it('has the correct default name', function () {
-    $action = VerifyEmailBulkAction::make();
+describe('action configuration', function () {
+    it('has the correct default name', function () {
+        $action = VerifyEmailBulkAction::make();
 
-    expect($action->getName())->toBe('verifyEmailBulk');
+        expect($action->getName())->toBe('verifyEmailBulk');
+    });
 });
 
-it('verifies selected users by setting email_verified_at', function () {
-    $users = User::factory()->count(2)->create(['email_verified_at' => null]);
+describe('action execution', function () {
+    it('verifies selected users by setting email_verified_at', function () {
+        $users = User::factory()->count(2)->create(['email_verified_at' => null]);
 
-    livewire(ListUsers::class)
-        ->callTableBulkAction('verifyEmailBulk', $users)
-        ->assertNotified();
+        livewire(ListUsers::class)
+            ->callTableBulkAction('verifyEmailBulk', $users)
+            ->assertNotified();
 
-    foreach ($users as $user) {
-        $user->refresh();
+        foreach ($users as $user) {
+            $user->refresh();
 
-        expect($user->email_verified_at)->not->toBeNull();
-    }
+            expect($user->email_verified_at)->not->toBeNull();
+        }
+    });
 });

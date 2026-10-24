@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 use App\Filament\Filters\SelectUserFilter;
 use App\Models\Permission;
 use App\Models\Role;
@@ -25,14 +27,16 @@ beforeEach(function () {
     $this->actingAs($this->adminUser);
 });
 
-it('has the correct default name', function () {
-    $filter = SelectUserFilter::make();
+describe('filter creation', function () {
+    it('has the correct default name', function () {
+        $filter = SelectUserFilter::make();
 
-    expect($filter->getName())->toBe('user');
-});
+        expect($filter->getName())->toBe('user');
+    });
 
-it('has the correct label', function () {
-    $filter = SelectUserFilter::make();
+    it('has the correct label', function () {
+        $filter = SelectUserFilter::make();
 
-    expect($filter->getLabel())->toBe(__('User'));
+        expect($filter->getLabel())->toBe(__('User'));
+    });
 });

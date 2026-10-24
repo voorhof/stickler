@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 use App\Filament\Actions\UnpublishAction;
 use App\Models\Permission;
 use App\Models\Post;
@@ -25,29 +27,33 @@ beforeEach(function () {
     $this->actingAs($this->adminUser);
 });
 
-it('has the correct default name', function () {
-    $action = UnpublishAction::make();
-    expect($action->getName())->toBe('unpublish');
+describe('action configuration', function () {
+    it('has the correct default name', function () {
+        $action = UnpublishAction::make();
+        expect($action->getName())->toBe('unpublish');
+    });
 });
 
-it('is hidden if the record is not publishd', function () {
-    $action = UnpublishAction::make();
-    $post = Post::factory()->create(['published_at' => null]);
+describe('visibility', function () {
+    it('is hidden if the record is not publishd', function () {
+        $action = UnpublishAction::make();
+        $post = Post::factory()->create(['published_at' => null]);
 
-    // Set the record on the action
-    $action->record($post);
+        // Set the record on the action
+        $action->record($post);
 
-    // The hidden() callback should evaluate to true
-    expect($action->isHidden())->toBeTrue();
-});
+        // The hidden() callback should evaluate to true
+        expect($action->isHidden())->toBeTrue();
+    });
 
-it('is not hidden if the record is publishd', function () {
-    $action = UnpublishAction::make();
-    $post = Post::factory()->create(['published_at' => now()]);
+    it('is not hidden if the record is publishd', function () {
+        $action = UnpublishAction::make();
+        $post = Post::factory()->create(['published_at' => now()]);
 
-    // Set the record on the action
-    $action->record($post);
+        // Set the record on the action
+        $action->record($post);
 
-    // The hidden() callback should evaluate to false
-    expect($action->isHidden())->toBeFalse();
+        // The hidden() callback should evaluate to false
+        expect($action->isHidden())->toBeFalse();
+    });
 });

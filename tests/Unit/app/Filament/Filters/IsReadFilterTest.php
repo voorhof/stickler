@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 use App\Filament\Filters\IsReadFilter;
 use App\Filament\Resources\Messages\Pages\ListMessages;
 use App\Models\Message;
@@ -29,29 +31,33 @@ beforeEach(function () {
     $this->actingAs($this->adminUser);
 });
 
-it('has the correct default name', function () {
-    $filter = IsReadFilter::make();
+describe('filter creation', function () {
+    it('has the correct default name', function () {
+        $filter = IsReadFilter::make();
 
-    expect($filter->getName())->toBe('isRead');
+        expect($filter->getName())->toBe('isRead');
+    });
+
+    it('has the correct label', function () {
+        $filter = IsReadFilter::make();
+
+        expect($filter->getLabel())->toBe(__('Read'));
+    });
+
+    it('exists in the messages table', function () {
+        livewire(ListMessages::class)
+            ->assertTableFilterExists('isRead');
+    });
 });
 
-it('has the correct label', function () {
-    $filter = IsReadFilter::make();
+describe('filter execution', function () {
+    it('filters read records when enabled', function () {
+        $readMessage = Message::factory()->create(['read' => true]);
+        $unreadMessage = Message::factory()->create(['read' => false]);
 
-    expect($filter->getLabel())->toBe(__('Read'));
-});
-
-it('exists in the messages table', function () {
-    livewire(ListMessages::class)
-        ->assertTableFilterExists('isRead');
-});
-
-it('filters read records when enabled', function () {
-    $readMessage = Message::factory()->create(['read' => true]);
-    $unreadMessage = Message::factory()->create(['read' => false]);
-
-    livewire(ListMessages::class)
-        ->filterTable('isRead')
-        ->assertCanSeeTableRecords([$readMessage])
-        ->assertCanNotSeeTableRecords([$unreadMessage]);
+        livewire(ListMessages::class)
+            ->filterTable('isRead')
+            ->assertCanSeeTableRecords([$readMessage])
+            ->assertCanNotSeeTableRecords([$unreadMessage]);
+    });
 });

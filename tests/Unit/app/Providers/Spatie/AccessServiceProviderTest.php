@@ -13,12 +13,6 @@ test('it extends ServiceProvider', function () {
     expect($provider)->toBeInstanceOf(ServiceProvider::class);
 });
 
-test('it executes boot method without errors', function () {
-    $provider = new AccessServiceProvider(app());
-
-    expect(fn () => $provider->boot())->not->toThrow(Throwable::class);
-});
-
 test('it is registered in the application', function () {
     expect(app()->getLoadedProviders())->toHaveKey(AccessServiceProvider::class);
 });

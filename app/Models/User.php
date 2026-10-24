@@ -1,12 +1,16 @@
 <?php
 
-/** @noinspection PhpUnused */
-
 namespace App\Models;
 
 use App\Observers\UserObserver;
+use App\Policies\UserPolicy;
+use App\Traits\HasCreatorAndUpdater;
+use App\Traits\HasMediaConversions;
+use App\Traits\HasStandardActivitylogOptions;
+use App\Traits\HasStandardMediaCollections;
 use App\Traits\LogsTrashedActivity;
 use App\Traits\SortableOnUpdate;
+use App\Traits\TracksCreatorAndUpdater;
 use Database\Factories\UserFactory;
 use DateTime;
 use Filament\Models\Contracts\FilamentUser;
@@ -17,18 +21,16 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\RouteKey;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Activitylog\Models\Concerns\HasActivity;
-use Spatie\Activitylog\Support\LogOptions;
 use Spatie\EloquentSortable\Sortable;
 use Spatie\EloquentSortable\SortableTrait;
-use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media as BaseMedia;
@@ -81,20 +83,30 @@ use Spatie\Sluggable\Attributes\Sluggable;
     onUpdate: false,
 )]
 #[ObservedBy(UserObserver::class)]
+#[UsePolicy(UserPolicy::class)]
 class User extends Authenticatable implements FilamentUser, HasMedia, HasName, MustVerifyEmail, Sortable
 {
     use HasActivity;
+    use HasCreatorAndUpdater;
 
     /** @use HasFactory<UserFactory> */
     use HasFactory;
 
+    use HasMediaConversions;
     use HasRoles;
+    use HasStandardActivitylogOptions {
+        HasStandardActivitylogOptions::getActivitylogOptions insteadof HasActivity;
+    }
+    use HasStandardMediaCollections {
+        HasStandardMediaCollections::registerMediaCollections insteadof InteractsWithMedia;
+    }
     use InteractsWithMedia;
     use LogsTrashedActivity;
     use Notifiable;
     use SoftDeletes;
     use SortableOnUpdate;
     use SortableTrait;
+    use TracksCreatorAndUpdater;
 
     /**
      * The model's default values for attributes.
@@ -199,60 +211,17 @@ class User extends Authenticatable implements FilamentUser, HasMedia, HasName, M
      */
     public function registerMediaConversions(?BaseMedia $media = null): void
     {
-        // The Collection component will show a preview thumbnail for items in the collection it is showing.
-        // To generate that thumbnail, we must add a conversion like this one to the model.
-        $this->addMediaConversion('preview')
-            ->fit(Fit::Crop, 400, 400)
-            ->nonQueued()
-            ->deferred()
-            ->format('webp')
-            ->performOnCollections('avatar', 'images', 'videos', 'documents')
-            ->pdfPageNumber(1)
-            ->extractVideoFrameAtSecond(1);
-
-        $this->addMediaConversion('thumb')
-            ->fit(Fit::Crop, 40, 40)
-            ->nonQueued()
-            ->deferred()
-            ->format('webp')
-            ->performOnCollections('avatar', 'images', 'videos', 'documents')
-            ->pdfPageNumber(1)
-            ->extractVideoFrameAtSecond(1);
-
-        $this->addMediaConversion('webp')
-            ->deferred()
-            ->format('webp')
-            ->withResponsiveImages()
-            ->performOnCollections('avatar', 'images');
+        $this->registerStandardMediaConversions(['avatar', 'images', 'videos', 'documents']);
     }
 
     /**
-     * Media Collections are used to group media items together.
-     * You can define as many collections as needed.
+     * Get the collection names that should receive the webp responsive image conversion.
+     *
+     * @return array<string>
      */
-    public function registerMediaCollections(): void
+    protected function webpCollections(): array
     {
-        $useFallbackUrl = 'https://ui-avatars.com/api/?name='.(mb_substr($this->name, 0, 1) ?: 'X').'&format=svg&color=FFFFFF&background=0b0809';
-
-        // Avatar single-file collection
-        $this->addMediaCollection('avatar')
-            ->useDisk(config('media-library.disk_name'))
-            ->singleFile()
-            ->withResponsiveImages()
-            ->useFallbackUrl($useFallbackUrl);
-
-        // Images multi-file collection
-        $this->addMediaCollection('images')
-            ->useDisk(config('media-library.disk_name'))
-            ->withResponsiveImages();
-
-        // Videos multi-file collection
-        $this->addMediaCollection('videos')
-            ->useDisk(config('media-library.disk_name'));
-
-        // Documents multi-file collection
-        $this->addMediaCollection('documents')
-            ->useDisk(config('media-library.disk_name'));
+        return ['avatar', 'images'];
     }
 
     /*
@@ -261,18 +230,32 @@ class User extends Authenticatable implements FilamentUser, HasMedia, HasName, M
     |--------------------------------------------------------------------------
     */
 
-    public function getActivitylogOptions(): LogOptions
+    /**
+     * Determine whether to log only fillable attributes.
+     */
+    protected function activitylogFillable(): bool
     {
-        return LogOptions::defaults()
-            ->logFillable()
-            ->logExcept(['password', 'updated_at'])
-            ->logOnlyDirty()
-            ->dontLogEmptyChanges()
-            ->dontLogIfAttributesChangedOnly([
-                'updated_at',
-                'updated_by_user_id',
-            ])
-            ->setDescriptionForEvent(fn (string $eventName) => __('This item has been :event', ['event' => __($eventName)]));
+        return true;
+    }
+
+    /**
+     * Get the attributes that should be excluded from logging.
+     *
+     * @return array<string>
+     */
+    protected function activitylogExcept(): array
+    {
+        return ['password', 'updated_at'];
+    }
+
+    /**
+     * Get the attributes that should be ignored when determining if changes occurred.
+     *
+     * @return array<string>
+     */
+    protected function activitylogIgnoreChanges(): array
+    {
+        return ['updated_at', 'updated_by_user_id'];
     }
 
     /*
@@ -282,168 +265,20 @@ class User extends Authenticatable implements FilamentUser, HasMedia, HasName, M
     */
 
     /**
-     * Get the media created by the user.
+     * Get the class name for the creator/updater relationship.
+     *
+     * @return class-string<self>
      */
-    public function createdMedia(): HasMany
+    protected function creatorClass(): string
     {
-        return $this->hasMany(Media::class, 'created_by_user_id', 'id')
-            ->chaperone('creator');
+        return self::class;
     }
 
     /**
-     * Get the media updated by the user.
+     * Determine whether to include soft-deleted users in the relationship.
      */
-    public function updatedMedia(): HasMany
+    protected function creatorWithTrashed(): bool
     {
-        return $this->hasMany(Media::class, 'updated_by_user_id', 'id')
-            ->chaperone('updater');
-    }
-
-    /**
-     * Get the messages created by the user.
-     */
-    public function createdMessages(): HasMany
-    {
-        return $this->hasMany(Message::class, 'created_by_user_id', 'id')
-            ->chaperone('creator');
-    }
-
-    /**
-     * Get the messages updated by the user.
-     */
-    public function updatedMessages(): HasMany
-    {
-        return $this->hasMany(Message::class, 'updated_by_user_id', 'id')
-            ->chaperone('updater');
-    }
-
-    /**
-     * Get the posts created by the user.
-     */
-    public function createdPosts(): HasMany
-    {
-        return $this->hasMany(Post::class, 'created_by_user_id', 'id')
-            ->chaperone('creator');
-    }
-
-    /**
-     * Get the posts updated by the user.
-     */
-    public function updatedPosts(): HasMany
-    {
-        return $this->hasMany(Post::class, 'updated_by_user_id', 'id')
-            ->chaperone('updater');
-    }
-
-    /**
-     * Get the pages created by the user.
-     */
-    public function createdPages(): HasMany
-    {
-        return $this->hasMany(Page::class, 'created_by_user_id', 'id')
-            ->chaperone('creator');
-    }
-
-    /**
-     * Get the pages updated by the user.
-     */
-    public function updatedPages(): HasMany
-    {
-        return $this->hasMany(Page::class, 'updated_by_user_id', 'id')
-            ->chaperone('updater');
-    }
-
-    /**
-     * Get the projects created by the user.
-     */
-    public function createdProjects(): HasMany
-    {
-        return $this->hasMany(Project::class, 'created_by_user_id', 'id')
-            ->chaperone('creator');
-    }
-
-    /**
-     * Get the projects updated by the user.
-     */
-    public function updatedProjects(): HasMany
-    {
-        return $this->hasMany(Project::class, 'updated_by_user_id', 'id')
-            ->chaperone('updater');
-    }
-
-    /**
-     * Get the roles created by the user.
-     */
-    public function createdRoles(): HasMany
-    {
-        return $this->hasMany(Role::class, 'created_by_user_id', 'id')
-            ->chaperone('creator');
-    }
-
-    /**
-     * Get the roles updated by the user.
-     */
-    public function updatedRoles(): HasMany
-    {
-        return $this->hasMany(Role::class, 'updated_by_user_id', 'id')
-            ->chaperone('updater');
-    }
-
-    /**
-     * Get the tags created by the user.
-     */
-    public function createdTags(): HasMany
-    {
-        return $this->hasMany(Tag::class, 'created_by_user_id', 'id')
-            ->chaperone('creator');
-    }
-
-    /**
-     * Get the tags updated by the user.
-     */
-    public function updatedTags(): HasMany
-    {
-        return $this->hasMany(Tag::class, 'updated_by_user_id', 'id')
-            ->chaperone('updater');
-    }
-
-    /**
-     * Get the users created by the user.
-     */
-    public function createdUsers(): HasMany
-    {
-        return $this->hasMany(self::class, 'created_by_user_id', 'id')
-            ->chaperone('creator');
-    }
-
-    /**
-     * Get the users updated by the user.
-     */
-    public function updatedUsers(): HasMany
-    {
-        return $this->hasMany(self::class, 'updated_by_user_id', 'id')
-            ->chaperone('updater');
-    }
-
-    /**
-     * Get the user that created the user.
-     */
-    public function creator(): BelongsTo
-    {
-        return $this->belongsTo(self::class, 'created_by_user_id')
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
-    }
-
-    /**
-     * Get the user that updated the user.
-     */
-    public function updater(): BelongsTo
-    {
-        return $this->belongsTo(self::class, 'updated_by_user_id')
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
+        return false;
     }
 }

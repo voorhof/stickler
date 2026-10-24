@@ -14,15 +14,15 @@ It's not necessary to run these commands again for local development since they 
 We just provide them here for reference.
 
 ```bash
-composer require filament/filament:"~5.7"
+composer require filament/filament:"^5.10"
 php artisan filament:install --panels
 php artisan vendor:publish --tag=filament-config
 php artisan icons:cache
 php artisan make:filament-resource User --generate --soft-deletes
 php artisan make:provider Filament/UiServiceProvider        
 ```
-- Required the `filament/filament` package, version 5.7 at the time of writing.
-- Install command created the default admin panel at `App\Providers\Filament\AdminPanelProvider.php`.
+- Required the `filament/filament` package, version 5.10 at the time of writing.
+- Install command created the default admin panel at `app/Providers/Filament/AdminPanelProvider.php`.
 - Published the config file, located in `config/filament.php`.
 - Cached the Filament icons using `icons:cache` command.
 - Resource files created for the `User` model in the `app/Filament/Resources/Users` directory.
@@ -204,22 +204,37 @@ this class implements Filament's `RichContentPlugin` contract and provides:
 
 ### Registration
 
-The plugin is registered globally for every `RichEditor` inside the `UiServiceProvider`,
+The plugin is registered globally for every `RichEditor` inside the `UiServiceProvider` (`app/Providers/Filament/UiServiceProvider.php`),
 and the button is added as its own group in the toolbar:
 
 ```php
 use App\Filament\RichEditor\Plugins\SourceCodePlugin;
+use Filament\Forms\Components\RichEditor;
 
 RichEditor::configureUsing(function (RichEditor $richEditor): void {
     $richEditor
         ->toolbarButtons([
-            // ... other toolbar groups
+            ['undo', 'redo'],
+            [ToolbarButtonGroup::make(__('Paragraph'), ['paragraph', 'h2', 'h3', 'h4'])],
+            [ToolbarButtonGroup::make(__('Alignment'), ['alignStart', 'alignCenter', 'alignEnd', 'alignJustify'])],
+            ['bold', 'italic', 'underline', 'strike', 'link', 'textColor', 'highlight'],
+            ['blockquote', 'codeBlock', ToolbarButtonGroup::make('Lists', ['bulletList', 'orderedList'])],
             ['attachFiles'],
             [SourceCodePlugin::NAME],
         ])
+        ->floatingToolbars([
+            'paragraph' => [
+                'bold', 'italic', 'underline', 'strike', 'link', 'textColor',
+            ],
+            'heading' => [
+                'h2', 'h3', 'h4',
+            ],
+        ])
+        ->maxHeight('80svh')
         ->plugins([
             SourceCodePlugin::make(),
-        ]);
+        ])
+        ->columnSpanFull();
 });
 ```
 
@@ -245,6 +260,76 @@ The button label and modal heading use the `"Source code"` translation key in `l
 - `tests/Feature/app/Filament/Resources/PostResourceTest.php`: opens and submits the action on the Edit Post page.
 
 
+## Page Views
+
+Public page views are tracked on the server, without cookies or a consent banner.
+The admin panel shows the results in a dashboard widget and in a view-only resource.
+
+### Tracking: PageView model and TrackPageView middleware
+
+- `App\Models\PageView` stores one row per visit in the `page_views` table: `path`, `route_name`, `referrer_host`, `visitor_hash`, `viewed_on` and `created_at`. The table has no `updated_at` column.
+- `App\Http\Middleware\TrackPageView` is registered with `prepend` in `bootstrap/app.php`, so it runs before `CacheResponse`. Cached responses are therefore still counted.
+- Only successful `GET` requests (status 200) on these route names are tracked: `welcome.index`, `contact.index`, `terms.*`, `posts.*`, `projects.*` and `pages.*`. Admin and other routes are never tracked.
+- The visitor is stored as `hash_hmac('sha256', ip|user-agent, app.key|date)`. The salt changes every day, so the same visitor cannot be followed across days. The raw IP address is never stored.
+- Only the referrer host is stored, never the full referrer URL. The referrer is `null` for internal navigation.
+
+To add tracking for another public page, add its route name to `$trackedRouteNames` in `TrackPageView`.
+
+### Bot filter
+
+- `TrackPageView` checks the User-Agent with `jaybizzle/crawler-detect`. Visits from known bots are stored with `is_bot = true` instead of being dropped, so the bot share can be checked over time.
+- Browser prefetch requests (`Purpose: prefetch` or `Sec-Purpose: prefetch`) and requests with an empty User-Agent are skipped and not stored.
+- Only the boolean flag is stored, never the User-Agent string.
+- The `PageViewsWidget` and the `PageViewResource` count only rows with `is_bot = false`.
+- Bots that send a browser User-Agent are still counted as human visits.
+- Rows created before the `is_bot` column was added have no classification, so their bot hits still count.
+
+### Dashboard widget: PageViewsWidget
+
+Located at `app/Filament/Widgets/PageViewsWidget.php`, this stats widget shows two numbers for today:
+- **Page views today**: the number of rows with `viewed_on` equal to today.
+- **Unique visitors today**: the number of distinct `visitor_hash` values for today.
+
+Both labels use the `Page views today` and `Unique visitors today` keys in `lang/en.json` and `lang/nl.json`.
+
+### Resource: PageViewResource
+
+Located at `app/Filament/Resources/PageViews/PageViewResource.php`, this view-only resource lists the public pages in the **Settings** navigation group:
+
+- `getEloquentQuery()` groups the rows by `path` and `route_name`. The list shows one row per page with the total views (`views`) and unique visitors (`unique_visitors`).
+- The table is defined in `app/Filament/Resources/PageViews/Tables/PageViewsTable.php`. It has columns for path, route name (hidden by default), page views and unique visitors. The default sort is views, descending.
+- The **Viewed on** filter has **From** and **Until** date pickers. It filters on the `viewed_on` column, so the counts follow the selected period.
+- The resource has only the list page (`ListPageViews`). Creating and editing are disabled through `PageViewPolicy`, which always returns `false` for `create()` and `update()`.
+- Access requires the `view pageviews` permission. The permission is added in `database/seeders/AdminUserAndRoleSeeder.php` next to the activity permissions.
+
+Existing admin users do not receive the new permission automatically. Re-run the seeder or assign `view pageviews` manually.
+
+### Limitations
+
+- Bots that do not identify themselves in the User-Agent are still counted. See the bot filter section above.
+- The resource has no detail view per page.
+- Before production use, the privacy policy should mention this processing. A pseudonymised hash can still be personal data under the GDPR, so a legal review is recommended.
+
+### Cleanup: page-views:clean command and schedule
+
+Old page views can be removed with the `page-views:clean` Artisan command, so the table does not grow forever.
+
+- Located at `app/Console/Commands/CleanPageViewsCommand.php`. It deletes every row whose `viewed_on` is before today minus the given number of days, the same rule as the `PageViewCleanupAction` in the Page views list header.
+- `--days` sets how many days to keep (0 to 366, default 60). Values outside this range make the command fail.
+- `--force` runs without the confirmation question. Without it, the command asks first and does nothing when you answer no.
+- Run it manually with `php artisan page-views:clean --days=60` or `php artisan page-views:clean --days=30 --force`.
+- The schedule is defined in `routes/console.php`, next to `activitylog:clean`: `page-views:clean --days=60 --force` runs daily at 06:05.
+- The schedule only runs when the Laravel scheduler is active on the server (`php artisan schedule:run` every minute, for example through a cron entry).
+- To change the retention, edit the `--days` value in `routes/console.php`.
+
+### Tests
+
+- `tests/Unit/app/Http/Middleware/TrackPageViewTest.php`: tracked routes, the hashed visitor, and the excluded requests.
+- `tests/Unit/app/Filament/Widgets/PageViewsWidgetTest.php`: the stats and labels.
+- `tests/Unit/app/Models/PageViewTest.php`: the model and table.
+- `tests/Unit/app/Policies/PageViewPolicyTest.php`: the create/update block and the permission check.
+- `tests/Feature/app/Filament/Resources/PageViewResourceTest.php`: the grouped counts, the date filter, the permission gate, and the create/update block.
+
 ## Plugins
 
 List of plugins used in this project.  
@@ -265,19 +350,10 @@ The plug-in is configured in the `plugins()` array of the panel method in the `A
 ```php
 use Asmit\ResizedColumn\ResizedColumnPlugin;
 
-class AdminPanelProvider extends PanelProvider
-{
-    public function panel(Panel $panel): Panel
-    {
-        return $panel
-            // ... other configuration
-            ->plugins([
-                // ... other plugins
-                ResizedColumnPlugin::make()
-                    ->preserveOnDB(), // Enable database storage (optional)
-            ]);
-    }
-}
+->plugins([
+    ResizedColumnPlugin::make()
+        ->preserveOnDB(),
+]);
 ```
 
 To use the ‘Resize Columns’ feature, you must include the `HasResizableColumn` trait 
@@ -324,6 +400,54 @@ class ListUsers extends ListRecords
     use HasResizableColumn;
 }
 ````
+
+### Filament Business Hours
+[GitHub](https://github.com/La-boite-a-code/Filament-Business-Hours)
+
+The **Filament Business Hours** plugin provides a visual interface for managing opening hours in the admin panel.
+It stores the schedules in the `business_hours` table and uses `spatie/opening-hours` for opening-hours calculations.
+
+The plugin publishes the following project files:
+
+- Configuration: `config/filament-business-hours.php`
+- Migration: `0001_01_03_000000_create_business_hours_table.php`
+- Translations: `lang/vendor/filament-business-hours/`
+- Frontend assets: `public/css/laboiteacode/filament-business-hours/` and `public/js/laboiteacode/filament-business-hours/`
+
+It is registered in `app/Providers/Filament/AdminPanelProvider.php` under the **Settings** navigation group.
+Access is limited to users who have the `edit settings` permission:
+
+```php
+use LaBoiteACode\FilamentBusinessHours\FilamentBusinessHoursPlugin;
+
+->plugins([
+    // ... other plugins
+    FilamentBusinessHoursPlugin::make()
+        ->navigationGroup(__('Settings'))
+        ->navigationSort(9200)
+        ->canAccessUsing(fn (): bool => auth()->user()?->can('edit settings') ?? false),
+]);
+```
+
+The custom `database/seeders/BusinessHoursSeeder.php` seeds a `default` schedule with Monday through Friday
+open from `08:00-12:00` and `13:00-18:00`; Saturday and Sunday are closed. The seeder is included in
+`DatabaseSeeder` and can be rerun safely because it upserts the `default` record.
+
+The public contact page reads the configured record from `config('filament-business-hours.record', 'default')`:
+
+```php
+use LaBoiteACode\FilamentBusinessHours\Models\BusinessHours;
+use LaBoiteACode\FilamentBusinessHours\Support\Weekdays;
+
+$openingHours = BusinessHours::openingHours(config('filament-business-hours.record', 'default'));
+
+return view('public.contact', [
+    'openingHours' => $openingHours,
+    'weekdays' => Weekdays::DAYS,
+]);
+```
+
+The contact view displays each day's translated name, opening periods, open/closed status, and a highlight for the current day.
 
 
 ### Spatie Media Library

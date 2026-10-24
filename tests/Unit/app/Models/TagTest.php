@@ -1,6 +1,6 @@
 <?php
 
-/** @noinspection PhpUndefinedFieldInspection */
+/** @noinspection PhpPossiblePolymorphicInvocationInspection */
 
 use App\Models\Tag;
 use App\Models\User;

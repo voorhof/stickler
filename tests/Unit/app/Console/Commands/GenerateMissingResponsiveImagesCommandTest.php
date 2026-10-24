@@ -1,7 +1,5 @@
 <?php
 
-/** @noinspection PhpUnhandledExceptionInspection */
-
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
@@ -11,52 +9,54 @@ use function Pest\Laravel\actingAs;
 
 use Spatie\MediaLibrary\ResponsiveImages\Jobs\GenerateResponsiveImagesJob;
 
-it('outputs info message when no media items require responsive image generation', function () {
-    $this->artisan('media:generate-missing-responsive-images')
-        ->expectsOutput('No media records with missing responsive images found.')
-        ->assertSuccessful();
-});
+describe('command execution', function () {
+    test('it outputs info message when no media items require responsive image generation', function () {
+        $this->artisan('media:generate-missing-responsive-images')
+            ->expectsOutput('No media records with missing responsive images found.')
+            ->assertSuccessful();
+    });
 
-it('dispatches generate responsive images jobs synchronously by default', function () {
-    $user = User::factory()->create();
+    test('it dispatches generate responsive images jobs synchronously by default', function () {
+        $user = User::factory()->create();
 
-    actingAs($user);
+        actingAs($user);
 
-    $post = Post::factory()->create();
+        $post = Post::factory()->create();
 
-    $media = $post->addMedia(UploadedFile::fake()->image('test.jpg', 10, 10))
-        ->toMediaCollection('image');
+        $media = $post->addMedia(UploadedFile::fake()->image('test.jpg'))
+            ->toMediaCollection('image');
 
-    // Simulate media item uploaded without responsive images
-    $media->update(['responsive_images' => []]);
+        // Simulate media item uploaded without responsive images
+        $media->update(['responsive_images' => []]);
 
-    $this->artisan('media:generate-missing-responsive-images')
-        ->expectsOutput('Found 1 media items to process.')
-        ->expectsOutput('Done!')
-        ->assertSuccessful();
+        $this->artisan('media:generate-missing-responsive-images')
+            ->expectsOutput('Found 1 media items to process.')
+            ->expectsOutput('Done!')
+            ->assertSuccessful();
 
-    $media->refresh();
-    expect($media->responsive_images)->not->toBeEmpty();
-});
+        $media->refresh();
+        expect($media->responsive_images)->not->toBeEmpty();
+    });
 
-it('queues generate responsive images jobs when queue option is provided', function () {
-    Queue::fake();
+    test('it queues generate responsive images jobs when queue option is provided', function () {
+        Queue::fake();
 
-    $user = User::factory()->create();
+        $user = User::factory()->create();
 
-    actingAs($user);
+        actingAs($user);
 
-    $post = Post::factory()->create();
+        $post = Post::factory()->create();
 
-    $media = $post->addMedia(UploadedFile::fake()->image('test-queue.jpg', 10, 10))
-        ->toMediaCollection('image');
+        $media = $post->addMedia(UploadedFile::fake()->image('test-queue.jpg'))
+            ->toMediaCollection('image');
 
-    $media->update(['responsive_images' => []]);
+        $media->update(['responsive_images' => []]);
 
-    $this->artisan('media:generate-missing-responsive-images --queue')
-        ->expectsOutput('Found 1 media items to process.')
-        ->expectsOutput('Done!')
-        ->assertSuccessful();
+        $this->artisan('media:generate-missing-responsive-images --queue')
+            ->expectsOutput('Found 1 media items to process.')
+            ->expectsOutput('Done!')
+            ->assertSuccessful();
 
-    Queue::assertPushed(GenerateResponsiveImagesJob::class);
+        Queue::assertPushed(GenerateResponsiveImagesJob::class);
+    });
 });

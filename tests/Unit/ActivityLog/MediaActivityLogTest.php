@@ -1,7 +1,5 @@
 <?php
 
-/** @noinspection PhpUndefinedMethodInspection, LaravelEloquentGuardedAttributeAssignmentInspection */
-
 use App\Models\Media;
 use App\Models\User;
 
@@ -13,7 +11,6 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
 function makeMedia(): Media
 {
     $user = User::factory()->create();
-
     actingAs($user);
 
     return Media::create([
@@ -32,51 +29,58 @@ function makeMedia(): Media
     ]);
 }
 
-test('the Media model uses the LogsActivity trait', function () {
-    expect(in_array(LogsActivity::class, class_uses_recursive(Media::class), true))->toBeTrue();
+describe('trait registration', function () {
+    test('the Media model uses the LogsActivity trait', function () {
+        expect(in_array(LogsActivity::class, class_uses_recursive(Media::class), true))->toBeTrue();
+    });
 });
 
-test('it logs an activity when a media record is created', function () {
-    $media = makeMedia();
+describe('create activity logging', function () {
+    test('it logs an activity when a media record is created', function () {
+        $media = makeMedia();
 
-    expect(Activity::query()
-        ->where('subject_type', $media->getMorphClass())
-        ->where('subject_id', $media->id)
-        ->where('event', 'created')
-        ->exists())->toBeTrue();
+        expect(Activity::query()
+            ->where('subject_type', $media->getMorphClass())
+            ->where('subject_id', $media->id)
+            ->where('event', 'created')
+            ->exists())->toBeTrue();
+    });
 });
 
-test('it logs an activity when a media record is updated', function () {
-    $media = makeMedia();
-    $media->update(['name' => 'Renamed Avatar']);
+describe('update activity logging', function () {
+    test('it logs an activity when a media record is updated', function () {
+        $media = makeMedia();
+        $media->update(['name' => 'Renamed Avatar']);
 
-    expect(Activity::query()
-        ->where('subject_type', $media->getMorphClass())
-        ->where('subject_id', $media->id)
-        ->where('event', 'updated')
-        ->exists())->toBeTrue();
+        expect(Activity::query()
+            ->where('subject_type', $media->getMorphClass())
+            ->where('subject_id', $media->id)
+            ->where('event', 'updated')
+            ->exists())->toBeTrue();
+    });
 });
 
-test('it logs an activity when a media record is deleted', function () {
-    $media = makeMedia();
-    $media->delete();
+describe('delete activity logging', function () {
+    test('it logs deleted event when a media record is deleted', function () {
+        $media = makeMedia();
+        $media->delete();
 
-    expect(Activity::query()
-        ->where('subject_type', $media->getMorphClass())
-        ->where('event', 'deleted')
-        ->exists())->toBeTrue();
-});
+        expect(Activity::query()
+            ->where('subject_type', $media->getMorphClass())
+            ->where('event', 'deleted')
+            ->exists())->toBeTrue();
+    });
 
-test('it logs deleted event for force delete', function () {
-    $media = makeMedia();
+    test('it logs deleted event for force delete with correct subject', function () {
+        $media = makeMedia();
 
-    // Force delete
-    $deletedMediaId = $media->id;
-    $media->forceDelete();
+        $deletedMediaId = $media->id;
+        $media->forceDelete();
 
-    $activity = Activity::where('event', 'deleted')->latest()->first();
-    expect($activity)->not->toBeNull()
-        ->and($activity->subject_type)->toBe(Media::class)
-        ->and($activity->subject_id)->toBe($deletedMediaId)
-        ->and($activity->event)->toBe('deleted');
+        $activity = Activity::where('event', 'deleted')->latest()->first();
+        expect($activity)->not->toBeNull()
+            ->and($activity->subject_type)->toBe(Media::class)
+            ->and($activity->subject_id)->toBe($deletedMediaId)
+            ->and($activity->event)->toBe('deleted');
+    });
 });

@@ -42,6 +42,13 @@ Schedule::command('activitylog:clean --force')
     ->daily()->at('06:03');
 
 /**
+ * Page view cleanup
+ * Deletes page views older than the number of days given by --days (default 60).
+ */
+Schedule::command('page-views:clean --days=60 --force')
+    ->daily()->at('06:05');
+
+/**
  * Spatie health checks every hour.
  */
 Schedule::command(RunHealthChecksCommand::class)

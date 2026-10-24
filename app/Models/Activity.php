@@ -3,13 +3,13 @@
 namespace App\Models;
 
 use App\Policies\ActivityPolicy;
+use App\Traits\HasStandardActivitylogOptions;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Enums\ActivityEvent;
 use Spatie\Activitylog\Models\Activity as SpatieActivity;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
-use Spatie\Activitylog\Support\LogOptions;
 
 /**
  * @property Attribute $title
@@ -22,10 +22,14 @@ use Spatie\Activitylog\Support\LogOptions;
  * @method static causedBy(User $user)
  * @method static forSubject(Model $model)
  * @method static forEvent(string|ActivityEvent $string)
+ * @method static factory()
  */
 #[UsePolicy(ActivityPolicy::class)]
 class Activity extends SpatieActivity
 {
+    use HasStandardActivitylogOptions {
+        HasStandardActivitylogOptions::getActivitylogOptions insteadof LogsActivity;
+    }
     use LogsActivity;
 
     /*
@@ -54,16 +58,30 @@ class Activity extends SpatieActivity
     // Log only deleted activities. This is the only available action on Activity Model.
     protected static array $recordEvents = ['deleted'];
 
-    public function getActivitylogOptions(): LogOptions
+    /**
+     * Determine whether to log only fillable attributes.
+     */
+    protected function activitylogFillable(): bool
     {
-        return LogOptions::defaults()
-            ->useLogName('activity')
-            ->logAll()
-            ->dontLogIfAttributesChangedOnly([
-                'updated_at',
-                'updated_by',
-            ])
-            ->setDescriptionForEvent(fn (string $eventName) => __('This item has been :event', ['event' => __($eventName)]));
+        return false;
+    }
+
+    /**
+     * Get the attributes that should be ignored when determining if changes occurred.
+     *
+     * @return array<string>
+     */
+    protected function activitylogIgnoreChanges(): array
+    {
+        return ['updated_at', 'updated_by'];
+    }
+
+    /**
+     * Get the custom log name.
+     */
+    protected function activitylogName(): ?string
+    {
+        return 'activity';
     }
 
     /**

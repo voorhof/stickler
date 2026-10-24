@@ -16,7 +16,7 @@ class ProjectController extends Controller
         $projects = Project::where('published_at', '<=', now())
             ->with('media')
             ->orderBy('order_column', 'asc')
-            ->get();
+            ->paginate(6);
 
         Head::title(__('Projects'))
             ->description(__('Projects').' '.config('app.name'));

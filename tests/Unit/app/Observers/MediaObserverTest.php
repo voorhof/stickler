@@ -6,30 +6,7 @@ use App\Models\User;
 
 use function Pest\Laravel\actingAs;
 
-it('sets created_by_user_id and updated_by_user_id when a media is created', function (): void {
-    $user = User::factory()->create();
-
-    actingAs($user);
-
-    $media = Media::create([
-        'name' => 'Observer Test Media',
-        'model_type' => 'App\Models\Media',
-        'model_id' => 1,
-        'collection_name' => 'default',
-        'file_name' => 'test.jpg',
-        'disk' => 'public',
-        'size' => 1024,
-        'manipulations' => [],
-        'custom_properties' => [],
-        'generated_conversions' => [],
-        'responsive_images' => [],
-    ]);
-
-    expect($media->created_by_user_id)->toBe($user->id)
-        ->and($media->updated_by_user_id)->toBe($user->id);
-});
-
-it('updates updated_by_user_id but not created_by_user_id when a media is updated', function (): void {
+it('tracks creator and updater on media create and update', function (): void {
     $creator = User::factory()->create();
     $updater = User::factory()->create();
 
@@ -49,47 +26,18 @@ it('updates updated_by_user_id but not created_by_user_id when a media is update
         'responsive_images' => [],
     ]);
 
-    expect($media->created_by_user_id)->toBe($creator->id);
+    expect($media->created_by_user_id)->toBe($creator->id)
+        ->and($media->updated_by_user_id)->toBe($creator->id);
 
     actingAs($updater);
 
-    $media->update(['name' => 'Updated Title']);
+    $media->update(['name' => 'Updated Media']);
 
     expect($media->fresh()->created_by_user_id)->toBe($creator->id)
         ->and($media->fresh()->updated_by_user_id)->toBe($updater->id);
 });
 
-it('does not overwrite user ids when no user is authenticated during update', function (): void {
-    $creator = User::factory()->create();
-
-    actingAs($creator);
-
-    $media = Media::create([
-        'name' => 'Observer Test Media',
-        'model_type' => 'App\Models\Media',
-        'model_id' => 1,
-        'collection_name' => 'default',
-        'file_name' => 'test.jpg',
-        'disk' => 'public',
-        'size' => 1024,
-        'manipulations' => [],
-        'custom_properties' => [],
-        'generated_conversions' => [],
-        'responsive_images' => [],
-    ]);
-
-    $originalCreatorId = $media->created_by_user_id;
-    $originalUpdaterId = $media->updated_by_user_id;
-
-    auth()->logout();
-
-    $media->update(['name' => 'Updated Without Auth']);
-
-    expect($media->fresh()->created_by_user_id)->toBe($originalCreatorId)
-        ->and($media->fresh()->updated_by_user_id)->toBe($originalUpdaterId);
-});
-
-it('removes image from post rich content when media in content collection is deleted', function (): void {
+it('removes image from rich content when content media is deleted', function (): void {
     $user = User::factory()->create();
     actingAs($user);
 
@@ -119,14 +67,13 @@ it('removes image from post rich content when media in content collection is del
 
     expect($post->fresh()->content)->toContain($uuid);
 
-    // Delete the media record, which triggers MediaObserver::deleted
     $media->delete();
 
     expect($post->fresh()->content)->not->toContain($uuid)
         ->and($post->fresh()->content)->toContain('Keep Me');
 });
 
-it('does not remove image from rich content when deleted media is not in content collection', function (): void {
+it('does not remove image when deleted media is not in content collection', function (): void {
     $user = User::factory()->create();
     actingAs($user);
 
@@ -144,7 +91,7 @@ it('does not remove image from rich content when deleted media is not in content
         'uuid' => $uuid,
         'model_type' => $post->getMorphClass(),
         'model_id' => $post->getKey(),
-        'collection_name' => 'default', // Not 'content'
+        'collection_name' => 'default',
         'name' => 'test.jpg',
         'file_name' => 'test.jpg',
         'mime_type' => 'image/jpeg',

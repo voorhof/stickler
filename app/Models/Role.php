@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Observers\RoleObserver;
 use App\Policies\RolePolicy;
+use App\Traits\HasCreatorAndUpdater;
+use App\Traits\HasStandardActivitylogOptions;
 use App\Traits\LogsTrashedActivity;
 use App\Traits\SortableOnUpdate;
 use Database\Factories\RoleFactory;
@@ -16,7 +18,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
-use Spatie\Activitylog\Support\LogOptions;
 use Spatie\EloquentSortable\Sortable;
 use Spatie\EloquentSortable\SortableTrait;
 use Spatie\Permission\Models\Role as SpatieRole;
@@ -49,9 +50,14 @@ use Spatie\Permission\Models\Role as SpatieRole;
 #[UsePolicy(RolePolicy::class)]
 class Role extends SpatieRole implements Sortable
 {
+    use HasCreatorAndUpdater;
+
     /** @use HasFactory<RoleFactory> */
     use HasFactory;
 
+    use HasStandardActivitylogOptions {
+        HasStandardActivitylogOptions::getActivitylogOptions insteadof LogsActivity;
+    }
     use LogsActivity;
     use LogsTrashedActivity;
     use SoftDeletes;
@@ -82,53 +88,5 @@ class Role extends SpatieRole implements Sortable
         return Attribute::make(
             get: fn () => "$this->name",
         )->shouldCache();
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Spatie Activitylog
-    |--------------------------------------------------------------------------
-    */
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logFillable()
-            ->logOnlyDirty()
-            ->dontLogEmptyChanges()
-            ->dontLogIfAttributesChangedOnly([
-                'updated_at',
-            ])
-            ->setDescriptionForEvent(fn (string $eventName) => __('This item has been :event', ['event' => __($eventName)]));
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Eloquent Relationships
-    |--------------------------------------------------------------------------
-    */
-
-    /**
-     * Get the user that created the role.
-     */
-    public function creator(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by_user_id')
-            ->withTrashed()
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
-    }
-
-    /**
-     * Get the user that updated the role.
-     */
-    public function updater(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'updated_by_user_id')
-            ->withTrashed()
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
     }
 }

@@ -32,22 +32,26 @@ beforeEach(function () {
     $this->actingAs($this->adminUser);
 });
 
-it('has the correct default name', function () {
-    $action = PublishBulkAction::make();
+describe('action configuration', function () {
+    it('has the correct default name', function () {
+        $action = PublishBulkAction::make();
 
-    expect($action->getName())->toBe('publishBulk');
+        expect($action->getName())->toBe('publishBulk');
+    });
 });
 
-it('publishes selected posts by setting published_at', function () {
-    $posts = Post::factory()->count(2)->create(['published_at' => null]);
+describe('action execution', function () {
+    it('publishes selected posts by setting published_at', function () {
+        $posts = Post::factory()->count(2)->create(['published_at' => null]);
 
-    livewire(ListPosts::class)
-        ->callTableBulkAction('publishBulk', $posts)
-        ->assertNotified();
+        livewire(ListPosts::class)
+            ->callTableBulkAction('publishBulk', $posts)
+            ->assertNotified();
 
-    foreach ($posts as $post) {
-        $post->refresh();
+        foreach ($posts as $post) {
+            $post->refresh();
 
-        expect($post->published_at)->not->toBeNull();
-    }
+            expect($post->published_at)->not->toBeNull();
+        }
+    });
 });

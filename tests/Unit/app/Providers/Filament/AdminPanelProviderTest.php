@@ -25,6 +25,7 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use LaBoiteACode\FilamentBusinessHours\FilamentBusinessHoursPlugin;
 
 test('it extends PanelProvider', function () {
     $provider = new AdminPanelProvider(app());
@@ -102,6 +103,14 @@ test('it configures resized column plugin', function () {
 
     expect($panel->hasPlugin('asmit-resized-column'))->toBeTrue()
         ->and($panel->getPlugin('asmit-resized-column'))->toBeInstanceOf(ResizedColumnPlugin::class);
+});
+
+test('it configures filament business hours plugin', function () {
+    $provider = new AdminPanelProvider(app());
+    $panel = $provider->panel(new Panel);
+
+    expect($panel->hasPlugin('filament-business-hours'))->toBeTrue()
+        ->and($panel->getPlugin('filament-business-hours'))->toBeInstanceOf(FilamentBusinessHoursPlugin::class);
 });
 
 test('it registers render hooks on boot', function () {

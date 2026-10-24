@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 use App\Filament\Filters\IsRepliedFilter;
 use App\Filament\Resources\Messages\Pages\ListMessages;
 use App\Models\Message;
@@ -29,29 +31,33 @@ beforeEach(function () {
     $this->actingAs($this->adminUser);
 });
 
-it('has the correct default name', function () {
-    $filter = IsRepliedFilter::make();
+describe('filter creation', function () {
+    it('has the correct default name', function () {
+        $filter = IsRepliedFilter::make();
 
-    expect($filter->getName())->toBe('isReplied');
+        expect($filter->getName())->toBe('isReplied');
+    });
+
+    it('has the correct label', function () {
+        $filter = IsRepliedFilter::make();
+
+        expect($filter->getLabel())->toBe(__('Replied'));
+    });
+
+    it('exists in the messages table', function () {
+        livewire(ListMessages::class)
+            ->assertTableFilterExists('isReplied');
+    });
 });
 
-it('has the correct label', function () {
-    $filter = IsRepliedFilter::make();
+describe('filter execution', function () {
+    it('filters replied records when enabled', function () {
+        $repliedMessage = Message::factory()->create(['replied' => true]);
+        $unrepliedMessage = Message::factory()->create(['replied' => false]);
 
-    expect($filter->getLabel())->toBe(__('Replied'));
-});
-
-it('exists in the messages table', function () {
-    livewire(ListMessages::class)
-        ->assertTableFilterExists('isReplied');
-});
-
-it('filters replied records when enabled', function () {
-    $repliedMessage = Message::factory()->create(['replied' => true]);
-    $unrepliedMessage = Message::factory()->create(['replied' => false]);
-
-    livewire(ListMessages::class)
-        ->filterTable('isReplied')
-        ->assertCanSeeTableRecords([$repliedMessage])
-        ->assertCanNotSeeTableRecords([$unrepliedMessage]);
+        livewire(ListMessages::class)
+            ->filterTable('isReplied')
+            ->assertCanSeeTableRecords([$repliedMessage])
+            ->assertCanNotSeeTableRecords([$unrepliedMessage]);
+    });
 });

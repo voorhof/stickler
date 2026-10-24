@@ -4,6 +4,10 @@ namespace App\Models;
 
 use App\Observers\PostObserver;
 use App\Policies\PostPolicy;
+use App\Traits\HasCreatorAndUpdater;
+use App\Traits\HasMediaConversions;
+use App\Traits\HasStandardActivitylogOptions;
+use App\Traits\HasStandardMediaCollections;
 use App\Traits\LogsTrashedActivity;
 use App\Traits\RenderResponsiveRichContent;
 use App\Traits\SortableOnUpdate;
@@ -23,10 +27,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
-use Spatie\Activitylog\Support\LogOptions;
 use Spatie\EloquentSortable\Sortable;
 use Spatie\EloquentSortable\SortableTrait;
-use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -54,7 +56,7 @@ use Spatie\Tags\HasTags;
  * @method static updater()
  * @method static create(mixed $validated)
  * @method static forceCreate(array $array)
- * @method static where(string $column, mixed $operator, mixed $value)
+ * @method static where(string $column, mixed $operator, mixed $value = null)
  */
 #[Fillable([
     'slug',
@@ -79,9 +81,17 @@ use Spatie\Tags\HasTags;
 #[UsePolicy(PostPolicy::class)]
 class Post extends Model implements HasMedia, HasRichContent, Sortable
 {
+    use HasCreatorAndUpdater;
+
     /** @use HasFactory<PostFactory> */
     use HasFactory;
 
+    use HasMediaConversions;
+    use HasStandardActivitylogOptions;
+    use HasStandardMediaCollections {
+        HasStandardMediaCollections::registerMediaCollections insteadof InteractsWithMedia;
+        HasStandardActivitylogOptions::getActivitylogOptions insteadof LogsActivity;
+    }
     use HasTags;
     use InteractsWithMedia;
     use InteractsWithRichContent;
@@ -143,64 +153,7 @@ class Post extends Model implements HasMedia, HasRichContent, Sortable
      */
     public function registerMediaConversions(?Media $media = null): void
     {
-        // The Collection component will show a preview thumbnail for items in the collection it is showing.
-        // To generate that thumbnail, we must add a conversion like this one to the model.
-        $this->addMediaConversion('preview')
-            ->fit(Fit::Crop, 400, 400)
-            ->nonQueued()
-            ->deferred()
-            ->format('webp')
-            ->performOnCollections('cover', 'images', 'videos', 'documents', 'content')
-            ->pdfPageNumber(1)
-            ->extractVideoFrameAtSecond(1);
-
-        $this->addMediaConversion('thumb')
-            ->fit(Fit::Crop, 40, 40)
-            ->nonQueued()
-            ->deferred()
-            ->format('webp')
-            ->performOnCollections('cover', 'images', 'videos', 'documents', 'content')
-            ->pdfPageNumber(1)
-            ->extractVideoFrameAtSecond(1);
-
-        $this->addMediaConversion('webp')
-            ->deferred()
-            ->format('webp')
-            ->withResponsiveImages()
-            ->performOnCollections('cover', 'images', 'content');
-    }
-
-    /**
-     * Media Collections are used to group media items together.
-     * You can define as many collections as needed.
-     */
-    public function registerMediaCollections(): void
-    {
-        // Cover image single-file collection
-        $this->addMediaCollection('cover')
-            ->useDisk(config('media-library.disk_name'))
-            ->singleFile()
-            ->withResponsiveImages()
-            ->useFallbackUrl('/art/placeholders/pietje-200.png')
-            ->useFallbackPath(public_path('/art/placeholders/pietje-200.png'));
-
-        // Images multi-file collection
-        $this->addMediaCollection('images')
-            ->useDisk(config('media-library.disk_name'))
-            ->withResponsiveImages();
-
-        // Videos multi-file collection
-        $this->addMediaCollection('videos')
-            ->useDisk(config('media-library.disk_name'));
-
-        // Documents multi-file collection
-        $this->addMediaCollection('documents')
-            ->useDisk(config('media-library.disk_name'));
-
-        // Rich content collection
-        $this->addMediaCollection('content')
-            ->useDisk(config('media-library.disk_name'))
-            ->withResponsiveImages();
+        $this->registerStandardMediaConversions(['cover', 'images', 'videos', 'documents', 'content']);
     }
 
     /**
@@ -210,53 +163,5 @@ class Post extends Model implements HasMedia, HasRichContent, Sortable
     {
         $this->registerRichContent('content')
             ->fileAttachmentProvider(SpatieMediaLibraryFileAttachmentProvider::make());
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Spatie Activitylog
-    |--------------------------------------------------------------------------
-    */
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logFillable()
-            ->logOnlyDirty()
-            ->dontLogEmptyChanges()
-            ->dontLogIfAttributesChangedOnly([
-                'updated_at',
-            ])
-            ->setDescriptionForEvent(fn (string $eventName) => __('This item has been :event', ['event' => __($eventName)]));
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Eloquent Relationships
-    |--------------------------------------------------------------------------
-    */
-
-    /**
-     * Get the user that created the post.
-     */
-    public function creator(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by_user_id')
-            ->withTrashed()
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
-    }
-
-    /**
-     * Get the user that updated the post.
-     */
-    public function updater(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'updated_by_user_id')
-            ->withTrashed()
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 use App\Filament\Resources\Posts\Pages\ListPosts;
 use App\Filament\Resources\Projects\Pages\ListProject;
 use App\Filament\Resources\Roles\Pages\ListRoles;
@@ -40,27 +42,29 @@ beforeEach(function () {
     $this->actingAs($this->adminUser);
 });
 
-it('has create action on list posts page', function () {
-    livewire(ListPosts::class)
-        ->assertActionExists('create');
-});
+describe('create action presence', function () {
+    it('has create action on list posts page', function () {
+        livewire(ListPosts::class)
+            ->assertActionExists('create');
+    });
 
-it('has create action on list projects page', function () {
-    livewire(ListProject::class)
-        ->assertActionExists('create');
-});
+    it('has create action on list projects page', function () {
+        livewire(ListProject::class)
+            ->assertActionExists('create');
+    });
 
-it('has create action on list roles page', function () {
-    livewire(ListRoles::class)
-        ->assertActionExists('create');
-});
+    it('has create action on list roles page', function () {
+        livewire(ListRoles::class)
+            ->assertActionExists('create');
+    });
 
-it('has create action on list tags page', function () {
-    livewire(ListTags::class)
-        ->assertActionExists('create');
-});
+    it('has create action on list tags page', function () {
+        livewire(ListTags::class)
+            ->assertActionExists('create');
+    });
 
-it('has create action on list users page', function () {
-    livewire(ListUsers::class)
-        ->assertActionExists('create');
+    it('has create action on list users page', function () {
+        livewire(ListUsers::class)
+            ->assertActionExists('create');
+    });
 });

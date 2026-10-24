@@ -1,18 +1,19 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 use App\View\Components\Layouts\App;
 use Illuminate\Contracts\View\View;
 
-test('it instantiates app component successfully', function () {
-    $component = new App;
+describe('component', function () {
+    test('it instantiates app component successfully', function () {
+        expect(new App)->toBeInstanceOf(App::class);
+    });
 
-    expect($component)->toBeInstanceOf(App::class);
-});
+    test('it renders the correct view', function () {
+        $view = (new App)->render();
 
-test('it renders the correct view', function () {
-    $component = new App;
-    $view = $component->render();
-
-    expect($view)->toBeInstanceOf(View::class)
-        ->and($view->name())->toBe('components.layouts.app');
+        expect($view)->toBeInstanceOf(View::class)
+            ->and($view->name())->toBe('components.layouts.app');
+    });
 });

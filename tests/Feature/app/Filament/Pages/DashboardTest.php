@@ -1,7 +1,5 @@
 <?php
 
-/** @noinspection PhpUndefinedMethodInspection */
-
 use App\Filament\Pages\Dashboard;
 use App\Models\Permission;
 use App\Models\Role;
@@ -27,22 +25,24 @@ beforeEach(function () {
     $this->actingAs($this->adminUser);
 });
 
-it('can load the dashboard page', function () {
-    get('/admin')
-        ->assertSuccessful()
-        ->assertSeeLivewire(Dashboard::class);
-});
+describe('dashboard page', function () {
+    test('it can load the dashboard page', function () {
+        get('/admin')
+            ->assertSuccessful()
+            ->assertSeeLivewire(Dashboard::class);
+    });
 
-it('has correct columns configuration', function () {
-    $dashboard = new Dashboard;
+    test('it has correct columns configuration', function () {
+        $dashboard = new Dashboard;
 
-    expect($dashboard->getColumns())->toBe([
-        'md' => 6,
-        '2xl' => 6,
-    ]);
-});
+        expect($dashboard->getColumns())->toBe([
+            'md' => 6,
+            '2xl' => 6,
+        ]);
+    });
 
-it('can render dashboard livewire component', function () {
-    livewire(Dashboard::class)
-        ->assertSuccessful();
+    test('it can render dashboard livewire component', function () {
+        livewire(Dashboard::class)
+            ->assertSuccessful();
+    });
 });

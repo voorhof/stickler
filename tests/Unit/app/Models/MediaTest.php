@@ -1,7 +1,5 @@
 <?php
 
-/** @noinspection PhpUndefinedFieldInspection */
-
 use App\Models\Media;
 use App\Models\User;
 use App\Policies\MediaPolicy;
@@ -415,4 +413,18 @@ test('it configures activity log options correctly', function () {
     $options = $media->getActivitylogOptions();
 
     expect($options)->toBeInstanceOf(LogOptions::class);
+});
+
+test('it returns the media owner route', function () {
+    $media = new Media;
+    $media->model_type = 'App\\Models\\Post';
+
+    expect($media->mediaOwnerRoute())->toBe('filament.admin.resources.posts.edit');
+});
+
+test('it returns the media owner title', function () {
+    $media = new Media;
+    $media->model_type = 'App\\Models\\Post';
+
+    expect($media->mediaOwnerTitle())->toBe('Post');
 });

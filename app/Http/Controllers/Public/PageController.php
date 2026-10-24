@@ -16,7 +16,7 @@ class PageController extends Controller
         $pages = Page::where('published_at', '<=', now())
             ->with('media')
             ->orderBy('order_column', 'asc')
-            ->get();
+            ->paginate(6);
 
         Head::title(__('Pages'))
             ->description(__('Pages').' '.config('app.name'));

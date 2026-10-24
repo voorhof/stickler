@@ -14,31 +14,35 @@ beforeEach(function () {
     Filament::bootCurrentPanel();
 });
 
-it('can be viewed when authenticated', function () {
-    $user = User::factory()->create();
-    $this->actingAs($user);
+describe('widget visibility', function () {
+    it('can be viewed when authenticated', function () {
+        $user = User::factory()->create();
+        $this->actingAs($user);
 
-    expect(SticklerWidget::canView())->toBeTrue();
+        expect(SticklerWidget::canView())->toBeTrue();
 
-    livewire(SticklerWidget::class)->assertOk();
+        livewire(SticklerWidget::class)->assertOk();
+    });
+
+    it('cannot be viewed when unauthenticated', function () {
+        expect(SticklerWidget::canView())->toBeFalse();
+    });
 });
 
-it('cannot be viewed when unauthenticated', function () {
-    expect(SticklerWidget::canView())->toBeFalse();
-});
+describe('sitemap generator', function () {
+    it('show the sitemap generator when permitted', function () {
+        $user = User::factory()->create();
+        $permission = Permission::create(['name' => 'edit settings', 'guard_name' => 'web']);
+        $user->permissions()->attach($permission);
+        $this->actingAs($user);
 
-it('show the sitemap generator when permitted', function () {
-    $user = User::factory()->create();
-    $permission = Permission::create(['name' => 'edit settings', 'guard_name' => 'web']);
-    $user->permissions()->attach($permission);
-    $this->actingAs($user);
+        livewire(SticklerWidget::class)->assertSee(__('Generate sitemap'));
+    });
 
-    livewire(SticklerWidget::class)->assertSee(__('Generate sitemap'));
-});
+    it('hides the sitemap generator when not permitted', function () {
+        $user = User::factory()->create();
+        $this->actingAs($user);
 
-it('hides the sitemap generator when not permitted', function () {
-    $user = User::factory()->create();
-    $this->actingAs($user);
-
-    livewire(SticklerWidget::class)->assertDontSee(__('Generate sitemap'));
+        livewire(SticklerWidget::class)->assertDontSee(__('Generate sitemap'));
+    });
 });

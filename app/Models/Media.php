@@ -6,6 +6,8 @@ namespace App\Models;
 
 use App\Observers\MediaObserver;
 use App\Policies\MediaPolicy;
+use App\Traits\HasCreatorAndUpdater;
+use App\Traits\HasStandardActivitylogOptions;
 use App\Traits\SortableOnUpdate;
 use DateTime;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -16,7 +18,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
-use Spatie\Activitylog\Support\LogOptions;
 use Spatie\EloquentSortable\Sortable;
 use Spatie\EloquentSortable\SortableTrait;
 use Spatie\MediaLibrary\MediaCollections\Models\Media as BaseMedia;
@@ -54,11 +55,16 @@ use Spatie\Tags\HasTags;
  * @method static findOrFail(int $id)
  * @method static create(array $array)
  * @method static find($mediaId)
+ * @method static factory()
  */
 #[ObservedBy(MediaObserver::class)]
 #[UsePolicy(MediaPolicy::class)]
 class Media extends BaseMedia implements Sortable
 {
+    use HasCreatorAndUpdater;
+    use HasStandardActivitylogOptions {
+        HasStandardActivitylogOptions::getActivitylogOptions insteadof LogsActivity;
+    }
     use HasTags;
     use LogsActivity;
     use SortableOnUpdate;
@@ -122,17 +128,22 @@ class Media extends BaseMedia implements Sortable
     |--------------------------------------------------------------------------
     */
 
-    public function getActivitylogOptions(): LogOptions
+    /**
+     * Determine whether to log only fillable attributes.
+     */
+    protected function activitylogFillable(): bool
     {
-        return LogOptions::defaults()
-            ->logAll()
-            ->logOnlyDirty()
-            ->dontLogEmptyChanges()
-            ->logExcept(['generated_conversions', 'responsive_images', 'updated_at'])
-            ->dontLogIfAttributesChangedOnly([
-                'updated_at',
-            ])
-            ->setDescriptionForEvent(fn (string $eventName) => __('This item has been :event', ['event' => __($eventName)]));
+        return false;
+    }
+
+    /**
+     * Get the attributes that should be excluded from logging.
+     *
+     * @return array<string>
+     */
+    protected function activitylogExcept(): array
+    {
+        return ['generated_conversions', 'responsive_images', 'updated_at'];
     }
 
     /*
@@ -168,29 +179,5 @@ class Media extends BaseMedia implements Sortable
     {
         return $this->morphTo()
             ->withTrashed();
-    }
-
-    /**
-     * Get the user that created the media.
-     */
-    public function creator(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by_user_id')
-            ->withTrashed()
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
-    }
-
-    /**
-     * Get the user that updated the media.
-     */
-    public function updater(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'updated_by_user_id')
-            ->withTrashed()
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
     }
 }

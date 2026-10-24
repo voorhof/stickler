@@ -41,213 +41,223 @@ beforeEach(function () {
     $this->adminUser->assignRole($adminRole);
 });
 
-it('can load the backup page for an authorized user', function () {
-    $this->actingAs($this->adminUser)
-        ->get('/admin/backups')
-        ->assertSuccessful()
-        ->assertSeeLivewire(Backups::class);
+describe('access control', function () {
+    test('it can load the backup page for an authorized user', function () {
+        $this->actingAs($this->adminUser)
+            ->get('/admin/backups')
+            ->assertSuccessful()
+            ->assertSeeLivewire(Backups::class);
+    });
+
+    test('it denies access to the backup page for users without permission', function () {
+        $user = User::factory()->create();
+        $user->assignRole('No Admin');
+
+        $this->actingAs($user)
+            ->get('/admin/backups')
+            ->assertForbidden();
+    });
 });
 
-it('denies access to the backup page for users without permission', function () {
-    $user = User::factory()->create();
-    $user->assignRole('No Admin');
+describe('create backup action', function () {
+    test('it shows the create backup action for a user with the create backups permission', function () {
+        $this->actingAs($this->adminUser);
 
-    $this->actingAs($user)
-        ->get('/admin/backups')
-        ->assertForbidden();
+        livewire(Backups::class)
+            ->assertActionVisible('createBackup');
+    });
+
+    test('it hides the create backup action for a user without the create backups permission', function () {
+        $restrictedRole = Role::factory()->create(['name' => 'Restricted']);
+        $restrictedRole->givePermissionTo(['access admin', 'view backups']);
+
+        $restrictedUser = User::factory()->create();
+        $restrictedUser->assignRole($restrictedRole);
+        $this->actingAs($restrictedUser);
+
+        livewire(Backups::class)
+            ->assertActionHidden('createBackup');
+    });
+
+    test('it opens the backup option modal when triggered', function () {
+        $this->actingAs($this->adminUser);
+
+        livewire(Backups::class)
+            ->call('openOptionModal')
+            ->assertDispatched('open-modal', id: 'backup-option');
+    });
+
+    test('it creates a full backup and closes the modal', function () {
+        $this->actingAs($this->adminUser);
+
+        Artisan::shouldReceive('queue')
+            ->once()
+            ->with(BackupCommand::class, [
+                '--only-db' => false,
+                '--only-files' => false,
+                '--filename' => null,
+            ]);
+
+        livewire(Backups::class)
+            ->call('create', 'all')
+            ->assertDispatched('close-modal', id: 'backup-option')
+            ->assertNotified();
+    });
+
+    test('it creates a database only backup with the expected artisan options', function () {
+        $this->actingAs($this->adminUser);
+
+        Artisan::shouldReceive('queue')
+            ->once()
+            ->with(BackupCommand::class, Mockery::on(function ($args) {
+                return $args['--only-db'] === true
+                    && $args['--only-files'] === false
+                    && str_starts_with($args['--filename'], 'only-db-');
+            }));
+
+        livewire(Backups::class)
+            ->call('create', 'only-db')
+            ->assertNotified();
+    });
+
+    test('it creates a files only backup with the expected artisan options', function () {
+        $this->actingAs($this->adminUser);
+
+        Artisan::shouldReceive('queue')
+            ->once()
+            ->with(BackupCommand::class, Mockery::on(function ($args) {
+                return $args['--only-db'] === false
+                    && $args['--only-files'] === true
+                    && str_starts_with($args['--filename'], 'only-files-');
+            }));
+
+        livewire(Backups::class)
+            ->call('create', 'only-files')
+            ->assertNotified();
+    });
 });
 
-it('shows the create backup action for a user with the create backups permission', function () {
-    $this->actingAs($this->adminUser);
+describe('backup display', function () {
+    test('it displays the backup destination status', function () {
+        $this->actingAs($this->adminUser);
 
-    livewire(Backups::class)
-        ->assertActionVisible('createBackup');
-});
+        Storage::fake('backups');
 
-it('hides the create backup action for a user without the create backups permission', function () {
-    $restrictedRole = Role::factory()->create(['name' => 'Restricted']);
-    $restrictedRole->givePermissionTo(['access admin', 'view backups']);
+        $backupName = config('backup.backup.name');
 
-    $restrictedUser = User::factory()->create();
-    $restrictedUser->assignRole($restrictedRole);
-    $this->actingAs($restrictedUser);
-
-    livewire(Backups::class)
-        ->assertActionHidden('createBackup');
-});
-
-it('opens the backup option modal when triggered', function () {
-    $this->actingAs($this->adminUser);
-
-    livewire(Backups::class)
-        ->call('openOptionModal')
-        ->assertDispatched('open-modal', id: 'backup-option');
-});
-
-it('creates a full backup and closes the modal', function () {
-    $this->actingAs($this->adminUser);
-
-    Artisan::shouldReceive('queue')
-        ->once()
-        ->with(BackupCommand::class, [
-            '--only-db' => false,
-            '--only-files' => false,
-            '--filename' => null,
-        ]);
-
-    livewire(Backups::class)
-        ->call('create', 'all')
-        ->assertDispatched('close-modal', id: 'backup-option')
-        ->assertNotified();
-});
-
-it('creates a database only backup with the expected artisan options', function () {
-    $this->actingAs($this->adminUser);
-
-    Artisan::shouldReceive('queue')
-        ->once()
-        ->with(BackupCommand::class, Mockery::on(function ($args) {
-            return $args['--only-db'] === true
-                && $args['--only-files'] === false
-                && str_starts_with($args['--filename'], 'only-db-');
-        }));
-
-    livewire(Backups::class)
-        ->call('create', 'only-db')
-        ->assertNotified();
-});
-
-it('creates a files only backup with the expected artisan options', function () {
-    $this->actingAs($this->adminUser);
-
-    Artisan::shouldReceive('queue')
-        ->once()
-        ->with(BackupCommand::class, Mockery::on(function ($args) {
-            return $args['--only-db'] === false
-                && $args['--only-files'] === true
-                && str_starts_with($args['--filename'], 'only-files-');
-        }));
-
-    livewire(Backups::class)
-        ->call('create', 'only-files')
-        ->assertNotified();
-});
-
-it('displays the backup destination status', function () {
-    $this->actingAs($this->adminUser);
-
-    Storage::fake('backups');
-
-    $backupName = config('backup.backup.name');
-
-    config(['backup.monitor_backups' => [
-        [
-            'name' => $backupName,
-            'disks' => ['backups'],
-            'health_checks' => [
-                MaximumAgeInDays::class => 1,
-                MaximumStorageInMegabytes::class => 5000,
+        config(['backup.monitor_backups' => [
+            [
+                'name' => $backupName,
+                'disks' => ['backups'],
+                'health_checks' => [
+                    MaximumAgeInDays::class => 1,
+                    MaximumStorageInMegabytes::class => 5000,
+                ],
             ],
-        ],
-    ]]);
+        ]]);
 
-    livewire(Backups::class)
-        ->assertSee($backupName)
-        ->assertSee('backups')
-        ->assertSee(__('backups.no_backups_info'));
+        livewire(Backups::class)
+            ->assertSee($backupName)
+            ->assertSee('backups')
+            ->assertSee(__('backups.no_backups_info'));
+    });
+
+    test('it lists the backup files in the table', function () {
+        $this->actingAs($this->adminUser);
+
+        Storage::fake('backups');
+        config(['backup.backup.destination.disks' => ['backups']]);
+
+        $backupName = config('backup.backup.name');
+        Storage::disk('backups')->put("$backupName/backup.zip", 'backup-content');
+
+        livewire(Backups::class)
+            ->assertCanSeeTableRecords(['0'])
+            ->assertSee("$backupName/backup.zip")
+            ->assertSee('backups');
+    });
+
+    test('it provides a disk filter with the configured destination disks as options', function () {
+        $this->actingAs($this->adminUser);
+
+        config(['backup.backup.destination.disks' => ['backups', 'local']]);
+
+        livewire(Backups::class)
+            ->assertTableFilterExists('disk')
+            ->assertSee('Backups')
+            ->assertSee('Local');
+    });
 });
 
-it('lists the backup files in the table', function () {
-    $this->actingAs($this->adminUser);
+describe('download action', function () {
+    test('it shows the download action for a user with the download backups permission', function () {
+        $adminRole = Role::whereName('Admin')->first();
+        $adminRole->givePermissionTo('download backups');
 
-    Storage::fake('backups');
-    config(['backup.backup.destination.disks' => ['backups']]);
+        $this->actingAs($this->adminUser);
 
-    $backupName = config('backup.backup.name');
-    Storage::disk('backups')->put("$backupName/backup.zip", 'backup-content');
+        Storage::fake('backups');
+        config(['backup.backup.destination.disks' => ['backups']]);
 
-    livewire(Backups::class)
-        ->assertCanSeeTableRecords(['0'])
-        ->assertSee("$backupName/backup.zip")
-        ->assertSee('backups');
+        $backupName = config('backup.backup.name');
+        Storage::disk('backups')->put("$backupName/backup.zip", 'backup-content');
+
+        livewire(Backups::class)
+            ->assertTableActionVisible('download', record: '0');
+    });
+
+    test('it hides the download action for a user without the download backups permission', function () {
+        $restrictedRole = Role::factory()->create(['name' => 'Restricted']);
+        $restrictedRole->givePermissionTo(['access admin', 'view backups']);
+
+        $restrictedUser = User::factory()->create();
+        $restrictedUser->assignRole($restrictedRole);
+        $this->actingAs($restrictedUser);
+
+        Storage::fake('backups');
+        config(['backup.backup.destination.disks' => ['backups']]);
+
+        $backupName = config('backup.backup.name');
+        Storage::disk('backups')->put("$backupName/backup.zip", 'backup-content');
+
+        livewire(Backups::class)
+            ->assertTableActionHidden('download', record: '0');
+    });
 });
 
-it('provides a disk filter with the configured destination disks as options', function () {
-    $this->actingAs($this->adminUser);
+describe('delete action', function () {
+    test('it shows the delete action for a user with the delete backups permission and deletes the backup', function () {
+        $this->actingAs($this->adminUser);
 
-    config(['backup.backup.destination.disks' => ['backups', 'local']]);
+        Storage::fake('backups');
+        config(['backup.backup.destination.disks' => ['backups']]);
 
-    livewire(Backups::class)
-        ->assertTableFilterExists('disk')
-        ->assertSee('Backups')
-        ->assertSee('Local');
-});
+        $backupName = config('backup.backup.name');
+        Storage::disk('backups')->put("$backupName/backup.zip", 'backup-content');
 
-it('shows the download action for a user with the download backups permission', function () {
-    $adminRole = Role::whereName('Admin')->first();
-    $adminRole->givePermissionTo('download backups');
+        livewire(Backups::class)
+            ->assertTableActionVisible('delete', record: '0')
+            ->callTableAction('delete', record: '0')
+            ->assertNotified();
 
-    $this->actingAs($this->adminUser);
+        Storage::disk('backups')->assertMissing("$backupName/backup.zip");
+    });
 
-    Storage::fake('backups');
-    config(['backup.backup.destination.disks' => ['backups']]);
+    test('it hides the delete action for a user without the delete backups permission', function () {
+        $restrictedRole = Role::factory()->create(['name' => 'Restricted']);
+        $restrictedRole->givePermissionTo(['access admin', 'view backups']);
 
-    $backupName = config('backup.backup.name');
-    Storage::disk('backups')->put("$backupName/backup.zip", 'backup-content');
+        $restrictedUser = User::factory()->create();
+        $restrictedUser->assignRole($restrictedRole);
+        $this->actingAs($restrictedUser);
 
-    livewire(Backups::class)
-        ->assertTableActionVisible('download', record: '0');
-});
+        Storage::fake('backups');
+        config(['backup.backup.destination.disks' => ['backups']]);
 
-it('hides the download action for a user without the download backups permission', function () {
-    $restrictedRole = Role::factory()->create(['name' => 'Restricted']);
-    $restrictedRole->givePermissionTo(['access admin', 'view backups']);
+        $backupName = config('backup.backup.name');
+        Storage::disk('backups')->put("$backupName/backup.zip", 'backup-content');
 
-    $restrictedUser = User::factory()->create();
-    $restrictedUser->assignRole($restrictedRole);
-    $this->actingAs($restrictedUser);
-
-    Storage::fake('backups');
-    config(['backup.backup.destination.disks' => ['backups']]);
-
-    $backupName = config('backup.backup.name');
-    Storage::disk('backups')->put("$backupName/backup.zip", 'backup-content');
-
-    livewire(Backups::class)
-        ->assertTableActionHidden('download', record: '0');
-});
-
-it('shows the delete action for a user with the delete backups permission and deletes the backup', function () {
-    $this->actingAs($this->adminUser);
-
-    Storage::fake('backups');
-    config(['backup.backup.destination.disks' => ['backups']]);
-
-    $backupName = config('backup.backup.name');
-    Storage::disk('backups')->put("$backupName/backup.zip", 'backup-content');
-
-    livewire(Backups::class)
-        ->assertTableActionVisible('delete', record: '0')
-        ->callTableAction('delete', record: '0')
-        ->assertNotified();
-
-    Storage::disk('backups')->assertMissing("$backupName/backup.zip");
-});
-
-it('hides the delete action for a user without the delete backups permission', function () {
-    $restrictedRole = Role::factory()->create(['name' => 'Restricted']);
-    $restrictedRole->givePermissionTo(['access admin', 'view backups']);
-
-    $restrictedUser = User::factory()->create();
-    $restrictedUser->assignRole($restrictedRole);
-    $this->actingAs($restrictedUser);
-
-    Storage::fake('backups');
-    config(['backup.backup.destination.disks' => ['backups']]);
-
-    $backupName = config('backup.backup.name');
-    Storage::disk('backups')->put("$backupName/backup.zip", 'backup-content');
-
-    livewire(Backups::class)
-        ->assertTableActionHidden('delete', record: '0');
+        livewire(Backups::class)
+            ->assertTableActionHidden('delete', record: '0');
+    });
 });

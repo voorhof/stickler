@@ -3,7 +3,9 @@
 use App\Filament\Schemas\Sections\SettingsSection;
 use Filament\Schemas\Components\Section;
 
-it('creates settings section', function () {
-    $section = SettingsSection::make();
-    expect($section)->toBeInstanceOf(Section::class);
+describe('section creation', function () {
+    it('creates settings section', function () {
+        $section = SettingsSection::make();
+        expect($section)->toBeInstanceOf(Section::class);
+    });
 });

@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 use App\Filament\Filters\ForModelsFilter;
 use App\Models\Permission;
 use App\Models\Role;
@@ -25,15 +27,17 @@ beforeEach(function () {
     $this->actingAs($this->adminUser);
 });
 
-it('has no default name', function () {
-    $filter = ForModelsFilter::make('for_recipes');
+describe('filter creation', function () {
+    it('has no default name', function () {
+        $filter = ForModelsFilter::make('for_recipes');
 
-    expect($filter->getName())->toBe('for_recipes');
-});
+        expect($filter->getName())->toBe('for_recipes');
+    });
 
-it('can set a model name label', function () {
-    $filter = ForModelsFilter::make('for_recipes')
-        ->modelName(__('Recipes'));
+    it('can set a model name label', function () {
+        $filter = ForModelsFilter::make('for_recipes')
+            ->modelName(__('Recipes'));
 
-    expect($filter->getLabel())->toBe(__('For :model', ['model' => __('Recipes')]));
+        expect($filter->getLabel())->toBe(__('For :model', ['model' => __('Recipes')]));
+    });
 });

@@ -1,7 +1,5 @@
 <?php
 
-/** @noinspection PhpUndefinedMethodInspection */
-
 use App\Filament\Pages\Spatie\Health;
 use App\Models\Permission;
 use App\Models\Role;
@@ -28,116 +26,122 @@ beforeEach(function () {
     $this->adminUser->assignRole($adminRole);
 });
 
-it('can load the health page for users with access health page permission', function () {
-    $this->actingAs($this->adminUser)
-        ->get(Health::getUrl())
-        ->assertSuccessful()
-        ->assertSeeLivewire(Health::class)
-        ->assertSee(__('Website health status'));
+describe('access control', function () {
+    test('it can load the health page for users with access health page permission', function () {
+        $this->actingAs($this->adminUser)
+            ->get(Health::getUrl())
+            ->assertSuccessful()
+            ->assertSeeLivewire(Health::class)
+            ->assertSee(__('Website health status'));
+    });
+
+    test('it denies access to the health page for users without access health page permission', function () {
+        $restrictedUser = User::factory()->create();
+        $restrictedUser->assignRole('Restricted');
+        $restrictedUser->givePermissionTo(Permission::findByName('access admin'));
+
+        $this->actingAs($restrictedUser)
+            ->get(Health::getUrl())
+            ->assertForbidden();
+    });
+
+    test('it allows access when the user has the access health page permission', function () {
+        $this->actingAs($this->adminUser);
+
+        expect(Health::canAccess())->toBeTrue();
+    });
+
+    test('it does not allow access when the user does not have the access health page permission', function () {
+        $restrictedUser = User::factory()->create();
+        $restrictedUser->assignRole('Restricted');
+
+        $this->actingAs($restrictedUser);
+
+        expect(Health::canAccess())->toBeFalse();
+    });
 });
 
-it('denies access to the health page for users without access health page permission', function () {
-    $restrictedUser = User::factory()->create();
-    $restrictedUser->assignRole('Restricted');
-    $restrictedUser->givePermissionTo(Permission::findByName('access admin'));
+describe('page configuration', function () {
+    test('it has the correct health page title', function () {
+        $this->actingAs($this->adminUser);
 
-    $this->actingAs($restrictedUser)
-        ->get(Health::getUrl())
-        ->assertForbidden();
+        expect(new Health()->getTitle())->toBe(__('Website health status'));
+    });
+
+    test('it has the correct health page navigation label', function () {
+        expect(Health::getNavigationLabel())->toBe(__('Website health status'));
+    });
+
+    test('it has the correct health page navigation group', function () {
+        expect(Health::getNavigationGroup())->toBe(__('Settings'));
+    });
 });
 
-it('has the correct health page title', function () {
-    $this->actingAs($this->adminUser);
+describe('header actions', function () {
+    test('it has the health check header action', function () {
+        $this->actingAs($this->adminUser);
 
-    expect(new Health()->getTitle())->toBe(__('Website health status'));
-});
+        livewire(Health::class)
+            ->assertActionExists('healthCheck');
+    });
 
-it('has the correct health page navigation label', function () {
-    expect(Health::getNavigationLabel())->toBe(__('Website health status'));
-});
+    test('it can run the health check action from the page', function () {
+        $this->actingAs($this->adminUser);
 
-it('has the correct health page navigation group', function () {
-    expect(Health::getNavigationGroup())->toBe(__('Settings'));
-});
+        Artisan::shouldReceive('call')
+            ->with('health:queue-check-heartbeat')
+            ->once();
+        Artisan::shouldReceive('call')
+            ->with('health:check')
+            ->once();
 
-it('allows access when the user has the access health page permission', function () {
-    $this->actingAs($this->adminUser);
+        Artisan::shouldReceive('output')
+            ->once()
+            ->andReturn("Line 1\nResult: Success");
 
-    expect(Health::canAccess())->toBeTrue();
-});
+        livewire(Health::class)
+            ->assertActionExists('healthCheck')
+            ->callAction('healthCheck')
+            ->assertNotified();
+    });
 
-it('does not allow access when the user does not have the access health page permission', function () {
-    $restrictedUser = User::factory()->create();
-    $restrictedUser->assignRole('Restricted');
+    test('it has the optimize header action', function () {
+        $this->actingAs($this->adminUser);
 
-    $this->actingAs($restrictedUser);
+        livewire(Health::class)
+            ->assertActionExists('optimize');
+    });
 
-    expect(Health::canAccess())->toBeFalse();
-});
+    test('it can run the optimize action from the page', function () {
+        $this->actingAs($this->adminUser);
 
-it('has the health check header action', function () {
-    $this->actingAs($this->adminUser);
+        Artisan::shouldReceive('call')
+            ->with('optimize')
+            ->once();
 
-    livewire(Health::class)
-        ->assertActionExists('healthCheck');
-});
+        livewire(Health::class)
+            ->assertActionExists('optimize')
+            ->callAction('optimize')
+            ->assertNotified();
+    });
 
-it('can run the health check action from the page', function () {
-    $this->actingAs($this->adminUser);
+    test('it has the optimizeClear header action', function () {
+        $this->actingAs($this->adminUser);
 
-    Artisan::shouldReceive('call')
-        ->with('health:queue-check-heartbeat')
-        ->once();
-    Artisan::shouldReceive('call')
-        ->with('health:check')
-        ->once();
+        livewire(Health::class)
+            ->assertActionExists('optimizeClear');
+    });
 
-    Artisan::shouldReceive('output')
-        ->once()
-        ->andReturn("Line 1\nResult: Success");
+    test('it can run the optimizeClear action from the page', function () {
+        $this->actingAs($this->adminUser);
 
-    livewire(Health::class)
-        ->assertActionExists('healthCheck')
-        ->callAction('healthCheck')
-        ->assertNotified();
-});
+        Artisan::shouldReceive('call')
+            ->with('optimize:clear')
+            ->once();
 
-it('has the optimize header action', function () {
-    $this->actingAs($this->adminUser);
-
-    livewire(Health::class)
-        ->assertActionExists('optimize');
-});
-
-it('can run the optimize action from the page', function () {
-    $this->actingAs($this->adminUser);
-
-    Artisan::shouldReceive('call')
-        ->with('optimize')
-        ->once();
-
-    livewire(Health::class)
-        ->assertActionExists('optimize')
-        ->callAction('optimize')
-        ->assertNotified();
-});
-
-it('has the optimizeClear header action', function () {
-    $this->actingAs($this->adminUser);
-
-    livewire(Health::class)
-        ->assertActionExists('optimizeClear');
-});
-
-it('can run the optimizeClear action from the page', function () {
-    $this->actingAs($this->adminUser);
-
-    Artisan::shouldReceive('call')
-        ->with('optimize:clear')
-        ->once();
-
-    livewire(Health::class)
-        ->assertActionExists('optimizeClear')
-        ->callAction('optimizeClear')
-        ->assertNotified();
+        livewire(Health::class)
+            ->assertActionExists('optimizeClear')
+            ->callAction('optimizeClear')
+            ->assertNotified();
+    });
 });

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a3e4d56b214a4df0b814f9a78dc99ccb",
+    "content-hash": "f1e964b83899f1b9bbd3e393ef4319e6",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -2680,6 +2680,58 @@
             "time": "2026-08-24T17:13:02+00:00"
         },
         {
+            "name": "jaybizzle/crawler-detect",
+            "version": "v1.4.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/JayBizzle/Crawler-Detect.git",
+                "reference": "d4b03a96c1ed0cc9da025018ca4a3e805c56c276"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/JayBizzle/Crawler-Detect/zipball/d4b03a96c1ed0cc9da025018ca4a3e805c56c276",
+                "reference": "d4b03a96c1ed0cc9da025018ca4a3e805c56c276",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^8.5.52|^9.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Jaybizzle\\CrawlerDetect\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Mark Beech",
+                    "email": "m@rkbee.ch",
+                    "role": "Developer"
+                }
+            ],
+            "description": "CrawlerDetect is a PHP class for detecting bots/crawlers/spiders via the user agent",
+            "homepage": "https://github.com/JayBizzle/Crawler-Detect/",
+            "keywords": [
+                "crawler",
+                "crawler detect",
+                "crawler detector",
+                "crawlerdetect",
+                "php crawler detect"
+            ],
+            "support": {
+                "issues": "https://github.com/JayBizzle/Crawler-Detect/issues",
+                "source": "https://github.com/JayBizzle/Crawler-Detect/tree/v1.4.2"
+            },
+            "time": "2026-10-20T18:03:06+00:00"
+        },
+        {
             "name": "kirschbaum-development/eloquent-power-joins",
             "version": "4.3.5",
             "source": {
@@ -2741,6 +2793,75 @@
                 "source": "https://github.com/kirschbaum-development/eloquent-power-joins/tree/4.3.5"
             },
             "time": "2026-10-14T12:55:07+00:00"
+        },
+        {
+            "name": "laboiteacode/filament-business-hours",
+            "version": "v1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/La-boite-a-code/Filament-Business-Hours.git",
+                "reference": "ee2abe2b345526aaf59cb2138c1016ad14a0104b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/La-boite-a-code/Filament-Business-Hours/zipball/ee2abe2b345526aaf59cb2138c1016ad14a0104b",
+                "reference": "ee2abe2b345526aaf59cb2138c1016ad14a0104b",
+                "shasum": ""
+            },
+            "require": {
+                "filament/filament": "^4.0|^5.0",
+                "illuminate/contracts": "^12.0|^13.0",
+                "php": "^8.2",
+                "spatie/laravel-package-tools": "^1.16",
+                "spatie/opening-hours": "^4.0"
+            },
+            "require-dev": {
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.18",
+                "orchestra/testbench": "^10.0|^11.0",
+                "pestphp/pest": "^3.0|^4.0",
+                "pestphp/pest-plugin-laravel": "^3.0|^4.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "LaBoiteACode\\FilamentBusinessHours\\FilamentBusinessHoursServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "LaBoiteACode\\FilamentBusinessHours\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Alexandre Ribes",
+                    "email": "alexandre@laboiteacode.fr",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Filament plugin to manage the opening hours of a business: a weekly 24h grid, exceptional closures, vacation periods and timezones, backed by spatie/opening-hours.",
+            "homepage": "https://github.com/la-boite-a-code/filament-business-hours",
+            "keywords": [
+                "business-hours",
+                "filament",
+                "filamentphp",
+                "laboiteacode",
+                "laravel",
+                "opening-hours",
+                "spatie"
+            ],
+            "support": {
+                "issues": "https://github.com/La-boite-a-code/Filament-Business-Hours/issues",
+                "source": "https://github.com/La-boite-a-code/Filament-Business-Hours/tree/v1.0.1"
+            },
+            "time": "2026-07-24T06:13:01+00:00"
         },
         {
             "name": "laravel/framework",
@@ -8375,6 +8496,72 @@
                 }
             ],
             "time": "2026-10-19T00:09:37+00:00"
+        },
+        {
+            "name": "spatie/opening-hours",
+            "version": "4.2.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/spatie/opening-hours.git",
+                "reference": "e9a15d116446b8b6d60168f621d0951f6476edf4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/spatie/opening-hours/zipball/e9a15d116446b8b6d60168f621d0951f6476edf4",
+                "reference": "e9a15d116446b8b6d60168f621d0951f6476edf4",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.2"
+            },
+            "require-dev": {
+                "kylekatarnls/multi-tester": "^2.5",
+                "phpunit/phpunit": "^11.5.43 || ^12.4.2"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-2.x": "2.x-dev",
+                    "dev-3.x": "3.x-dev",
+                    "dev-master": "4.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Spatie\\OpeningHours\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Sebastian De Deyne",
+                    "email": "sebastian@spatie.be",
+                    "homepage": "https://spatie.be",
+                    "role": "Developer"
+                },
+                {
+                    "name": "kylekatarnls",
+                    "homepage": "https://github.com/kylekatarnls",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A helper to query and format a set of opening hours",
+            "homepage": "https://github.com/spatie/opening-hours",
+            "keywords": [
+                "hours",
+                "opening",
+                "opening-hours",
+                "schedule",
+                "spatie"
+            ],
+            "support": {
+                "issues": "https://github.com/spatie/opening-hours/issues",
+                "source": "https://github.com/spatie/opening-hours/tree/4.2.3"
+            },
+            "time": "2026-09-27T09:35:42+00:00"
         },
         {
             "name": "spatie/packagist-api",

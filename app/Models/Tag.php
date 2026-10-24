@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Observers\TagObserver;
 use App\Policies\TagPolicy;
+use App\Traits\HasCreatorAndUpdater;
+use App\Traits\HasStandardActivitylogOptions;
 use App\Traits\LogsTrashedActivity;
 use App\Traits\SortableOnUpdate;
 use Database\Factories\TagFactory;
@@ -19,7 +21,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
-use Spatie\Activitylog\Support\LogOptions;
 use Spatie\EloquentSortable\Sortable;
 use Spatie\EloquentSortable\SortableTrait;
 use Spatie\Sluggable\Attributes\Sluggable;
@@ -67,9 +68,14 @@ use Spatie\Tags\Tag as BaseTag;
 #[UsePolicy(TagPolicy::class)]
 class Tag extends BaseTag implements Sortable
 {
+    use HasCreatorAndUpdater;
+
     /** @use HasFactory<TagFactory> */
     use HasFactory;
 
+    use HasStandardActivitylogOptions {
+        HasStandardActivitylogOptions::getActivitylogOptions insteadof LogsActivity;
+    }
     use LogsActivity;
     use LogsTrashedActivity;
     use SoftDeletes;
@@ -99,24 +105,6 @@ class Tag extends BaseTag implements Sortable
         return Attribute::make(
             get: fn () => "$this->name",
         )->shouldCache();
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Spatie Activitylog
-    |--------------------------------------------------------------------------
-    */
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logAll()
-            ->logOnlyDirty()
-            ->dontLogEmptyChanges()
-            ->dontLogIfAttributesChangedOnly([
-                'updated_at',
-            ])
-            ->setDescriptionForEvent(fn (string $eventName) => __('This item has been :event', ['event' => __($eventName)]));
     }
 
     /*
@@ -166,29 +154,5 @@ class Tag extends BaseTag implements Sortable
     {
         return $this->morphedByMany(Project::class, 'taggable')
             ->orderBy('order_column');
-    }
-
-    /**
-     * Get the user that created the tag.
-     */
-    public function creator(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by_user_id')
-            ->withTrashed()
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
-    }
-
-    /**
-     * Get the user that updated the tag.
-     */
-    public function updater(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'updated_by_user_id')
-            ->withTrashed()
-            ->withDefault([
-                'name' => 'GUEST USER',
-            ]);
     }
 }

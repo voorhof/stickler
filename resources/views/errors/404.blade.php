@@ -3,12 +3,8 @@
         <div class="container-xl">
             <div class="row justify-content-center">
                 <div class="col-auto text-center">
-                    <h2 class="h1 mb-1">
-                        404
-                    </h2>
-                    <p>
-                        {{ __('Not Found') }}
-                    </p>
+                    <h2 class="h1 mb-1">404</h2>
+                    <p>{{ __('Not Found') }}</p>
                     <a href="{{ route('welcome.index') }}" class="btn btn-sm btn-primary">
                         <x-icons.chevron-double-left />
                         Terug naar de homepage

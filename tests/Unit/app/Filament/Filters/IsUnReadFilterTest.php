@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 use App\Filament\Filters\IsUnReadFilter;
 use App\Filament\Resources\Messages\Pages\ListMessages;
 use App\Models\Message;
@@ -29,29 +31,33 @@ beforeEach(function () {
     $this->actingAs($this->adminUser);
 });
 
-it('has the correct default name', function () {
-    $filter = IsUnReadFilter::make();
+describe('filter creation', function () {
+    it('has the correct default name', function () {
+        $filter = IsUnReadFilter::make();
 
-    expect($filter->getName())->toBe('isUnRead');
+        expect($filter->getName())->toBe('isUnRead');
+    });
+
+    it('has the correct label', function () {
+        $filter = IsUnReadFilter::make();
+
+        expect($filter->getLabel())->toBe(__('Unread'));
+    });
+
+    it('exists in the messages table', function () {
+        livewire(ListMessages::class)
+            ->assertTableFilterExists('isUnRead');
+    });
 });
 
-it('has the correct label', function () {
-    $filter = IsUnReadFilter::make();
+describe('filter execution', function () {
+    it('filters unread records when enabled', function () {
+        $unreadMessage = Message::factory()->create(['read' => false]);
+        $readMessage = Message::factory()->create(['read' => true]);
 
-    expect($filter->getLabel())->toBe(__('Unread'));
-});
-
-it('exists in the messages table', function () {
-    livewire(ListMessages::class)
-        ->assertTableFilterExists('isUnRead');
-});
-
-it('filters unread records when enabled', function () {
-    $unreadMessage = Message::factory()->create(['read' => false]);
-    $readMessage = Message::factory()->create(['read' => true]);
-
-    livewire(ListMessages::class)
-        ->filterTable('isUnRead')
-        ->assertCanSeeTableRecords([$unreadMessage])
-        ->assertCanNotSeeTableRecords([$readMessage]);
+        livewire(ListMessages::class)
+            ->filterTable('isUnRead')
+            ->assertCanSeeTableRecords([$unreadMessage])
+            ->assertCanNotSeeTableRecords([$readMessage]);
+    });
 });
