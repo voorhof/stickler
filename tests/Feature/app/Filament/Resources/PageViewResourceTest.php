@@ -60,6 +60,19 @@ describe('listing page views', function () {
             ->and($records->pluck('unique_visitors', 'path')->all())->toBe(['/contact' => 1]);
     });
 
+    test('it shows the last visit time per page', function () {
+        PageView::factory()->create(['path' => '/contact', 'visitor_hash' => hash('sha256', 'a'), 'viewed_on' => now()->subDays(2)->toDateString(), 'created_at' => now()->subDays(2)]);
+        PageView::factory()->create(['path' => '/contact', 'visitor_hash' => hash('sha256', 'b'), 'viewed_on' => now()->toDateString(), 'created_at' => now()->subHour()]);
+
+        $records = livewire(ListPageViews::class)
+            ->assertCountTableRecords(1)
+            ->instance()
+            ->getTableRecords();
+
+        expect(Illuminate\Support\Carbon::parse($records->first()->last_visited_at)->toDateTimeString())
+            ->toBe(now()->subHour()->startOfSecond()->toDateTimeString());
+    });
+
     test('it searches the grouped page views without aggregate errors', function () {
         PageView::factory()->create(['path' => '/temporis', 'route_name' => 'pages.show', 'visitor_hash' => hash('sha256', 'a'), 'viewed_on' => now()->toDateString()]);
         PageView::factory()->create(['path' => '/contact', 'route_name' => 'contact.index', 'visitor_hash' => hash('sha256', 'b'), 'viewed_on' => now()->toDateString()]);

@@ -37,6 +37,10 @@ class PageViewsTable
                     ->label(__('Unique visitors'))
                     ->numeric()
                     ->sortable(),
+                TextColumn::make('last_visited_at')
+                    ->label(__('Last visit'))
+                    ->dateTime()
+                    ->sortable(),
             ])
             ->filters([
                 Filter::make('viewed_on')

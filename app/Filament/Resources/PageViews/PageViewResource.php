@@ -32,7 +32,7 @@ class PageViewResource extends Resource
     {
         return parent::getEloquentQuery()
             ->where('is_bot', false)
-            ->selectRaw('MIN(id) as id, path, route_name, COUNT(*) as views, COUNT(DISTINCT visitor_hash) as unique_visitors')
+            ->selectRaw('MIN(id) as id, path, route_name, COUNT(*) as views, COUNT(DISTINCT visitor_hash) as unique_visitors, MAX(created_at) as last_visited_at')
             ->groupBy('path', 'route_name');
     }
 
