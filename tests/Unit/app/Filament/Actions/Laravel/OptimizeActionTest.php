@@ -34,6 +34,19 @@ beforeEach(function () {
     $this->actingAs($this->adminUser);
 });
 
+describe('authorization', function () {
+    it('is not authorized for users without the health page permission', function () {
+        $restrictedUser = User::factory()->create();
+        $restrictedRole = Role::factory()->create(['name' => 'Restricted', 'guard_name' => 'web']);
+        $restrictedRole->givePermissionTo('access admin');
+        $restrictedUser->assignRole($restrictedRole);
+
+        $this->actingAs($restrictedUser);
+
+        expect(OptimizeAction::make()->isAuthorized())->toBeFalse();
+    });
+});
+
 describe('action configuration', function () {
     it('has the correct default name', function () {
         $action = OptimizeAction::make();

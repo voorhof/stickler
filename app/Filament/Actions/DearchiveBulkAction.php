@@ -3,25 +3,32 @@
 namespace App\Filament\Actions;
 
 use App\Filament\Filters\IsArchivedFilter;
-use Filament\Actions\BulkAction;
-use Filament\Actions\Concerns\CanCustomizeProcess;
 use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Contracts\HasTable;
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
-use Illuminate\Support\LazyCollection;
 use Illuminate\Support\Number;
-use Throwable;
 
-class DearchiveBulkAction extends BulkAction
+class DearchiveBulkAction extends StatusToggleBulkAction
 {
-    use CanCustomizeProcess;
-
     public static function getDefaultName(): ?string
     {
         return 'dearchiveBulk';
+    }
+
+    protected function getStatusColumn(): string
+    {
+        return 'archived_at';
+    }
+
+    protected function getStatusValue(): null
+    {
+        return null;
+    }
+
+    protected function skipsRecordsAlreadyInState(): bool
+    {
+        return true;
     }
 
     protected function setUp(): void
@@ -78,62 +85,7 @@ class DearchiveBulkAction extends BulkAction
 
         $this->requiresConfirmation();
 
-        $this->authorizeIndividualRecords('update');
-
-        $this->authorize(function (): bool {
-            $livewire = $this->getLivewire();
-
-            if (! method_exists($livewire, 'getTable')) {
-                return false;
-            }
-
-            $model = $livewire->getTable()->getModel();
-
-            return is_string($model) && auth()->user()?->can('update', $model) === true;
-        });
-
         $this->modalIcon(Heroicon::ArchiveBox);
-
-        $this->action(function (): void {
-            $this->process(static function (DearchiveBulkAction $action, EloquentCollection|Collection|LazyCollection $records): void {
-                if (! $action->shouldFetchSelectedRecords()) {
-                    try {
-                        $action->reportBulkProcessingSuccessfulRecordsCount(
-                            $action->getSelectedRecordsQuery()->whereNotNull('archived_at')->update(['archived_at' => null]),
-                        );
-                    } catch (Throwable $exception) {
-                        $action->reportCompleteBulkProcessingFailure();
-
-                        report($exception);
-                    }
-
-                    return;
-                }
-
-                $isFirstException = true;
-
-                $records->each(static function (Model $record) use ($action, &$isFirstException): void {
-                    if ($record->archived_at === null) {
-                        return;
-                    }
-
-                    try {
-                        $record->update(['archived_at' => null]) || $action->reportBulkProcessingFailure();
-                    } catch (Throwable $exception) {
-                        $action->reportBulkProcessingFailure();
-
-                        if ($isFirstException) {
-                            // Only report the first exception to not flood error logs. Even if Filament
-                            // did not catch exceptions like this, only the first would be reported
-                            // as the rest of the process would be halted.
-                            report($exception);
-
-                            $isFirstException = false;
-                        }
-                    }
-                });
-            });
-        });
 
         $this->deselectRecordsAfterCompletion();
 

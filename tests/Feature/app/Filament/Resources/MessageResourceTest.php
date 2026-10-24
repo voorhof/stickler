@@ -172,6 +172,14 @@ it('can dearchive a message', function () {
     expect($message->archived_at)->toBeNull();
 });
 
+it('shows the dearchive action and hides the archive action on the edit page for an archived message', function () {
+    $message = Message::factory()->archived()->create();
+
+    livewire(EditMessage::class, ['record' => $message->getRouteKey()])
+        ->assertActionVisible('dearchive')
+        ->assertActionHidden('archive');
+});
+
 it('can soft delete a message', function () {
     $message = Message::factory()->create();
 

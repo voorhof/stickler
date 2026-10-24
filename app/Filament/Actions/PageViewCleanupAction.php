@@ -32,7 +32,7 @@ class PageViewCleanupAction extends Action
 
         $this->hidden(fn (): bool => ! PageView::count());
 
-        $this->authorize(auth()->user()?->can('delete pageviews') ?? false);
+        $this->authorize(fn (): bool => auth()->user()?->can('delete pageviews') ?? false);
 
         $this->rateLimit(fn (): int => 3);
 

@@ -81,6 +81,13 @@ class UserResource extends Resource
         ];
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->with('roles')
+            ->withMax('roles as primary_role_name', 'name');
+    }
+
     public static function getRecordRouteBindingEloquentQuery(): Builder
     {
         return parent::getRecordRouteBindingEloquentQuery()

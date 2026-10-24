@@ -65,6 +65,20 @@ it('can search users on the list page', function () {
         ->assertCanNotSeeTableRecords([$otherUser]);
 });
 
+it('can sort users by their role on the list page table', function () {
+    $editorRole = Role::factory()->create(['name' => 'Editor', 'guard_name' => 'web']);
+    $viewerRole = Role::factory()->create(['name' => 'Viewer', 'guard_name' => 'web']);
+
+    $editorUser = User::factory()->create();
+    $editorUser->assignRole($editorRole);
+    $viewerUser = User::factory()->create();
+    $viewerUser->assignRole($viewerRole);
+
+    livewire(ListUsers::class)
+        ->sortTable('roles.name')
+        ->assertCanSeeTableRecords([$editorUser, $viewerUser], inOrder: true);
+});
+
 it('can filter verified users on the list page table', function () {
     $verifiedUser = User::factory()->create(['email_verified_at' => Carbon::now()]);
     $unverifiedUser = User::factory()->create(['email_verified_at' => null]);
@@ -83,6 +97,45 @@ it('can filter unverified users on the list page table', function () {
         ->filterTable('unverified users')
         ->assertCanSeeTableRecords([$unverifiedUser])
         ->assertCanNotSeeTableRecords([$verifiedUser]);
+});
+
+it('turns off the unverified filter when the verified filter is enabled', function () {
+    $verifiedUser = User::factory()->create(['email_verified_at' => Carbon::now()]);
+    $unverifiedUser = User::factory()->create(['email_verified_at' => null]);
+
+    livewire(ListUsers::class)
+        ->set('tableFilters.unverified users.isActive', true)
+        ->set('tableFilters.verified users.isActive', true)
+        ->assertSet('tableFilters.unverified users.isActive', false)
+        ->assertCanSeeTableRecords([$verifiedUser])
+        ->assertCanNotSeeTableRecords([$unverifiedUser]);
+});
+
+it('turns off the verified filter when the unverified filter is enabled', function () {
+    $verifiedUser = User::factory()->create(['email_verified_at' => Carbon::now()]);
+    $unverifiedUser = User::factory()->create(['email_verified_at' => null]);
+
+    livewire(ListUsers::class)
+        ->set('tableFilters.verified users.isActive', true)
+        ->set('tableFilters.unverified users.isActive', true)
+        ->assertSet('tableFilters.verified users.isActive', false)
+        ->assertCanSeeTableRecords([$unverifiedUser])
+        ->assertCanNotSeeTableRecords([$verifiedUser]);
+});
+
+it('can filter users by role on the list page table', function () {
+    $editorRole = Role::factory()->create(['name' => 'Editor', 'guard_name' => 'web']);
+    $viewerRole = Role::factory()->create(['name' => 'Viewer', 'guard_name' => 'web']);
+
+    $editorUser = User::factory()->create();
+    $editorUser->assignRole($editorRole);
+    $viewerUser = User::factory()->create();
+    $viewerUser->assignRole($viewerRole);
+
+    livewire(ListUsers::class)
+        ->filterTable('role', $editorRole->id)
+        ->assertCanSeeTableRecords([$editorUser])
+        ->assertCanNotSeeTableRecords([$viewerUser]);
 });
 
 it('can filter users by trashed state on the list page table', function () {

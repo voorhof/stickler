@@ -1,6 +1,7 @@
 <?php
 
 use App\Providers\AppServiceProvider;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 
@@ -15,4 +16,8 @@ test('it is registered in the application', function () {
 test('it uses bootstrap five pagination', function () {
     expect(Paginator::$defaultView)->toBe('pagination::bootstrap-5')
         ->and(Paginator::$defaultSimpleView)->toBe('pagination::simple-bootstrap-5');
+});
+
+test('it prevents lazy loading outside production', function () {
+    expect(Model::preventsLazyLoading())->toBeTrue();
 });

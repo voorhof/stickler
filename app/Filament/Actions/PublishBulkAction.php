@@ -3,25 +3,28 @@
 namespace App\Filament\Actions;
 
 use App\Filament\Filters\IsPublishedFilter;
-use Filament\Actions\BulkAction;
-use Filament\Actions\Concerns\CanCustomizeProcess;
+use Carbon\CarbonInterface;
 use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Contracts\HasTable;
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
-use Illuminate\Support\LazyCollection;
 use Illuminate\Support\Number;
-use Throwable;
 
-class PublishBulkAction extends BulkAction
+class PublishBulkAction extends StatusToggleBulkAction
 {
-    use CanCustomizeProcess;
-
     public static function getDefaultName(): ?string
     {
         return 'publishBulk';
+    }
+
+    protected function getStatusColumn(): string
+    {
+        return 'published_at';
+    }
+
+    protected function getStatusValue(): CarbonInterface
+    {
+        return now();
     }
 
     protected function setUp(): void
@@ -78,58 +81,7 @@ class PublishBulkAction extends BulkAction
 
         $this->requiresConfirmation();
 
-        $this->authorizeIndividualRecords('update');
-
-        $this->authorize(function (): bool {
-            $livewire = $this->getLivewire();
-
-            if (! method_exists($livewire, 'getTable')) {
-                return false;
-            }
-
-            $model = $livewire->getTable()->getModel();
-
-            return is_string($model) && auth()->user()?->can('update', $model) === true;
-        });
-
         $this->modalIcon(Heroicon::OutlinedArrowUpOnSquareStack);
-
-        $this->action(function (): void {
-            $this->process(static function (PublishBulkAction $action, EloquentCollection|Collection|LazyCollection $records): void {
-                if (! $action->shouldFetchSelectedRecords()) {
-                    try {
-                        $action->reportBulkProcessingSuccessfulRecordsCount(
-                            $action->getSelectedRecordsQuery()->update(['published_at' => now()]),
-                        );
-                    } catch (Throwable $exception) {
-                        $action->reportCompleteBulkProcessingFailure();
-
-                        report($exception);
-                    }
-
-                    return;
-                }
-
-                $isFirstException = true;
-
-                $records->each(static function (Model $record) use ($action, &$isFirstException): void {
-                    try {
-                        $record->update(['published_at' => now()]) || $action->reportBulkProcessingFailure();
-                    } catch (Throwable $exception) {
-                        $action->reportBulkProcessingFailure();
-
-                        if ($isFirstException) {
-                            // Only report the first exception to not flood error logs. Even if Filament
-                            // did not catch exceptions like this, only the first would be reported
-                            // as the rest of the process would be halted.
-                            report($exception);
-
-                            $isFirstException = false;
-                        }
-                    }
-                });
-            });
-        });
 
         $this->deselectRecordsAfterCompletion();
 

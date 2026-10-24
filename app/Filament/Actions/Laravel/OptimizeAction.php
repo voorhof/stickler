@@ -28,7 +28,7 @@ class OptimizeAction extends Action
 
         $this->size('sm');
 
-        $this->authorize(auth()->user()?->can('access health page') ?? false);
+        $this->authorize(fn (): bool => auth()->user()?->can('access health page') ?? false);
 
         $this->rateLimit(fn (): int => 3);
 
