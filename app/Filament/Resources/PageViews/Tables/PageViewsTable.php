@@ -14,6 +14,7 @@ class PageViewsTable
     {
         return $table
             ->defaultSort('views', 'desc')
+            ->defaultKeySort(false)
             ->searchUsing(function (Builder $query, string $search): void {
                 $query->where(function (Builder $query) use ($search): void {
                     $query->where('path', 'like', "%{$search}%")
