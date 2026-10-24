@@ -327,6 +327,49 @@ test('it can store a contact message with empty phone field successfully', funct
     Mail::assertQueued(ContactMessageReceived::class);
 });
 
+test('it does not store a duplicate contact message sent within the duplicate window', function () {
+    Mail::fake();
+
+    config()->set('honeypot.enabled', false);
+
+    $data = [
+        'name' => 'Jane Doe',
+        'email' => 'jane@example.com',
+        'phone' => '123456789',
+        'subject' => 'Inquiry',
+        'message' => 'Hello, I have a question.',
+    ];
+
+    $this->post(route('contact.store'), $data)->assertRedirect(route('contact.index'));
+    $this->post(route('contact.store'), $data)->assertRedirect(route('contact.index'));
+
+    expect(Message::count())->toBe(1);
+
+    Mail::assertQueuedCount(1);
+});
+
+test('it reports an error and stores nothing when the message cannot be queued', function () {
+    config()->set('honeypot.enabled', false);
+
+    Mail::shouldReceive('queue')
+        ->once()
+        ->andThrow(new RuntimeException('Mail transport unavailable'));
+
+    $data = [
+        'name' => 'Jane Doe',
+        'email' => 'jane@example.com',
+        'phone' => '123456789',
+        'subject' => 'Inquiry',
+        'message' => 'Hello, I have a question.',
+    ];
+
+    $this->post(route('contact.store'), $data)
+        ->assertRedirect(route('contact.index'))
+        ->assertSessionHas('error');
+
+    expect(Message::count())->toBe(0);
+});
+
 test('it fails validation when storing invalid contact message', function () {
     Mail::fake();
 
