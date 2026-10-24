@@ -61,8 +61,10 @@ describe('listing page views', function () {
     });
 
     test('it shows the last visit time per page', function () {
+        $lastVisitedAt = now()->subHour()->startOfSecond();
+
         PageView::factory()->create(['path' => '/contact', 'visitor_hash' => hash('sha256', 'a'), 'viewed_on' => now()->subDays(2)->toDateString(), 'created_at' => now()->subDays(2)]);
-        PageView::factory()->create(['path' => '/contact', 'visitor_hash' => hash('sha256', 'b'), 'viewed_on' => now()->toDateString(), 'created_at' => now()->subHour()]);
+        PageView::factory()->create(['path' => '/contact', 'visitor_hash' => hash('sha256', 'b'), 'viewed_on' => now()->toDateString(), 'created_at' => $lastVisitedAt]);
 
         $records = livewire(ListPageViews::class)
             ->assertCountTableRecords(1)
@@ -70,7 +72,7 @@ describe('listing page views', function () {
             ->getTableRecords();
 
         expect(Illuminate\Support\Carbon::parse($records->first()->last_visited_at)->toDateTimeString())
-            ->toBe(now()->subHour()->startOfSecond()->toDateTimeString());
+            ->toBe($lastVisitedAt->toDateTimeString());
     });
 
     test('it searches the grouped page views without aggregate errors', function () {
