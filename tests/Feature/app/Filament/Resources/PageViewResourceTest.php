@@ -60,6 +60,19 @@ describe('listing page views', function () {
             ->and($records->pluck('unique_visitors', 'path')->all())->toBe(['/contact' => 1]);
     });
 
+    test('it searches the grouped page views without aggregate errors', function () {
+        PageView::factory()->create(['path' => '/temporis', 'route_name' => 'pages.show', 'visitor_hash' => hash('sha256', 'a'), 'viewed_on' => now()->toDateString()]);
+        PageView::factory()->create(['path' => '/contact', 'route_name' => 'contact.index', 'visitor_hash' => hash('sha256', 'b'), 'viewed_on' => now()->toDateString()]);
+
+        $records = livewire(ListPageViews::class)
+            ->searchTable('temporis')
+            ->assertCountTableRecords(1)
+            ->instance()
+            ->getTableRecords();
+
+        expect($records->pluck('path')->all())->toBe(['/temporis']);
+    });
+
     test('it filters page views by the viewed on date range', function () {
         PageView::factory()->create(['path' => '/old', 'viewed_on' => now()->subDays(10)->toDateString()]);
         PageView::factory()->create(['path' => '/recent', 'viewed_on' => now()->subDay()->toDateString()]);

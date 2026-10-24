@@ -14,6 +14,12 @@ class PageViewsTable
     {
         return $table
             ->defaultSort('views', 'desc')
+            ->searchUsing(function (Builder $query, string $search): void {
+                $query->where(function (Builder $query) use ($search): void {
+                    $query->where('path', 'like', "%{$search}%")
+                        ->orWhere('route_name', 'like', "%{$search}%");
+                });
+            })
             ->columns([
                 TextColumn::make('path')
                     ->label(__('Path'))
