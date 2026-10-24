@@ -34,7 +34,7 @@ class SendMessageReplyMailAction extends Action
 
         $this->hidden(fn (): bool => $this->getRecord()?->reply === null);
 
-        $this->authorize(auth()->user()?->can('update messages') ?? false);
+        $this->authorize(fn (): bool => auth()->user()?->can('update messages') ?? false);
 
         $this->rateLimit(fn (): int => 1);
 

@@ -33,7 +33,7 @@ class ActivityLogCleanupAction extends Action
 
         $this->hidden(fn (): bool => ! Activity::count());
 
-        $this->authorize(auth()->user()?->can('delete activities') ?? false);
+        $this->authorize(fn (): bool => auth()->user()?->can('delete activities') ?? false);
 
         $this->rateLimit(fn (): int => 3);
 

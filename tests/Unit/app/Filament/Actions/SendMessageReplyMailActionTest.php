@@ -62,6 +62,27 @@ describe('visibility', function () {
     });
 });
 
+describe('authorization', function () {
+    it('does not send the reply for users without update messages permission', function () {
+        Mail::fake();
+
+        $restrictedRole = Role::factory()->create(['name' => 'Restricted', 'guard_name' => 'web']);
+        $restrictedRole->givePermissionTo(['access admin', 'view messages']);
+        $restrictedUser = User::factory()->create();
+        $restrictedUser->assignRole($restrictedRole);
+        $this->actingAs($restrictedUser);
+
+        $message = Message::factory()->create(['reply' => 'reply text']);
+
+        $action = SendMessageReplyMailAction::make();
+        $action->record($message);
+
+        expect($action->isAuthorized())->toBeFalse();
+
+        Mail::assertNothingQueued();
+    });
+});
+
 describe('action execution', function () {
     it('sends the reply email and notifies the user', function () {
         Mail::fake();

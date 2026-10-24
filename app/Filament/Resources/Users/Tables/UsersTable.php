@@ -13,8 +13,6 @@ use App\Filament\Schemas\Columns\IdColumn;
 use App\Filament\Schemas\Columns\NameColumn;
 use App\Filament\Schemas\Columns\OrderColumn;
 use App\Filament\Schemas\Columns\UpdatedColumn;
-use App\Models\Role;
-use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\EditAction;
@@ -57,16 +55,7 @@ class UsersTable
                 TextColumn::make('roles.name')
                     ->label(__('Role'))
                     ->badge()
-                    ->sortable(query: function (Builder $query, string $direction): Builder {
-                        return $query->orderBy(
-                            Role::select('roles.name')
-                                ->join('model_has_roles', 'model_has_roles.role_id', '=', 'roles.id')
-                                ->whereColumn('model_has_roles.model_id', 'users.id')
-                                ->where('model_has_roles.model_type', User::class)
-                                ->limit(1),
-                            $direction,
-                        );
-                    }),
+                    ->sortable(query: fn (Builder $query, string $direction): Builder => $query->orderBy('primary_role_name', $direction)),
                 CreatedColumn::make(),
                 UpdatedColumn::make(),
                 DeletedColumn::make(),
