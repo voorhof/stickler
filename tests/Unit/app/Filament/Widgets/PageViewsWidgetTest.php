@@ -46,6 +46,22 @@ describe('widget statistics', function () {
         expect(pageViewsWidgetStats()[1]->getValue())->toBe(2);
     });
 
+    it('excludes bot page views from both statistics', function () {
+        PageView::factory()->create([
+            'viewed_on' => now()->toDateString(),
+            'visitor_hash' => hash('sha256', 'human'),
+        ]);
+        PageView::factory()->bot()->count(2)->create([
+            'viewed_on' => now()->toDateString(),
+            'visitor_hash' => hash('sha256', 'bot'),
+        ]);
+
+        $stats = pageViewsWidgetStats();
+
+        expect($stats[0]->getValue())->toBe(1)
+            ->and($stats[1]->getValue())->toBe(1);
+    });
+
     it('returns zero for both statistics when there are no page views', function () {
         $stats = pageViewsWidgetStats();
 

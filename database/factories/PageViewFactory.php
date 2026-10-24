@@ -22,7 +22,18 @@ class PageViewFactory extends Factory
             'route_name' => 'pages.show',
             'referrer_host' => fake()->optional()->domainName(),
             'visitor_hash' => hash('sha256', fake()->uuid()),
+            'is_bot' => false,
             'viewed_on' => now()->toDateString(),
         ];
+    }
+
+    /**
+     * Mark the page view as coming from a crawler or bot.
+     */
+    public function bot(): static
+    {
+        return $this->state(fn (): array => [
+            'is_bot' => true,
+        ]);
     }
 }

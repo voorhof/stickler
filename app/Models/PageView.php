@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $route_name
  * @property string|null $referrer_host
  * @property string $visitor_hash
+ * @property bool $is_bot
  * @property string $viewed_on
  * @property string $created_at
  *
@@ -25,6 +26,7 @@ use Illuminate\Database\Eloquent\Model;
     'route_name',
     'referrer_host',
     'visitor_hash',
+    'is_bot',
     'viewed_on',
 ])]
 class PageView extends Model
@@ -33,4 +35,11 @@ class PageView extends Model
     use HasFactory;
 
     public const null UPDATED_AT = null;
+
+    protected function casts(): array
+    {
+        return [
+            'is_bot' => 'boolean',
+        ];
+    }
 }

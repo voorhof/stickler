@@ -28,8 +28,8 @@ class PageViewsWidget extends StatsOverviewWidget
     protected function getStats(): array
     {
         $today = now()->toDateString();
-        $pageViewsToday = PageView::where('viewed_on', $today)->count();
-        $uniqueVisitorsToday = PageView::where('viewed_on', $today)->distinct('visitor_hash')->count('visitor_hash');
+        $pageViewsToday = PageView::where('viewed_on', $today)->where('is_bot', false)->count();
+        $uniqueVisitorsToday = PageView::where('viewed_on', $today)->where('is_bot', false)->distinct('visitor_hash')->count('visitor_hash');
 
         return [
             Stat::make(__('Page views today'), $pageViewsToday)

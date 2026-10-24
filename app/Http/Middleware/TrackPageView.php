@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\PageView;
 use Closure;
 use Illuminate\Http\Request;
+use Jaybizzle\CrawlerDetect\CrawlerDetect;
 use Symfony\Component\HttpFoundation\Response;
 
 class TrackPageView
@@ -39,6 +40,7 @@ class TrackPageView
             'route_name' => $request->route()?->getName(),
             'referrer_host' => $this->referrerHost($request),
             'visitor_hash' => $this->visitorHash($request),
+            'is_bot' => $this->isBot($request),
             'viewed_on' => now()->toDateString(),
         ]);
 
@@ -46,13 +48,32 @@ class TrackPageView
     }
 
     /**
-     * Only track successful GET requests to public named routes.
+     * Only track successful GET requests to public named routes, skipping browser prefetches and requests without a User-Agent.
      */
     protected function shouldTrack(Request $request, Response $response): bool
     {
         return $request->isMethod('GET')
             && $response->getStatusCode() === 200
-            && $request->routeIs(...$this->trackedRouteNames);
+            && $request->routeIs(...$this->trackedRouteNames)
+            && ! $this->isPrefetch($request)
+            && filled($request->userAgent());
+    }
+
+    /**
+     * Determine whether the request comes from a known crawler or bot.
+     */
+    protected function isBot(Request $request): bool
+    {
+        return (new CrawlerDetect)->isCrawler($request->userAgent());
+    }
+
+    /**
+     * Determine whether the browser requested the page in advance, which is not a real view.
+     */
+    protected function isPrefetch(Request $request): bool
+    {
+        return mb_strtolower((string) $request->headers->get('Purpose')) === 'prefetch'
+            || mb_strtolower((string) $request->headers->get('Sec-Purpose')) === 'prefetch';
     }
 
     /**

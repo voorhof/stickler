@@ -46,6 +46,20 @@ describe('listing page views', function () {
             ->and($records->pluck('unique_visitors', 'path')->all())->toBe(['/contact' => 2, '/terms' => 1]);
     });
 
+    test('it excludes bot page views from the grouped counts', function () {
+        PageView::factory()->create(['path' => '/contact', 'route_name' => 'contact.index', 'visitor_hash' => hash('sha256', 'a'), 'viewed_on' => now()->toDateString()]);
+        PageView::factory()->bot()->create(['path' => '/contact', 'route_name' => 'contact.index', 'visitor_hash' => hash('sha256', 'bot'), 'viewed_on' => now()->toDateString()]);
+        PageView::factory()->bot()->create(['path' => '/bot-only', 'route_name' => 'contact.index', 'visitor_hash' => hash('sha256', 'bot'), 'viewed_on' => now()->toDateString()]);
+
+        $records = livewire(ListPageViews::class)
+            ->assertCountTableRecords(1)
+            ->instance()
+            ->getTableRecords();
+
+        expect($records->pluck('views', 'path')->all())->toBe(['/contact' => 1])
+            ->and($records->pluck('unique_visitors', 'path')->all())->toBe(['/contact' => 1]);
+    });
+
     test('it filters page views by the viewed on date range', function () {
         PageView::factory()->create(['path' => '/old', 'viewed_on' => now()->subDays(10)->toDateString()]);
         PageView::factory()->create(['path' => '/recent', 'viewed_on' => now()->subDay()->toDateString()]);

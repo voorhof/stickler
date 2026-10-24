@@ -32,6 +32,28 @@ test('a page view can be mass assigned fillable values', function () {
         ->and($pageView->viewed_on)->toBe('2024-01-15');
 });
 
+test('a page view can be mass assigned the is bot flag', function () {
+    $pageView = new PageView([
+        'path' => '/contact',
+        'is_bot' => true,
+    ]);
+
+    expect($pageView->is_bot)->toBeTrue();
+});
+
+test('is bot is cast to a boolean', function () {
+    $pageView = PageView::factory()->bot()->create();
+
+    expect($pageView->fresh()->is_bot)->toBeBool()
+        ->and($pageView->fresh()->is_bot)->toBeTrue();
+});
+
+test('is bot defaults to a human visit when cast from the database', function () {
+    $pageView = PageView::factory()->create(['is_bot' => 0]);
+
+    expect($pageView->fresh()->is_bot)->toBeFalse();
+});
+
 test('route name and referrer host are nullable', function () {
     $pageView = PageView::factory()->create([
         'route_name' => null,
