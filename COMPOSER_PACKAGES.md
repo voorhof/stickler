@@ -1186,6 +1186,33 @@ Assets are now served directly from the vendor directory.
 This option only applies if you have already published older assets using `php artisan log-viewer:publish`.  
 **This option will be removed in the next major version** of the package.
 
+## Jaybizzle Crawler Detect
+[GitHub](https://github.com/JayBizzle/Crawler-Detect)
+
+This package detects bots and crawlers by their User-Agent string. It ships a maintained list of bot patterns and is used by the page view tracker to flag bot visits.
+
+The package is required in `composer.json` (`"jaybizzle/crawler-detect": "^1.4"`).
+
+The `TrackPageView` middleware (`app/Http/Middleware/TrackPageView.php`) uses the `Jaybizzle\CrawlerDetect\CrawlerDetect` class:
+
+```php
+use Jaybizzle\CrawlerDetect\CrawlerDetect;
+
+$isBot = (new CrawlerDetect)->isCrawler($request->userAgent());
+```
+
+The result is stored in the `is_bot` column of the `page_views` table. The middleware also skips requests that have an empty User-Agent or a browser prefetch header (`Purpose: prefetch` or `Sec-Purpose: prefetch`).
+
+No User-Agent string is stored, only the boolean flag. Bot visits are excluded by default from the `PageViewsWidget` and the `PageViewResource`.
+
+Limitation: the detection only catches bots that identify themselves in the User-Agent. Scrapers with a browser User-Agent are still counted as human visits.
+
+Check the installed version with:
+
+```bash
+composer show jaybizzle/crawler-detect
+```
+
 ## Other Composer Dependencies
 
 The following direct Composer dependencies are part of the starter kit but do not require a dedicated implementation guide. They are listed here so this document remains aligned with `composer.json`.

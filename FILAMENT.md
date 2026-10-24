@@ -275,6 +275,15 @@ The admin panel shows the results in a dashboard widget and in a view-only resou
 
 To add tracking for another public page, add its route name to `$trackedRouteNames` in `TrackPageView`.
 
+### Bot filter
+
+- `TrackPageView` checks the User-Agent with `jaybizzle/crawler-detect`. Visits from known bots are stored with `is_bot = true` instead of being dropped, so the bot share can be checked over time.
+- Browser prefetch requests (`Purpose: prefetch` or `Sec-Purpose: prefetch`) and requests with an empty User-Agent are skipped and not stored.
+- Only the boolean flag is stored, never the User-Agent string.
+- The `PageViewsWidget` and the `PageViewResource` count only rows with `is_bot = false`.
+- Bots that send a browser User-Agent are still counted as human visits.
+- Rows created before the `is_bot` column was added have no classification, so their bot hits still count.
+
 ### Dashboard widget: PageViewsWidget
 
 Located at `app/Filament/Widgets/PageViewsWidget.php`, this stats widget shows two numbers for today:
@@ -297,9 +306,21 @@ Existing admin users do not receive the new permission automatically. Re-run the
 
 ### Limitations
 
-- Bot traffic is not filtered, so the numbers can be inflated.
+- Bots that do not identify themselves in the User-Agent are still counted. See the bot filter section above.
 - The resource has no detail view per page.
 - Before production use, the privacy policy should mention this processing. A pseudonymised hash can still be personal data under the GDPR, so a legal review is recommended.
+
+### Cleanup: page-views:clean command and schedule
+
+Old page views can be removed with the `page-views:clean` Artisan command, so the table does not grow forever.
+
+- Located at `app/Console/Commands/CleanPageViewsCommand.php`. It deletes every row whose `viewed_on` is before today minus the given number of days, the same rule as the `PageViewCleanupAction` in the Page views list header.
+- `--days` sets how many days to keep (0 to 366, default 60). Values outside this range make the command fail.
+- `--force` runs without the confirmation question. Without it, the command asks first and does nothing when you answer no.
+- Run it manually with `php artisan page-views:clean --days=60` or `php artisan page-views:clean --days=30 --force`.
+- The schedule is defined in `routes/console.php`, next to `activitylog:clean`: `page-views:clean --days=60 --force` runs daily at 06:05.
+- The schedule only runs when the Laravel scheduler is active on the server (`php artisan schedule:run` every minute, for example through a cron entry).
+- To change the retention, edit the `--days` value in `routes/console.php`.
 
 ### Tests
 
