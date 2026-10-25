@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 use App\Actions\Locale\UpdateUserLocale;
 use App\Models\User;
 

@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 use App\Actions\Sitemap\RegenerateSitemap;
 use App\Models\Activity;
 use Illuminate\Support\Facades\Storage;
@@ -25,6 +27,6 @@ test('it does not log the activity when sitemap generation fails', function () {
     $sitemapGenerator->shouldReceive('setUrl')->andThrow(new RuntimeException('Crawl failed'));
     $this->app->instance(SitemapGenerator::class, $sitemapGenerator);
 
-    expect(fn () => app(RegenerateSitemap::class)->handle())->toThrow(RuntimeException::class, 'Crawl failed');
-    expect(Activity::where('description', 'Sitemap generated')->exists())->toBeFalse();
+    expect(fn () => app(RegenerateSitemap::class)->handle())->toThrow(RuntimeException::class, 'Crawl failed')
+        ->and(Activity::where('description', 'Sitemap generated')->exists())->toBeFalse();
 });
