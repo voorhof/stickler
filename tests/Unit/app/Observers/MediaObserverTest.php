@@ -107,3 +107,28 @@ it('does not remove image when deleted media is not in content collection', func
 
     expect($post->fresh()->content)->toBe($content);
 });
+
+it('does nothing when content media belongs to a model without rich content', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $media = Media::create([
+        'model_type' => User::class,
+        'model_id' => $user->id,
+        'collection_name' => 'content',
+        'name' => 'avatar.jpg',
+        'file_name' => 'avatar.jpg',
+        'mime_type' => 'image/jpeg',
+        'disk' => 'public',
+        'size' => 1024,
+        'manipulations' => [],
+        'custom_properties' => [],
+        'generated_conversions' => [],
+        'responsive_images' => [],
+    ]);
+
+    $media->delete();
+
+    expect(Media::find($media->id))->toBeNull()
+        ->and(User::find($user->id))->not->toBeNull();
+});

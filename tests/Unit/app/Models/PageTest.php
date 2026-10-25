@@ -4,7 +4,9 @@
 
 use App\Models\Page;
 use App\Models\User;
+use App\Policies\PagePolicy;
 use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\Support\LogOptions;
@@ -316,4 +318,11 @@ test('it registers standard media conversions', function () {
     expect($names)->toContain('preview')
         ->and($names)->toContain('thumb')
         ->and($names)->toContain('webp');
+});
+
+test('page model has page policy attribute configured', function () {
+    $attributes = new ReflectionClass(Page::class)->getAttributes(UsePolicy::class);
+
+    expect($attributes)->toHaveCount(1)
+        ->and($attributes[0]->getArguments()[0])->toBe(PagePolicy::class);
 });

@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\PageView;
+use App\Policies\PageViewPolicy;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 
 test('a page view can be created with the factory', function () {
     $pageView = PageView::factory()->create([
@@ -66,6 +68,13 @@ test('route name and referrer host are nullable', function () {
 
 test('it uses the page views table', function () {
     expect((new PageView)->getTable())->toBe('page_views');
+});
+
+test('page view model has page view policy attribute configured', function () {
+    $attributes = new ReflectionClass(PageView::class)->getAttributes(UsePolicy::class);
+
+    expect($attributes)->toHaveCount(1)
+        ->and($attributes[0]->getArguments()[0])->toBe(PageViewPolicy::class);
 });
 
 test('it has no updated at column', function () {

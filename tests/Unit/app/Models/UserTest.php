@@ -1,12 +1,14 @@
 <?php
 
-/** @noinspection PhpUnhandledExceptionInspection, PhpPossiblePolymorphicInvocationInspection */
+/** @noinspection PhpPossiblePolymorphicInvocationInspection, PhpUnhandledExceptionInspection */
 
 use App\Models\Permission;
 use App\Models\Post;
 use App\Models\Role;
 use App\Models\User;
+use App\Policies\UserPolicy;
 use Filament\Facades\Filament;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
@@ -416,4 +418,11 @@ test('it registers standard media conversions', function () {
     expect($names)->toContain('preview')
         ->and($names)->toContain('thumb')
         ->and($names)->toContain('webp');
+});
+
+test('user model has user policy attribute configured', function () {
+    $attributes = new ReflectionClass(User::class)->getAttributes(UsePolicy::class);
+
+    expect($attributes)->toHaveCount(1)
+        ->and($attributes[0]->getArguments()[0])->toBe(UserPolicy::class);
 });

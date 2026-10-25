@@ -126,6 +126,28 @@ test('forceDelete delegates to delete', function () {
     expect($policy->forceDelete($user))->toBeTrue();
 });
 
+test('base policy denies users without the matching permission', function () {
+    Permission::create(['name' => 'view posts']);
+    Permission::create(['name' => 'create posts']);
+    Permission::create(['name' => 'update posts']);
+    Permission::create(['name' => 'delete posts']);
+
+    $user = User::factory()->create();
+    $policy = new PostPolicy;
+
+    expect($policy->viewAny($user))->toBeFalse()
+        ->and($policy->view($user))->toBeFalse()
+        ->and($policy->create($user))->toBeFalse()
+        ->and($policy->update($user))->toBeFalse()
+        ->and($policy->reorder($user))->toBeFalse()
+        ->and($policy->deleteAny($user))->toBeFalse()
+        ->and($policy->delete($user))->toBeFalse()
+        ->and($policy->restoreAny($user))->toBeFalse()
+        ->and($policy->restore($user))->toBeFalse()
+        ->and($policy->forceDeleteAny($user))->toBeFalse()
+        ->and($policy->forceDelete($user))->toBeFalse();
+});
+
 test('base policy is abstract', function () {
     $reflection = new ReflectionClass(BasePolicy::class);
 

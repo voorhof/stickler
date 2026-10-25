@@ -4,6 +4,8 @@
 
 use App\Models\Tag;
 use App\Models\User;
+use App\Policies\TagPolicy;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Spatie\Activitylog\Support\LogOptions;
 
@@ -224,4 +226,11 @@ test('it configures activity log options correctly', function () {
     $options = $tag->getActivitylogOptions();
 
     expect($options)->toBeInstanceOf(LogOptions::class);
+});
+
+test('tag model has tag policy attribute configured', function () {
+    $attributes = new ReflectionClass(Tag::class)->getAttributes(UsePolicy::class);
+
+    expect($attributes)->toHaveCount(1)
+        ->and($attributes[0]->getArguments()[0])->toBe(TagPolicy::class);
 });
