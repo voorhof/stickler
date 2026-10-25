@@ -2,6 +2,7 @@
 
 /** @noinspection PhpUndefinedMethodInspection */
 
+use App\Actions\Locale\UpdateUserLocale;
 use App\Http\Controllers\Filament\LocaleController;
 use App\Models\Permission;
 use App\Models\Role;
@@ -48,6 +49,6 @@ describe('locale updates', function () {
 
         $this->expectException(HttpException::class);
 
-        $controller->update($request, 'nl_BE');
+        $controller->update($request, 'nl_BE', app(UpdateUserLocale::class));
     });
 });

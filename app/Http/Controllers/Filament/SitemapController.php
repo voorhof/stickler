@@ -2,21 +2,16 @@
 
 namespace App\Http\Controllers\Filament;
 
+use App\Actions\Sitemap\RegenerateSitemap;
 use App\Http\Controllers\Controller;
 use Filament\Notifications\Notification;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Artisan;
 
 class SitemapController extends Controller
 {
-    public function __invoke(): RedirectResponse
+    public function __invoke(RegenerateSitemap $regenerateSitemap): RedirectResponse
     {
-        Artisan::call('sitemap:generate');
-
-        // Log the activity
-        activity()
-            ->event('updated')
-            ->log('Sitemap generated');
+        $regenerateSitemap->handle();
 
         // Send a custom notification
         Notification::make()
