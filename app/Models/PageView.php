@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Policies\PageViewPolicy;
 use Database\Factories\PageViewFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -29,6 +31,7 @@ use Illuminate\Database\Eloquent\Model;
     'is_bot',
     'viewed_on',
 ])]
+#[UsePolicy(PageViewPolicy::class)]
 class PageView extends Model
 {
     /** @use HasFactory<PageViewFactory> */
