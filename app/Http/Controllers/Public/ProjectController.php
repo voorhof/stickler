@@ -13,7 +13,7 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        $projects = Project::where('published_at', '<=', now())
+        $projects = Project::isPublicPublished()
             ->with('media')
             ->orderBy('order_column', 'asc')
             ->paginate(6);
@@ -31,7 +31,7 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        if ($project->published_at > now() || $project->published_at === null) {
+        if (! $project->isPublished()) {
             return redirect()->route('projects.index');
         }
 

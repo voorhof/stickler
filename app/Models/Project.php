@@ -6,6 +6,7 @@ use App\Observers\ProjectObserver;
 use App\Policies\ProjectPolicy;
 use App\Traits\HasCreatorAndUpdater;
 use App\Traits\HasMediaConversions;
+use App\Traits\HasPublishedScope;
 use App\Traits\HasStandardActivitylogOptions;
 use App\Traits\HasStandardMediaCollections;
 use App\Traits\LogsTrashedActivity;
@@ -59,6 +60,7 @@ use Spatie\Tags\HasTags;
  * @method static create(mixed $validated)
  * @method static forceCreate(array $array)
  * @method static where(string $column, mixed $operator, mixed $value = null)
+ * @method static isPublicPublished()
  */
 #[Fillable([
     'slug',
@@ -91,6 +93,7 @@ class Project extends Model implements HasMedia, HasRichContent, Sortable
     use HasFactory;
 
     use HasMediaConversions;
+    use HasPublishedScope;
     use HasStandardActivitylogOptions;
     use HasStandardMediaCollections {
         HasStandardMediaCollections::registerMediaCollections insteadof InteractsWithMedia;

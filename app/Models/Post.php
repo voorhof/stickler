@@ -6,6 +6,7 @@ use App\Observers\PostObserver;
 use App\Policies\PostPolicy;
 use App\Traits\HasCreatorAndUpdater;
 use App\Traits\HasMediaConversions;
+use App\Traits\HasPublishedScope;
 use App\Traits\HasStandardActivitylogOptions;
 use App\Traits\HasStandardMediaCollections;
 use App\Traits\LogsTrashedActivity;
@@ -57,6 +58,7 @@ use Spatie\Tags\HasTags;
  * @method static create(mixed $validated)
  * @method static forceCreate(array $array)
  * @method static where(string $column, mixed $operator, mixed $value = null)
+ * @method static isPublicPublished()
  */
 #[Fillable([
     'slug',
@@ -87,6 +89,7 @@ class Post extends Model implements HasMedia, HasRichContent, Sortable
     use HasFactory;
 
     use HasMediaConversions;
+    use HasPublishedScope;
     use HasStandardActivitylogOptions;
     use HasStandardMediaCollections {
         HasStandardMediaCollections::registerMediaCollections insteadof InteractsWithMedia;

@@ -162,6 +162,23 @@ test('it is published when published_at is in the past', function () {
     expect($post->published)->toBeTrue();
 });
 
+test('it is public published only when published_at is in the past', function () {
+    User::factory()->create();
+    $publishedPost = Post::factory()->create(['published_at' => now()->subDay()]);
+    Post::factory()->create(['published_at' => null]);
+    Post::factory()->create(['published_at' => now()->addDay()]);
+
+    expect($publishedPost->isPublished())->toBeTrue()
+        ->and(Post::isPublicPublished()->pluck('id')->all())->toBe([$publishedPost->id]);
+});
+
+test('it is not public published when published_at is in the future', function () {
+    User::factory()->create();
+    $post = Post::factory()->create(['published_at' => now()->addDay()]);
+
+    expect($post->isPublished())->toBeFalse();
+});
+
 test('it can be soft deleted', function () {
     User::factory()->create();
     $post = Post::factory()->create();

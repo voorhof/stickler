@@ -13,7 +13,7 @@ class PostController extends Controller
      */
     public function index()
     {
-        $posts = Post::where('published_at', '<=', now())
+        $posts = Post::isPublicPublished()
             ->with('media')
             ->orderBy('order_column', 'asc')
             ->paginate(6);
@@ -31,7 +31,7 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
-        if ($post->published_at > now() || $post->published_at === null) {
+        if (! $post->isPublished()) {
             return redirect()->route('posts.index');
         }
 

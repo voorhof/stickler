@@ -13,7 +13,7 @@ class PageController extends Controller
      */
     public function index()
     {
-        $pages = Page::where('published_at', '<=', now())
+        $pages = Page::isPublicPublished()
             ->with('media')
             ->orderBy('order_column', 'asc')
             ->paginate(6);
@@ -31,7 +31,7 @@ class PageController extends Controller
      */
     public function show(Page $page)
     {
-        if ($page->published_at > now() || $page->published_at === null) {
+        if (! $page->isPublished()) {
             return redirect()->route('welcome.index');
         }
 
