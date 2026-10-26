@@ -20,7 +20,7 @@ return new class extends Migration
             $table->date('viewed_on')->index();
             $table->timestamp('created_at')->useCurrent()->index();
             $table->boolean('is_bot')->default(false)->index();
-            $table->index(['viewed_on', 'visitor_hash']);
+            $table->index(['viewed_on', 'is_bot', 'visitor_hash']);
         });
     }
 

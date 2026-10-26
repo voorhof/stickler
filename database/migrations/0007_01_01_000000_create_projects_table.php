@@ -26,6 +26,8 @@ return new class extends Migration
             $table->softDeletes();
             $table->foreignIdFor(User::class, 'created_by_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignIdFor(User::class, 'updated_by_user_id')->nullable()->constrained('users')->nullOnDelete();
+
+            $table->index(['deleted_at', 'published_at', 'order_column']);
         });
     }
 
