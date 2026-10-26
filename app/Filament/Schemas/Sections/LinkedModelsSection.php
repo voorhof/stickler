@@ -3,6 +3,7 @@
 namespace App\Filament\Schemas\Sections;
 
 use App\Filament\Resources\Media\MediaResource;
+use App\Models\Media;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
@@ -41,11 +42,11 @@ class LinkedModelsSection
                             ->url(fn ($record): string => $resource::getUrl($url, ['record' => $record])),
                         ImageEntry::make('preview_url')
                             ->label(__('Preview'))
-                            ->hidden(fn ($record) => ! $record->preview_url)
+                            ->hidden(fn ($record) => ! $record instanceof Media || ! $record->preview_url)
                             ->hiddenLabel()
                             ->imageSize(200)
                             ->extraImgAttributes(['loading' => 'lazy'])
-                            ->visible(fn ($record) => str_starts_with($record->mime_type, 'image/'))
+                            ->visible(fn ($record) => $record instanceof Media && str_starts_with($record->mime_type, 'image/'))
                             ->url(fn ($record): string => MediaResource::getUrl('edit', ['record' => $record])),
                     ]),
             ]);

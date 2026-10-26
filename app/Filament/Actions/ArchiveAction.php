@@ -29,7 +29,7 @@ class ArchiveAction extends Action
 
         $this->size('sm');
 
-        $this->hidden(fn (): bool => $this->getRecord()?->archived_at !== null);
+        $this->hidden(fn (): bool => ($this->getRecord()?->getAttributes()['archived_at'] ?? null) !== null);
 
         $this->authorize(fn (): string => 'update');
 

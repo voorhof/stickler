@@ -113,6 +113,18 @@ describe('after create behavior', function () {
         expect($role->fresh()->permissions->count())->toBe(0);
     });
 
+    it('does not throw under strict mode when afterCreate runs for a Role without roles or tags', function () {
+        Model::shouldBeStrict();
+
+        $role = Role::factory()->create(['name' => 'Strict', 'guard_name' => 'web']);
+
+        callAfterCreateFor(CreateRole::class, $role);
+
+        expect(Activity::where('subject_type', $role->getMorphClass())
+            ->where('subject_id', $role->getKey())
+            ->exists())->toBeTrue();
+    });
+
     it('logs activity with properties on afterCreate', function () {
         $post = Post::factory()->create();
 

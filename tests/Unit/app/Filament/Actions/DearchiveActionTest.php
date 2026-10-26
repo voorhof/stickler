@@ -9,6 +9,7 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Filament\Facades\Filament;
+use Illuminate\Database\Eloquent\Model;
 
 use function Pest\Livewire\livewire;
 
@@ -48,6 +49,15 @@ describe('visibility', function () {
         $action->record($message);
 
         // The hidden() callback should evaluate to true
+        expect($action->isHidden())->toBeTrue();
+    });
+
+    it('does not throw under strict mode for a model without archived_at', function () {
+        Model::shouldBeStrict();
+
+        $action = DearchiveAction::make();
+        $action->record($this->adminUser);
+
         expect($action->isHidden())->toBeTrue();
     });
 

@@ -6,6 +6,7 @@ use App\Filament\Resources\Messages\Pages\EditMessage;
 use App\Filament\Resources\Posts\Pages\EditPost;
 use App\Filament\Resources\Roles\Pages\EditRole;
 use App\Filament\Resources\Tags\Pages\EditTag;
+use App\Filament\Resources\Users\Pages\EditUser;
 use App\Models\Message;
 use App\Models\Permission;
 use App\Models\Post;
@@ -200,6 +201,35 @@ describe('form mutations', function () {
         $data = mutateFormDataBeforeSaveFor(EditMessage::class, $message, ['archive' => false]);
 
         expect($data['archived_at'])->toBeNull();
+    });
+});
+
+describe('user roles', function () {
+    it('strips roles from form data and stores pending role ids for User', function () {
+        $user = User::factory()->create();
+        $role = Role::factory()->create(['name' => 'Editor']);
+
+        $page = editPageFor(EditUser::class, $user);
+
+        $data = (function () use ($role): array {
+            return $this->mutateFormDataBeforeSave(['name' => 'Renamed', 'roles' => [$role->id]]);
+        })->call($page);
+
+        expect($data)->not->toHaveKey('roles')
+            ->and($data['name'])->toBe('Renamed')
+            ->and($page->pendingRoleIds)->toBe([$role->id]);
+    });
+
+    it('syncs pending roles to the User in afterSave', function () {
+        $user = User::factory()->create();
+        $role = Role::factory()->create(['name' => 'Editor']);
+
+        $page = editPageFor(EditUser::class, $user);
+        $page->pendingRoleIds = [$role->id];
+
+        callAfterSaveFor($page);
+
+        expect($user->fresh()->hasRole('Editor'))->toBeTrue();
     });
 });
 
