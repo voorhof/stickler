@@ -80,6 +80,7 @@ class AdminPanelProvider extends PanelProvider
                     ->url(fn (): string => url(config('telescope.path')), shouldOpenInNewTab: true)
                     ->icon(Heroicon::OutlinedSparkles)
                     ->group(fn () => __('Settings'))
+                    ->visible(fn (): bool => ! app()->isProduction())
                     ->sort(9900),
             ])
             ->globalSearchResourceOptIn()
