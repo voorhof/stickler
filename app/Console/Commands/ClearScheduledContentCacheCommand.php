@@ -4,6 +4,7 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\GenerateSitemapJob;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\Project;
@@ -32,12 +33,6 @@ class ClearScheduledContentCacheCommand extends Command
         $now = now();
         $lastCheckedAt = Cache::get(self::LAST_CHECKED_CACHE_KEY);
 
-        if (! config('responsecache.enabled')) {
-            Cache::forever(self::LAST_CHECKED_CACHE_KEY, $now->toIso8601String());
-
-            return self::SUCCESS;
-        }
-
         $hasNewlyPublishedContent = $lastCheckedAt === null;
 
         if ($lastCheckedAt !== null) {
@@ -47,8 +42,12 @@ class ClearScheduledContentCacheCommand extends Command
         }
 
         if ($hasNewlyPublishedContent) {
-            ResponseCache::clear();
-            $this->info('Response cache cleared for newly published content.');
+            GenerateSitemapJob::dispatch();
+
+            if (config('responsecache.enabled')) {
+                ResponseCache::clear();
+                $this->info('Response cache cleared for newly published content.');
+            }
         }
 
         Cache::forever(self::LAST_CHECKED_CACHE_KEY, $now->toIso8601String());

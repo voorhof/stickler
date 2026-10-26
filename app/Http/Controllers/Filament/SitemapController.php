@@ -2,20 +2,19 @@
 
 namespace App\Http\Controllers\Filament;
 
-use App\Actions\Sitemap\RegenerateSitemap;
 use App\Http\Controllers\Controller;
+use App\Jobs\GenerateSitemapJob;
 use Filament\Notifications\Notification;
 use Illuminate\Http\RedirectResponse;
 
 class SitemapController extends Controller
 {
-    public function __invoke(RegenerateSitemap $regenerateSitemap): RedirectResponse
+    public function __invoke(): RedirectResponse
     {
-        $regenerateSitemap->handle();
+        GenerateSitemapJob::dispatch();
 
-        // Send a custom notification
         Notification::make()
-            ->title(__('Ok! Sitemap generated!'))
+            ->title(__('Ok! Sitemap generation queued!'))
             ->success()
             ->send()
             ->sendToDatabase(auth()->user(), isEventDispatched: true);

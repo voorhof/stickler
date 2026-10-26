@@ -2,6 +2,7 @@
 
 /** @noinspection PhpUndefinedFieldInspection, PhpUndefinedMethodInspection */
 
+use App\Jobs\GenerateSitemapJob;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\Project;
@@ -11,22 +12,24 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Queue;
 use Spatie\ResponseCache\Facades\ResponseCache;
 
 const SCHEDULED_CONTENT_LAST_CHECKED_CACHE_KEY = 'scheduled-content:last-checked-at';
 
 function createScheduledContentForCacheCommandTest(string $modelClass, User $user, ?CarbonInterface $publishedAt): Model
 {
-    return $modelClass::factory()->create([
+    return Model::withoutEvents(fn (): Model => $modelClass::factory()->create([
         'created_by_user_id' => $user->id,
         'updated_by_user_id' => $user->id,
         'published_at' => $publishedAt,
-    ]);
+    ]));
 }
 
 it('clears the response cache when scheduled content becomes public', function (string $modelClass): void {
     $this->travelTo(Carbon::parse('2026-10-26 11:00:00'));
     config(['responsecache.enabled' => false]);
+    Queue::fake([GenerateSitemapJob::class]);
 
     $user = User::factory()->create();
     createScheduledContentForCacheCommandTest($modelClass, $user, now()->subMinutes(30));
@@ -39,6 +42,7 @@ it('clears the response cache when scheduled content becomes public', function (
         ->expectsOutput('Response cache cleared for newly published content.')
         ->assertSuccessful();
 
+    Queue::assertPushed(GenerateSitemapJob::class);
     expect(Cache::get(SCHEDULED_CONTENT_LAST_CHECKED_CACHE_KEY))->toBe(now()->toIso8601String());
 })->with([
     'posts' => [Post::class],
@@ -49,6 +53,7 @@ it('clears the response cache when scheduled content becomes public', function (
 it('does not clear the response cache when no publishable content exists', function (): void {
     $this->travelTo(Carbon::parse('2026-10-26 11:00:00'));
     config(['responsecache.enabled' => true]);
+    Queue::fake([GenerateSitemapJob::class]);
     Cache::forever(SCHEDULED_CONTENT_LAST_CHECKED_CACHE_KEY, now()->subHour()->toIso8601String());
 
     ResponseCache::shouldReceive('clear')->never();
@@ -61,6 +66,7 @@ it('does not clear the response cache when no publishable content exists', funct
 it('does not clear the response cache for content outside the publish window', function (string $publishedAt): void {
     $this->travelTo(Carbon::parse('2026-10-26 11:00:00'));
     config(['responsecache.enabled' => false]);
+    Queue::fake([GenerateSitemapJob::class]);
 
     $user = User::factory()->create();
     createScheduledContentForCacheCommandTest(Post::class, $user, Carbon::parse($publishedAt));
@@ -79,6 +85,7 @@ it('does not clear the response cache for content outside the publish window', f
 it('clears the response cache when content is published exactly at the current check', function (): void {
     $this->travelTo(Carbon::parse('2026-10-26 11:00:00'));
     config(['responsecache.enabled' => false]);
+    Queue::fake([GenerateSitemapJob::class]);
 
     $user = User::factory()->create();
     createScheduledContentForCacheCommandTest(Post::class, $user, now());
@@ -95,6 +102,7 @@ it('clears the response cache when content is published exactly at the current c
 it('clears the response cache once when no previous check is recorded', function (): void {
     $this->travelTo(Carbon::parse('2026-10-26 11:00:00'));
     config(['responsecache.enabled' => true]);
+    Queue::fake([GenerateSitemapJob::class]);
     Cache::forget(SCHEDULED_CONTENT_LAST_CHECKED_CACHE_KEY);
 
     ResponseCache::shouldReceive('clear')->once();
@@ -109,6 +117,7 @@ it('clears the response cache once when no previous check is recorded', function
 it('does not clear the response cache when response caching is disabled', function (): void {
     $this->travelTo(Carbon::parse('2026-10-26 11:00:00'));
     config(['responsecache.enabled' => false]);
+    Queue::fake([GenerateSitemapJob::class]);
     Cache::forget(SCHEDULED_CONTENT_LAST_CHECKED_CACHE_KEY);
 
     ResponseCache::shouldReceive('clear')->never();
@@ -118,9 +127,26 @@ it('does not clear the response cache when response caching is disabled', functi
     expect(Cache::get(SCHEDULED_CONTENT_LAST_CHECKED_CACHE_KEY))->toBe(now()->toIso8601String());
 });
 
+it('queues sitemap generation for newly published content when response caching is disabled', function (): void {
+    $this->travelTo(Carbon::parse('2026-10-26 11:00:00'));
+    config(['responsecache.enabled' => false]);
+    Queue::fake([GenerateSitemapJob::class]);
+
+    $user = User::factory()->create();
+    createScheduledContentForCacheCommandTest(Post::class, $user, now()->subMinutes(30));
+    Cache::forever(SCHEDULED_CONTENT_LAST_CHECKED_CACHE_KEY, now()->subHour()->toIso8601String());
+
+    ResponseCache::shouldReceive('clear')->never();
+
+    $this->artisan('content:clear-scheduled-cache')->assertSuccessful();
+
+    Queue::assertPushed(GenerateSitemapJob::class);
+});
+
 it('does not clear the response cache for soft-deleted scheduled content', function (): void {
     $this->travelTo(Carbon::parse('2026-10-26 11:00:00'));
     config(['responsecache.enabled' => false]);
+    Queue::fake([GenerateSitemapJob::class]);
 
     $user = User::factory()->create();
     $post = createScheduledContentForCacheCommandTest(Post::class, $user, now()->subMinutes(30));

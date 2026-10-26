@@ -2,10 +2,13 @@
 
 /** @noinspection PhpUnhandledExceptionInspection */
 
+use App\Jobs\GenerateSitemapJob;
 use App\Models\Media;
 use App\Models\Post;
 use App\Models\User;
 use App\Observers\PostObserver;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Queue;
 
 use function Pest\Laravel\actingAs;
 
@@ -101,4 +104,30 @@ it('calls syncImageAltToMediaName directly via observer saved method', function 
     $observer->saved($post);
 
     expect($media->fresh()->name)->toBe('Direct Observer Alt');
+});
+
+it('queues sitemap generation when a post is created', function (): void {
+    $user = User::factory()->create();
+    Queue::fake([GenerateSitemapJob::class]);
+    actingAs($user);
+
+    Post::create([
+        'title' => 'Sitemap Observer Test Post',
+        'intro' => 'Testing sitemap generation.',
+    ]);
+
+    Queue::assertPushed(GenerateSitemapJob::class);
+});
+
+it('queues sitemap generation when a post is deleted', function (): void {
+    $user = User::factory()->create();
+    $post = Model::withoutEvents(fn (): Post => Post::factory()->create([
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]));
+    Queue::fake([GenerateSitemapJob::class]);
+
+    $post->delete();
+
+    Queue::assertPushed(GenerateSitemapJob::class);
 });

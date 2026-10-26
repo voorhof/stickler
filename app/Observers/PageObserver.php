@@ -5,6 +5,7 @@
 namespace App\Observers;
 
 use App\Models\Page;
+use App\Observers\Traits\DispatchesSitemapGeneration;
 use App\Observers\Traits\FlushesResponseCache;
 use App\Observers\Traits\SyncsRichContentImageAltText;
 use Exception;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 
 class PageObserver
 {
+    use DispatchesSitemapGeneration;
     use FlushesResponseCache;
     use SyncsRichContentImageAltText;
 
@@ -63,9 +65,16 @@ class PageObserver
     public function saved(Page $page): void
     {
         $this->flushResponseCache();
+        $this->dispatchSitemapGeneration();
         $this->syncImageAltToMediaName($page); // defaults to ['content']
 
         // e.g. a model with two rich-content fields:
         // $this->syncImageAltToMediaName($page, ['content', 'method']);
+    }
+
+    public function deleted(Page $page): void
+    {
+        $this->flushResponseCache();
+        $this->dispatchSitemapGeneration();
     }
 }

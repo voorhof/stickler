@@ -5,6 +5,7 @@
 namespace App\Observers;
 
 use App\Models\Project;
+use App\Observers\Traits\DispatchesSitemapGeneration;
 use App\Observers\Traits\FlushesResponseCache;
 use App\Observers\Traits\SyncsRichContentImageAltText;
 use App\Observers\Traits\TracksCreatorAndUpdaterObserver;
@@ -12,6 +13,7 @@ use Exception;
 
 class ProjectObserver
 {
+    use DispatchesSitemapGeneration;
     use FlushesResponseCache;
     use SyncsRichContentImageAltText;
     use TracksCreatorAndUpdaterObserver;
@@ -25,9 +27,16 @@ class ProjectObserver
     public function saved(Project $project): void
     {
         $this->flushResponseCache();
+        $this->dispatchSitemapGeneration();
         $this->syncImageAltToMediaName($project); // defaults to ['content']
 
         // e.g. a model with two rich-content fields:
         // $this->syncImageAltToMediaName($project, ['content', 'method']);
+    }
+
+    public function deleted(Project $project): void
+    {
+        $this->flushResponseCache();
+        $this->dispatchSitemapGeneration();
     }
 }

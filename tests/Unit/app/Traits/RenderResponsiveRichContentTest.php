@@ -59,7 +59,7 @@ describe('responsive images', function () {
             ->toContain('loading="eager"')
             ->toContain('sizes="(max-width: 768px) 100vw, 1200px"')
             ->toContain('srcset=')
-            ->toContain($media->getUrl());
+            ->toContain($media->getUrl('webp'));
     });
 
     test('it renders non-responsive image markup when media item has no responsive images', function () {

@@ -2,10 +2,12 @@
 
 /** @noinspection PhpUnhandledExceptionInspection */
 
+use App\Jobs\GenerateSitemapJob;
 use App\Models\Media;
 use App\Models\Project;
 use App\Models\User;
 use App\Observers\ProjectObserver;
+use Illuminate\Support\Facades\Queue;
 
 use function Pest\Laravel\actingAs;
 
@@ -101,4 +103,30 @@ it('calls syncImageAltToMediaName directly via observer saved method', function 
     $observer->saved($project);
 
     expect($media->fresh()->name)->toBe('Direct Observer Alt');
+});
+
+it('queues sitemap generation when a project is created', function (): void {
+    $user = User::factory()->create();
+    Queue::fake([GenerateSitemapJob::class]);
+    actingAs($user);
+
+    Project::create([
+        'title' => 'Sitemap Observer Test Project',
+        'intro' => 'Testing sitemap generation.',
+    ]);
+
+    Queue::assertPushed(GenerateSitemapJob::class);
+});
+
+it('queues sitemap generation when a project is deleted', function (): void {
+    $user = User::factory()->create();
+    $project = Project::withoutEvents(fn (): Project => Project::factory()->create([
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]));
+    Queue::fake([GenerateSitemapJob::class]);
+
+    $project->delete();
+
+    Queue::assertPushed(GenerateSitemapJob::class);
 });
