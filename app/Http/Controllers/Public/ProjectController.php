@@ -31,9 +31,7 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        if (! $project->isPublished()) {
-            return redirect()->route('projects.index');
-        }
+        abort_unless($project->isPublished(), 404);
 
         Head::title($project->title)
             ->description($project->intro);

@@ -31,9 +31,7 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
-        if (! $post->isPublished()) {
-            return redirect()->route('posts.index');
-        }
+        abort_unless($post->isPublished(), 404);
 
         Head::title($post->title)
             ->description($post->intro);

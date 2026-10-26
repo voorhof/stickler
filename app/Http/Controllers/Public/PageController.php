@@ -31,9 +31,7 @@ class PageController extends Controller
      */
     public function show(Page $page)
     {
-        if (! $page->isPublished()) {
-            return redirect()->route('welcome.index');
-        }
+        abort_unless($page->isPublished(), 404);
 
         Head::title($page->title)
             ->description($page->intro);
