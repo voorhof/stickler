@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUndefinedMethodInspection */
+
 use App\Filament\Pages\Auth\EditProfile;
 use App\Http\Middleware\SetLocaleFromUserPreference;
 use App\Models\Permission;
@@ -176,7 +178,7 @@ test('it hides the Telescope navigation item in production', function () {
     $application->detectEnvironment(fn (): string => 'production');
 
     try {
-        $navigationItems = (new AdminPanelProvider($application))->panel(new Panel)->getNavigationItems();
+        $navigationItems = new AdminPanelProvider($application)->panel(new Panel)->getNavigationItems();
         $telescopeItem = collect($navigationItems)->first(
             fn (NavigationItem $navigationItem): bool => $navigationItem->getLabel() === 'Telescope ↗',
         );

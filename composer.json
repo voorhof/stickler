@@ -50,7 +50,7 @@
         "spatie/laravel-tags": "^4.12",
         "spatie/opening-hours": "^4.2",
         "spatie/pdf-to-image": "^3.5",
-        "spatie/security-advisories-health-check": "^1.3"
+        "spatie/security-advisories-health-check": "^1.4"
     },
     "require-dev": {
         "fakerphp/faker": "^1.24",
