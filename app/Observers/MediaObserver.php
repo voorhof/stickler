@@ -1,15 +1,19 @@
 <?php
 
+/** @noinspection PhpParameterNameChangedDuringInheritanceInspection */
+
 namespace App\Observers;
 
 use App\Actions\RichContent\RemoveImageFromRichContent;
 use App\Models\Media;
+use App\Observers\Traits\FlushesResponseCache;
 use App\Observers\Traits\TracksCreatorAndUpdaterObserver;
 use Exception;
 use Spatie\MediaLibrary\HasMedia;
 
 class MediaObserver
 {
+    use FlushesResponseCache;
     use TracksCreatorAndUpdaterObserver;
 
     /**
@@ -20,6 +24,8 @@ class MediaObserver
      */
     public function deleted(Media $media): void
     {
+        $this->flushResponseCache();
+
         if ($media->collection_name !== 'content') {
             return;
         }

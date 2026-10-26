@@ -1,14 +1,18 @@
 <?php
 
+/** @noinspection PhpParameterNameChangedDuringInheritanceInspection */
+
 namespace App\Observers;
 
 use App\Models\Page;
+use App\Observers\Traits\FlushesResponseCache;
 use App\Observers\Traits\SyncsRichContentImageAltText;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 
 class PageObserver
 {
+    use FlushesResponseCache;
     use SyncsRichContentImageAltText;
 
     /**
@@ -58,6 +62,7 @@ class PageObserver
      */
     public function saved(Page $page): void
     {
+        $this->flushResponseCache();
         $this->syncImageAltToMediaName($page); // defaults to ['content']
 
         // e.g. a model with two rich-content fields:

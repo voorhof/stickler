@@ -1,14 +1,18 @@
 <?php
 
+/** @noinspection PhpParameterNameChangedDuringInheritanceInspection */
+
 namespace App\Observers;
 
 use App\Models\Project;
+use App\Observers\Traits\FlushesResponseCache;
 use App\Observers\Traits\SyncsRichContentImageAltText;
 use App\Observers\Traits\TracksCreatorAndUpdaterObserver;
 use Exception;
 
 class ProjectObserver
 {
+    use FlushesResponseCache;
     use SyncsRichContentImageAltText;
     use TracksCreatorAndUpdaterObserver;
 
@@ -20,6 +24,7 @@ class ProjectObserver
      */
     public function saved(Project $project): void
     {
+        $this->flushResponseCache();
         $this->syncImageAltToMediaName($project); // defaults to ['content']
 
         // e.g. a model with two rich-content fields:
