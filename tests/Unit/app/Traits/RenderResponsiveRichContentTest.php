@@ -4,7 +4,9 @@
 
 use App\Models\Page;
 use App\Models\User;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
@@ -85,6 +87,45 @@ describe('responsive images', function () {
             ->toContain('loading="lazy"')
             ->not->toContain('srcset=')
             ->not->toContain('sizes=');
+    });
+
+    test('it renders images from other models with one batched media query', function () {
+        $page = Page::factory()->create();
+        $firstOwner = Page::factory()->create();
+        $secondOwner = Page::factory()->create();
+
+        $firstMedia = $firstOwner->addMedia(UploadedFile::fake()->image('first.jpg'))
+            ->toMediaCollection('documents');
+        $secondMedia = $secondOwner->addMedia(UploadedFile::fake()->image('second.jpg'))
+            ->toMediaCollection('documents');
+
+        $page->update([
+            'content' => sprintf(
+                '<img data-id="%s" alt="First image" /><img data-id="%s" alt="Second image" />',
+                $firstMedia->uuid,
+                $secondMedia->uuid,
+            ),
+        ]);
+        $page = $page->fresh();
+
+        $mediaQueries = [];
+        DB::listen(function (QueryExecuted $query) use (&$mediaQueries): void {
+            $sql = mb_strtolower($query->sql);
+
+            if (str_contains($sql, 'from "media"') && str_contains($sql, 'uuid')) {
+                $mediaQueries[] = $query;
+            }
+        });
+
+        $rendered = $page->renderResponsiveRichContent();
+
+        expect($mediaQueries)
+            ->toHaveCount(1)
+            ->and($mediaQueries[0]->sql)->toContain(' in ');
+
+        expect($rendered)
+            ->toContain($firstMedia->getUrl())
+            ->toContain($secondMedia->getUrl());
     });
 });
 

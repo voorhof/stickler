@@ -4,7 +4,9 @@
 
 namespace App\Traits;
 
+use DOMDocument;
 use Filament\Forms\Components\RichEditor\RichContentRenderer;
+use Illuminate\Support\Str;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 trait RenderResponsiveRichContent
@@ -16,8 +18,21 @@ trait RenderResponsiveRichContent
     {
         $attribute = $this->getRichContentAttribute($attributeName);
         $renderer = $attribute ? $attribute->getRenderer() : RichContentRenderer::make($this->getAttribute($attributeName));
+        $uuids = $this->extractRichContentMediaUuids($this->getAttribute($attributeName));
+        $mediaByUuid = collect();
 
-        $renderer->processNodesUsing(function (object $node): void {
+        if ($uuids !== []) {
+            $mediaByUuid = $this->media->keyBy('uuid')->toBase();
+            $missingUuids = collect($uuids)->diff($mediaByUuid->keys());
+
+            if ($missingUuids->isNotEmpty()) {
+                $mediaByUuid = $mediaByUuid->merge(
+                    Media::query()->whereIn('uuid', $missingUuids)->get()->keyBy('uuid')->toBase(),
+                );
+            }
+        }
+
+        $renderer->processNodesUsing(function (object $node) use ($mediaByUuid): void {
             if (($node->type ?? null) !== 'image') {
                 return;
             }
@@ -29,7 +44,7 @@ trait RenderResponsiveRichContent
             }
 
             /** @var Media|null $media */
-            $media = $this->media->firstWhere('uuid', $uuid) ?? Media::where('uuid', $uuid)->first();
+            $media = $mediaByUuid->get($uuid);
 
             if (! $media) {
                 return;
@@ -79,5 +94,40 @@ trait RenderResponsiveRichContent
         });
 
         return $renderer->toHtml();
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function extractRichContentMediaUuids(mixed $content): array
+    {
+        if (! is_string($content) || blank($content)) {
+            return [];
+        }
+
+        $document = new DOMDocument;
+        $previousErrorHandling = libxml_use_internal_errors(true);
+
+        try {
+            $document->loadHTML(
+                '<?xml encoding="UTF-8"><div>'.$content.'</div>',
+                LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD,
+            );
+        } finally {
+            libxml_clear_errors();
+            libxml_use_internal_errors($previousErrorHandling);
+        }
+
+        $uuids = [];
+
+        foreach ($document->getElementsByTagName('img') as $image) {
+            $uuid = $image->getAttribute('data-id');
+
+            if (Str::isUuid($uuid)) {
+                $uuids[] = $uuid;
+            }
+        }
+
+        return array_values(array_unique($uuids));
     }
 }
