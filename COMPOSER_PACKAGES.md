@@ -25,19 +25,21 @@ log entries, database queries, queued jobs, mail, notifications, cache operation
 
 **Service Provider** was published to `app/Providers/TelescopeServiceProvider.php`.
 
+The Laravel Telescope provider and the application provider are registered by `AppServiceProvider` only outside production. The package is excluded from automatic provider discovery, so Telescope is not booted in production; its Filament navigation item is also hidden there. The config default for `TELESCOPE_ENABLED` is `false`, while `.env.example` enables it for local and staging environments.
+
 **Migration** file was published to `0001_01_01_000007_create_telescope_entries_table.php`.
 
 **Config** file was published to `config/telescope.php`.
 
-**Environment** variables were added to `.env` file that are used inside the config file, with default values:
+**Environment** variables are included in `.env.example` and used by the config file. The config fallback for `TELESCOPE_ENABLED` is `false`; the example enables it outside production:
 
 ```dotenv
 TELESCOPE_ENABLED=true
 TELESCOPE_PATH=admin/telescope
 ```
 
-Access to Telescope is restricted in production by default for users with the `access telescope` permission.  
-This is defined in the gate() method of the `TelescopeServiceProvider`:
+In environments where Telescope is enabled, access is restricted to users with the `access telescope` permission.
+This is defined in the `gate()` method of the `TelescopeServiceProvider`:
 
 ```php
 protected function gate(): void
@@ -305,8 +307,9 @@ public function registerMediaConversions(?BaseMedia $media = null): void
 ```
 
 The `registerStandardMediaConversions` method is provided by the `HasMediaConversions` trait,
-which defines the `preview` (200×200) and `thumb` (40×40) conversions with deferred, non-queued processing,
-PDF page extraction, and video frame extraction. The `HasStandardMediaCollections` trait
+which defines the `preview` (400×400) and `thumb` (40×40) conversions, queued on the `media` queue,
+with PDF page extraction and video frame extraction. It also defines a queued responsive WebP conversion
+for the `cover`, `images`, and `content` collections. The `HasStandardMediaCollections` trait
 registers the standard media collections (`avatar`, `images`, `videos`, `documents`) with responsive images.
 
 A new **Media** model was created inside the `app/models` folder that extends the default SpatieMedia model.
@@ -752,13 +755,11 @@ This works by crawling your entire site.
 
 **Config** file was published to `config/sitemap.php`.
 
-An **Artisan command** files was created in `app/Console/Commands/GenerateSitemap.php` for generating the sitemap.
+An Artisan command is available at `app/Console/Commands/GenerateSitemap.php` for generating the sitemap.
 
-A **controller** was created inside `app/Http/Controllers/Filament/SitemapController.php` 
-for generating the sitemap from inside the Filament admin panel.
+A queued `GenerateSitemapJob` runs the sitemap regeneration action. The admin controller dispatches this job from the dashboard widget, and publication changes to posts, pages, and projects also dispatch it through their observers.
 
-The **route** to the controller was registered inside `routes/filament.php` 
-and a link to the route was added to the StickerWidget view `stickler-widget.blade.php` used the admin dashboard.
+The admin route is a `POST` endpoint protected by the `edit settings` permission. The dashboard widget submits a CSRF-protected form rather than linking to a mutating `GET` URL.
 
 A sitemap link is also added in the head section of the app layout:
 
