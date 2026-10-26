@@ -15,6 +15,8 @@ return [
 
     'default' => env('QUEUE_CONNECTION', 'database'),
 
+    'sitemap_connection' => env('SITEMAP_QUEUE_CONNECTION', env('QUEUE_CONNECTION', 'database')),
+
     /*
     |--------------------------------------------------------------------------
     | Queue Connections

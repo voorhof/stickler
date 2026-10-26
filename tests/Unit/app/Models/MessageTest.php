@@ -4,6 +4,8 @@
 
 use App\Models\Message;
 use App\Models\User;
+use App\Policies\MessagePolicy;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\Support\LogOptions;
@@ -274,4 +276,11 @@ test('it configures activity log options correctly', function () {
     $options = $message->getActivitylogOptions();
 
     expect($options)->toBeInstanceOf(LogOptions::class);
+});
+
+test('message model has message policy attribute configured', function () {
+    $attributes = new ReflectionClass(Message::class)->getAttributes(UsePolicy::class);
+
+    expect($attributes)->toHaveCount(1)
+        ->and($attributes[0]->getArguments()[0])->toBe(MessagePolicy::class);
 });

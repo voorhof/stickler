@@ -5,6 +5,8 @@
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use App\Policies\RolePolicy;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Permission\Exceptions\RoleAlreadyExists;
 
@@ -300,4 +302,11 @@ test('it configures activity log options correctly', function () {
     $options = $role->getActivitylogOptions();
 
     expect($options)->toBeInstanceOf(LogOptions::class);
+});
+
+test('role model has role policy attribute configured', function () {
+    $attributes = new ReflectionClass(Role::class)->getAttributes(UsePolicy::class);
+
+    expect($attributes)->toHaveCount(1)
+        ->and($attributes[0]->getArguments()[0])->toBe(RolePolicy::class);
 });

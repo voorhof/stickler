@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUndefinedMethodInspection */
+
 use App\Filament\Pages\Auth\EditProfile;
 use App\Http\Middleware\SetLocaleFromUserPreference;
 use App\Models\Permission;
@@ -12,6 +14,7 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -165,7 +168,27 @@ test('it configures navigation items correctly', function () {
         ->and($telescopeItem->getUrl())->toBe(url(config('telescope.path')))
         ->and($telescopeItem->getIcon())->toBe(Heroicon::OutlinedSparkles)
         ->and($telescopeItem->getGroup())->toBe(__('Settings'))
-        ->and($telescopeItem->getSort())->toBe(9900);
+        ->and($telescopeItem->getSort())->toBe(9900)
+        ->and($telescopeItem->isVisible())->toBeTrue();
+});
+
+test('it hides the Telescope navigation item in production', function () {
+    $application = app();
+    $originalEnvironment = $application->environment();
+    $application->detectEnvironment(fn (): string => 'production');
+
+    try {
+        $navigationItems = new AdminPanelProvider($application)->panel(new Panel)->getNavigationItems();
+        $telescopeItem = collect($navigationItems)->first(
+            fn (NavigationItem $navigationItem): bool => $navigationItem->getLabel() === 'Telescope ↗',
+        );
+        $telescopeItemIsVisible = $telescopeItem?->isVisible();
+    } finally {
+        $application->detectEnvironment(fn (): string => $originalEnvironment);
+    }
+
+    expect($telescopeItem)->not->toBeNull()
+        ->and($telescopeItemIsVisible)->toBeFalse();
 });
 
 test('it configures user menu items correctly', function () {
@@ -181,7 +204,9 @@ test('it configures user menu items correctly', function () {
     $nlItem = $userMenuItems['locale-nl_BE'];
 
     expect($enItem->getUrl())->toBe(route('filament.admin.locale.update', ['locale' => 'en_US']))
-        ->and($nlItem->getUrl())->toBe(route('filament.admin.locale.update', ['locale' => 'nl_BE']));
+        ->and($nlItem->getUrl())->toBe(route('filament.admin.locale.update', ['locale' => 'nl_BE']))
+        ->and($enItem->shouldPostToUrl())->toBeTrue()
+        ->and($nlItem->shouldPostToUrl())->toBeTrue();
 
     $originalLocale = app()->getLocale();
 

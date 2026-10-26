@@ -17,7 +17,7 @@ class ArchiveToggle
             ->label(__('Archive :model', ['model' => __($modelLabel)]))
             ->live()
             ->afterStateHydrated(function (Toggle $component, ?Model $record) {
-                if ($record && $record->archived_at) {
+                if ($record && array_key_exists('archived_at', $record->getAttributes()) && $record->getAttribute('archived_at')) {
                     $component->state(true);
                 } else {
                     $component->state(false);
@@ -28,7 +28,7 @@ class ArchiveToggle
                 if ($state && ($get('archived_at') === null)) {
                     $set('archived_at', now());
                 } else {
-                    $set('archived_at', $record->archived_at ?? null);
+                    $set('archived_at', $record?->getAttributes()['archived_at'] ?? null);
                 }
             })
             ->hiddenOn('create')

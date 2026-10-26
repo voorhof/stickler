@@ -41,7 +41,7 @@
         "spatie/laravel-health": "^1.40",
         "spatie/laravel-honeypot": "^4.7",
         "spatie/laravel-http-logger": "^1.12",
-        "spatie/laravel-medialibrary": "11.23",
+        "spatie/laravel-medialibrary": "^11.23",
         "spatie/laravel-permission": "^8.3",
         "spatie/laravel-responsecache": "^8.6",
         "spatie/laravel-settings": "^3.10",
@@ -50,7 +50,7 @@
         "spatie/laravel-tags": "^4.12",
         "spatie/opening-hours": "^4.2",
         "spatie/pdf-to-image": "^3.5",
-        "spatie/security-advisories-health-check": "^1.3"
+        "spatie/security-advisories-health-check": "^1.4"
     },
     "require-dev": {
         "fakerphp/faker": "^1.24",
@@ -117,7 +117,9 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": []
+            "dont-discover": [
+                "laravel/telescope"
+            ]
         }
     },
     "config": {

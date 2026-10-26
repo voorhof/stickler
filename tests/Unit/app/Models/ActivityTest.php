@@ -3,6 +3,8 @@
 use App\Models\Activity;
 use App\Models\Post;
 use App\Models\User;
+use App\Policies\ActivityPolicy;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Support\Collection;
 use Spatie\Activitylog\Enums\ActivityEvent;
 use Spatie\Activitylog\Support\LogOptions;
@@ -145,4 +147,11 @@ test('it configures activity log options correctly', function () {
     $options = $activity->getActivitylogOptions();
 
     expect($options)->toBeInstanceOf(LogOptions::class);
+});
+
+test('activity model has activity policy attribute configured', function () {
+    $attributes = new ReflectionClass(Activity::class)->getAttributes(UsePolicy::class);
+
+    expect($attributes)->toHaveCount(1)
+        ->and($attributes[0]->getArguments()[0])->toBe(ActivityPolicy::class);
 });

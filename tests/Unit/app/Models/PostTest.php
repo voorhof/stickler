@@ -4,7 +4,9 @@
 
 use App\Models\Post;
 use App\Models\User;
+use App\Policies\PostPolicy;
 use Filament\Forms\Components\RichEditor\Models\Contracts\HasRichContent;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\Support\LogOptions;
@@ -158,6 +160,23 @@ test('it is published when published_at is in the past', function () {
     $post = Post::factory()->create(['published_at' => now()->subDay()]);
 
     expect($post->published)->toBeTrue();
+});
+
+test('it is public published only when published_at is in the past', function () {
+    User::factory()->create();
+    $publishedPost = Post::factory()->create(['published_at' => now()->subDay()]);
+    Post::factory()->create(['published_at' => null]);
+    Post::factory()->create(['published_at' => now()->addDay()]);
+
+    expect($publishedPost->isPublished())->toBeTrue()
+        ->and(Post::isPublicPublished()->pluck('id')->all())->toBe([$publishedPost->id]);
+});
+
+test('it is not public published when published_at is in the future', function () {
+    User::factory()->create();
+    $post = Post::factory()->create(['published_at' => now()->addDay()]);
+
+    expect($post->isPublished())->toBeFalse();
 });
 
 test('it can be soft deleted', function () {
@@ -316,4 +335,11 @@ test('it registers standard media conversions', function () {
     expect($names)->toContain('preview')
         ->and($names)->toContain('thumb')
         ->and($names)->toContain('webp');
+});
+
+test('post model has post policy attribute configured', function () {
+    $attributes = new ReflectionClass(Post::class)->getAttributes(UsePolicy::class);
+
+    expect($attributes)->toHaveCount(1)
+        ->and($attributes[0]->getArguments()[0])->toBe(PostPolicy::class);
 });

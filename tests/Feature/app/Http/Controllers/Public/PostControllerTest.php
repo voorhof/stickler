@@ -90,7 +90,7 @@ describe('posts show', function () {
             ->and($html)->toContain($post->intro);
     });
 
-    test('it redirects to posts index when showing a post published in the future', function () {
+    test('it returns 404 when showing a post published in the future', function () {
         User::factory()->create();
 
         $futurePost = Post::factory()->create([
@@ -100,10 +100,10 @@ describe('posts show', function () {
 
         $response = $this->get(route('posts.show', $futurePost));
 
-        $response->assertRedirect(route('posts.index'));
+        $response->assertNotFound();
     });
 
-    test('it redirects to posts index when showing an unpublished post with null published_at', function () {
+    test('it returns 404 when showing an unpublished post with null published_at', function () {
         User::factory()->create();
 
         $unpublishedPost = Post::factory()->create([
@@ -113,7 +113,7 @@ describe('posts show', function () {
 
         $response = $this->get(route('posts.show', $unpublishedPost));
 
-        $response->assertRedirect(route('posts.index'));
+        $response->assertNotFound();
     });
 
     test('it returns 404 when showing a nonexistent post', function () {
@@ -140,7 +140,7 @@ describe('controller methods', function () {
             ->and($view->getData()['posts']->pluck('id')->all())->toContain($post->id);
     });
 
-    test('direct controller show method returns view for published post or redirects for unpublished post', function () {
+    test('direct controller show method returns view for published post', function () {
         User::factory()->create();
 
         $publishedPost = Post::factory()->create([
@@ -153,12 +153,5 @@ describe('controller methods', function () {
         expect($view->name())->toBe('public.posts.show')
             ->and($view->getData()['post']->id)->toBe($publishedPost->id);
 
-        $unpublishedPost = Post::factory()->create([
-            'published_at' => null,
-        ]);
-
-        $redirectResponse = $controller->show($unpublishedPost);
-
-        expect($redirectResponse->isRedirect(route('posts.index')))->toBeTrue();
     });
 });

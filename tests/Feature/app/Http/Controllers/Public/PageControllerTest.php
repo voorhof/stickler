@@ -90,7 +90,7 @@ describe('pages show', function () {
             ->and($html)->toContain($page->intro);
     });
 
-    test('it redirects to welcome index when showing a page published in the future', function () {
+    test('it returns 404 when showing a page published in the future', function () {
         User::factory()->create();
 
         $futurePage = Page::factory()->create([
@@ -100,10 +100,10 @@ describe('pages show', function () {
 
         $response = $this->get(route('pages.show', $futurePage));
 
-        $response->assertRedirect(route('welcome.index'));
+        $response->assertNotFound();
     });
 
-    test('it redirects to welcome index when showing an unpublished page with null published_at', function () {
+    test('it returns 404 when showing an unpublished page with null published_at', function () {
         User::factory()->create();
 
         $unpublishedPage = Page::factory()->create([
@@ -113,7 +113,7 @@ describe('pages show', function () {
 
         $response = $this->get(route('pages.show', $unpublishedPage));
 
-        $response->assertRedirect(route('welcome.index'));
+        $response->assertNotFound();
     });
 
     test('it returns 404 when showing a nonexistent page', function () {
@@ -140,7 +140,7 @@ describe('controller methods', function () {
             ->and($view->getData()['pages']->pluck('id')->all())->toContain($page->id);
     });
 
-    test('direct controller show method returns view for published page or redirects for unpublished page', function () {
+    test('direct controller show method returns view for published page', function () {
         User::factory()->create();
 
         $publishedPage = Page::factory()->create([
@@ -153,12 +153,5 @@ describe('controller methods', function () {
         expect($view->name())->toBe('public.pages.show')
             ->and($view->getData()['page']->id)->toBe($publishedPage->id);
 
-        $unpublishedPage = Page::factory()->create([
-            'published_at' => null,
-        ]);
-
-        $redirectResponse = $controller->show($unpublishedPage);
-
-        expect($redirectResponse->isRedirect(route('welcome.index')))->toBeTrue();
     });
 });

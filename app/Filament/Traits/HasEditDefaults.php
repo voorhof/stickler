@@ -8,6 +8,8 @@ use App\Filament\Actions\HardDeleteAction;
 use App\Filament\Actions\RestoreDeletedAction;
 use App\Filament\Actions\SoftDeleteAction;
 use App\Models\Permission;
+use App\Models\Role;
+use App\Models\User;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Illuminate\Database\Eloquent\Model;
@@ -25,7 +27,7 @@ trait HasEditDefaults
         $modelClass = parent::getModel();
 
         // Set the ‘read’ attribute to ‘true’ for a Message model when it is viewed
-        if (! $this->record->read && $modelClass === 'App\Models\Message') {
+        if ($modelClass === 'App\Models\Message' && ! $this->record->read) {
             $this->record->updateQuietly(['read' => true]);
         }
     }
@@ -89,10 +91,26 @@ trait HasEditDefaults
             if (! ($data['archive'] ?? false)) {
                 $data['archived_at'] = null;
             }
+
+            unset($data['archive']);
+        }
+
+        if ($this->record instanceof User && array_key_exists('roles', $data)) {
+            $this->pendingRoleIds = $data['roles'] ? (array) $data['roles'] : [];
+            unset($data['roles']);
+        }
+
+        if ($this->record instanceof Role && array_key_exists('permissions', $data)) {
+            $this->pendingPermissionIds = $data['permissions'] ? (array) $data['permissions'] : [];
+            unset($data['permissions']);
         }
 
         return $data;
     }
+
+    public array $pendingRoleIds = [];
+
+    public array $pendingPermissionIds = [];
 
     public array $oldTags = [];
 
@@ -102,9 +120,9 @@ trait HasEditDefaults
 
     protected function beforeSave(): void
     {
-        $this->oldTags = $this->record->tags ? $this->record->tags()->pluck('name')->toArray() : [];
-        $this->oldPermissions = $this->record->permissions ? $this->record->permissions()->pluck('name')->toArray() : [];
-        $this->oldRoles = $this->record->roles ? $this->record->getRoleNames() : [];
+        $this->oldTags = method_exists($this->record, 'tags') ? $this->record->tags()->pluck('name')->toArray() : [];
+        $this->oldPermissions = method_exists($this->record, 'permissions') ? $this->record->permissions()->pluck('name')->toArray() : [];
+        $this->oldRoles = method_exists($this->record, 'getRoleNames') ? $this->record->getRoleNames() : [];
     }
 
     protected function afterSave(): void
@@ -116,8 +134,13 @@ trait HasEditDefaults
             $notification->sendToDatabase(auth()->user(), isEventDispatched: true);
         }
 
+        // Sync Spatie roles for User records (roles is a relation, not a column)
+        if ($this->record instanceof User && $this->pendingRoleIds !== []) {
+            $this->record->syncRoles(Role::whereIn('id', $this->pendingRoleIds)->get());
+        }
+
         // Set replied_at when reply is filled
-        if ($this->record->reply) {
+        if ($this->record->getTable() === 'messages' && $this->record->reply) {
             $this->record->updateQuietly([
                 'replied' => true,
                 'replied_at' => $this->record->replied_at ?? now(),
@@ -125,7 +148,11 @@ trait HasEditDefaults
         }
 
         // Role model actions
-        if ($this->record->permissions) {
+        if ($this->record instanceof Role && $this->pendingPermissionIds !== []) {
+            $this->record->syncPermissions(Permission::whereIn('id', $this->pendingPermissionIds)->get());
+        }
+
+        if (method_exists($this->record, 'permissions')) {
 
             // Sync all permissions to the Admin role by default (for safety)
             if ($this->record->name === 'Admin') {
@@ -159,8 +186,8 @@ trait HasEditDefaults
         }
 
         // Log changes if any (only if NO other activity was logged)
-        $newTags = $this->record->tags ? $this->record->tags()->pluck('name')->toArray() : [];
-        $newRoles = $this->record->roles ? $this->record->getRoleNames() : [];
+        $newTags = method_exists($this->record, 'tags') ? $this->record->tags()->pluck('name')->toArray() : [];
+        $newRoles = method_exists($this->record, 'getRoleNames') ? $this->record->getRoleNames() : [];
 
         $tagsChanged = array_diff($this->oldTags, $newTags) || array_diff($newTags, $this->oldTags);
         $rolesChanged = array_diff($this->oldRoles, $newRoles) || array_diff($newRoles, $this->oldRoles);

@@ -110,6 +110,8 @@ It defines:
 - The path to access the panel (`/admin`).
 - Colors, navigation, and middleware.
 - Automated discovery of resources, pages, and widgets.
+- The locale user-menu actions submit `POST` requests to save the signed-in user's locale preference.
+- The Telescope navigation item is hidden in production; Telescope itself is not registered there. See [COMPOSER_PACKAGES.md](COMPOSER_PACKAGES.md#laravel-telescope).
 
 ### 2. UI Service Provider
 
@@ -269,6 +271,7 @@ The admin panel shows the results in a dashboard widget and in a view-only resou
 
 - `App\Models\PageView` stores one row per visit in the `page_views` table: `path`, `route_name`, `referrer_host`, `visitor_hash`, `viewed_on` and `created_at`. The table has no `updated_at` column.
 - `App\Http\Middleware\TrackPageView` is registered with `prepend` in `bootstrap/app.php`, so it runs before `CacheResponse`. Cached responses are therefore still counted.
+- A qualifying view is inserted using Laravel's `defer()` helper after the response has been sent, keeping the database write off the request's response path.
 - Only successful `GET` requests (status 200) on these route names are tracked: `welcome.index`, `contact.index`, `terms.*`, `posts.*`, `projects.*` and `pages.*`. Admin and other routes are never tracked.
 - The visitor is stored as `hash_hmac('sha256', ip|user-agent, app.key|date)`. The salt changes every day, so the same visitor cannot be followed across days. The raw IP address is never stored.
 - Only the referrer host is stored, never the full referrer URL. The referrer is `null` for internal navigation.

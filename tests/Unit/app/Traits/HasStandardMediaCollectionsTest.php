@@ -119,6 +119,16 @@ test('it sets fallback url on avatar collection using model name', function () {
         ->and($avatar->fallbackUrls['default'])->toContain('J');
 });
 
+test('it sets fallback url on avatar collection using post title when model has no name', function () {
+    User::factory()->create();
+    $post = Post::factory()->create(['title' => 'Hello World']);
+
+    $post->registerMediaCollections();
+
+    expect($post->mediaCollections['avatar']->fallbackUrls['default'])
+        ->toBe('https://ui-avatars.com/api/?name=H&format=svg&color=FFFFFF&background=0b0809');
+});
+
 test('it uses configured disk for all collections', function () {
     User::factory()->create();
     $post = Post::factory()->create();

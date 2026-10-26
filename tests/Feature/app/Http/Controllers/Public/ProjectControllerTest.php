@@ -90,7 +90,7 @@ describe('projects show', function () {
             ->and($html)->toContain($project->intro);
     });
 
-    test('it redirects to projects index when showing a project published in the future', function () {
+    test('it returns 404 when showing a project published in the future', function () {
         User::factory()->create();
 
         $futureProject = Project::factory()->create([
@@ -100,10 +100,10 @@ describe('projects show', function () {
 
         $response = $this->get(route('projects.show', $futureProject));
 
-        $response->assertRedirect(route('projects.index'));
+        $response->assertNotFound();
     });
 
-    test('it redirects to projects index when showing an unpublished project with null published_at', function () {
+    test('it returns 404 when showing an unpublished project with null published_at', function () {
         User::factory()->create();
 
         $unpublishedProject = Project::factory()->create([
@@ -113,7 +113,7 @@ describe('projects show', function () {
 
         $response = $this->get(route('projects.show', $unpublishedProject));
 
-        $response->assertRedirect(route('projects.index'));
+        $response->assertNotFound();
     });
 
     test('it returns 404 when showing a nonexistent project', function () {
@@ -140,7 +140,7 @@ describe('controller methods', function () {
             ->and($view->getData()['projects']->pluck('id')->all())->toContain($project->id);
     });
 
-    test('direct controller show method returns view for published project or redirects for unpublished project', function () {
+    test('direct controller show method returns view for published project', function () {
         User::factory()->create();
 
         $publishedProject = Project::factory()->create([
@@ -153,12 +153,5 @@ describe('controller methods', function () {
         expect($view->name())->toBe('public.projects.show')
             ->and($view->getData()['project']->id)->toBe($publishedProject->id);
 
-        $unpublishedProject = Project::factory()->create([
-            'published_at' => null,
-        ]);
-
-        $redirectResponse = $controller->show($unpublishedProject);
-
-        expect($redirectResponse->isRedirect(route('projects.index')))->toBeTrue();
     });
 });

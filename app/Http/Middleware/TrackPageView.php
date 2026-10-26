@@ -5,6 +5,9 @@ namespace App\Http\Middleware;
 use App\Models\PageView;
 use Closure;
 use Illuminate\Http\Request;
+
+use function Illuminate\Support\defer;
+
 use Jaybizzle\CrawlerDetect\CrawlerDetect;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -35,14 +38,16 @@ class TrackPageView
             return $response;
         }
 
-        PageView::create([
+        $pageViewAttributes = [
             'path' => '/'.mb_ltrim($request->path(), '/'),
             'route_name' => $request->route()?->getName(),
             'referrer_host' => $this->referrerHost($request),
             'visitor_hash' => $this->visitorHash($request),
             'is_bot' => $this->isBot($request),
             'viewed_on' => now()->toDateString(),
-        ]);
+        ];
+
+        defer(fn () => PageView::create($pageViewAttributes));
 
         return $response;
     }

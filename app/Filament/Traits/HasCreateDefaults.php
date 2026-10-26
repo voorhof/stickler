@@ -6,6 +6,7 @@ namespace App\Filament\Traits;
 
 // use App\Mail\Filament\UserCreatedMail;
 use App\Models\Permission;
+use App\Models\Role;
 use App\Models\User;
 // use Illuminate\Support\Facades\Mail;
 // use Illuminate\Support\Str;
@@ -20,6 +21,25 @@ trait HasCreateDefaults
      * so we can include it in the welcome email for a newly created user.
      */
     protected ?string $randomPassword = null;
+
+    public array $pendingRoleIds = [];
+
+    public array $pendingPermissionIds = [];
+
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        if (parent::getModel() === 'App\Models\User' && array_key_exists('roles', $data)) {
+            $this->pendingRoleIds = $data['roles'] ? (array) $data['roles'] : [];
+            unset($data['roles']);
+        }
+
+        if (parent::getModel() === 'App\Models\Role' && array_key_exists('permissions', $data)) {
+            $this->pendingPermissionIds = $data['permissions'] ? (array) $data['permissions'] : [];
+            unset($data['permissions']);
+        }
+
+        return $data;
+    }
 
     /*
     protected function mutateFormDataBeforeCreate(array $data): array
@@ -61,6 +81,14 @@ trait HasCreateDefaults
             $notification->sendToDatabase(auth()->user(), isEventDispatched: true);
         }
 
+        if ($this->record instanceof User && $this->pendingRoleIds !== []) {
+            $this->record->syncRoles(Role::whereIn('id', $this->pendingRoleIds)->get());
+        }
+
+        if ($this->record instanceof Role && $this->pendingPermissionIds !== []) {
+            $this->record->syncPermissions(Permission::whereIn('id', $this->pendingPermissionIds)->get());
+        }
+
         // Role model actions
         if (parent::getModel() === 'App\Models\Role') {
             $record = $this->getRecord();
@@ -85,9 +113,9 @@ trait HasCreateDefaults
         // }
 
         // Log linked models for newly created records (merging with existing 'created' activity if possible)
-        $tags = $this->record->tags ? $this->record->tags()->pluck('name')->toArray() : [];
-        $permissions = $this->record->permissions ? $this->record->permissions()->pluck('name')->toArray() : [];
-        $roles = $this->record->roles ? $this->record->getRoleNames() : [];
+        $tags = method_exists($this->record, 'tags') ? $this->record->tags()->pluck('name')->toArray() : [];
+        $permissions = method_exists($this->record, 'permissions') ? $this->record->permissions()->pluck('name')->toArray() : [];
+        $roles = method_exists($this->record, 'getRoleNames') ? $this->record->getRoleNames() : [];
 
         $activity = Activity::where('subject_type', $this->record->getMorphClass())
             ->where('subject_id', $this->record->getKey())

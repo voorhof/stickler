@@ -22,7 +22,7 @@ describe('locale switching', function () {
         ]);
         $adminUser->assignRole('Admin');
 
-        $response = $this->actingAs($adminUser)->get(route('filament.admin.locale.update', [
+        $response = $this->actingAs($adminUser)->post(route('filament.admin.locale.update', [
             'locale' => 'nl_BE',
         ]));
 
@@ -36,7 +36,7 @@ describe('locale switching', function () {
         $adminUser = User::factory()->create(['locale' => 'en_US']);
         $adminUser->assignRole('Admin');
 
-        $response = $this->actingAs($adminUser)->get(route('filament.admin.locale.update', [
+        $response = $this->actingAs($adminUser)->post(route('filament.admin.locale.update', [
             'locale' => 'nl_NL',
         ]));
 
@@ -44,7 +44,7 @@ describe('locale switching', function () {
         expect($adminUser->fresh()->locale)->toBe('nl_NL')
             ->and(app()->getLocale())->toBe('nl');
 
-        $response = $this->actingAs($adminUser)->get(route('filament.admin.locale.update', [
+        $response = $this->actingAs($adminUser)->post(route('filament.admin.locale.update', [
             'locale' => 'en_UK',
         ]));
 
@@ -58,7 +58,7 @@ describe('locale switching', function () {
         $adminUser->assignRole('Admin');
 
         $this->actingAs($adminUser)
-            ->get(route('filament.admin.locale.update', ['locale' => 'fr']))
+            ->post(route('filament.admin.locale.update', ['locale' => 'fr']))
             ->assertNotFound();
     });
 });

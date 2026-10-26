@@ -3,24 +3,18 @@
 namespace App\Http\Controllers\Filament;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\GenerateSitemapJob;
 use Filament\Notifications\Notification;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Artisan;
 
 class SitemapController extends Controller
 {
     public function __invoke(): RedirectResponse
     {
-        Artisan::call('sitemap:generate');
+        GenerateSitemapJob::dispatch();
 
-        // Log the activity
-        activity()
-            ->event('updated')
-            ->log('Sitemap generated');
-
-        // Send a custom notification
         Notification::make()
-            ->title(__('Ok! Sitemap generated!'))
+            ->title(__('Ok! Sitemap generation queued!'))
             ->success()
             ->send()
             ->sendToDatabase(auth()->user(), isEventDispatched: true);

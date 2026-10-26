@@ -9,7 +9,7 @@ use App\Http\Controllers\Filament\SitemapController;
  */
 
 // Locale switcher
-Route::get('/locale/{locale}', [LocaleController::class, 'update'])
+Route::post('/locale/{locale}', [LocaleController::class, 'update'])
     ->name('locale.update');
 
 // Media download
@@ -20,6 +20,6 @@ Route::middleware(['can:view media'])->group(function () {
 
 // Sitemap generation
 Route::middleware(['can:edit settings'])->group(function () {
-    Route::get('/sitemap/generate', SitemapController::class)
+    Route::post('/sitemap/generate', SitemapController::class)
         ->name('sitemap.generate');
 });

@@ -13,7 +13,7 @@ class NameInput
             ->required()
             ->maxLength($maxLength)
             ->trim()
-            ->formatStateUsing(fn ($record): ?string => $record?->name ? $record?->getTranslation('name', app()->getLocale()) : null)
+            ->formatStateUsing(fn ($record): ?string => array_key_exists('name', $record?->getAttributes() ?? []) && $record->getAttribute('name') ? $record->getTranslation('name', app()->getLocale()) : null)
             ->columnSpanFull();
     }
 }

@@ -9,5 +9,4 @@ return [
     App\Providers\Spatie\BackupServiceProvider::class,
     App\Providers\Spatie\BusinessHoursServiceProvider::class,
     App\Providers\Spatie\HealthServiceProvider::class,
-    App\Providers\TelescopeServiceProvider::class,
 ];
