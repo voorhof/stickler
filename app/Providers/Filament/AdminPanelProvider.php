@@ -50,10 +50,12 @@ class AdminPanelProvider extends PanelProvider
             ->userMenuItems([
                 'locale-en_US' => Action::make('locale-en_US')
                     ->label(fn (): string => auth()->user()?->locale === 'en_US' ? '✓ English' : 'English')
-                    ->url(fn (): string => route('filament.admin.locale.update', ['locale' => 'en_US'])),
+                    ->url(fn (): string => route('filament.admin.locale.update', ['locale' => 'en_US']))
+                    ->postToUrl(),
                 'locale-nl_BE' => Action::make('locale-nl_BE')
                     ->label(fn (): string => auth()->user()?->locale === 'nl_BE' ? '✓ Nederlands' : 'Nederlands')
-                    ->url(fn (): string => route('filament.admin.locale.update', ['locale' => 'nl_BE'])),
+                    ->url(fn (): string => route('filament.admin.locale.update', ['locale' => 'nl_BE']))
+                    ->postToUrl(),
             ])
             ->brandLogo(fn () => view('filament.brand-logo'))
             ->favicon(asset('art/favicons/favicon-32x32.png'))

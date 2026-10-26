@@ -26,7 +26,7 @@ describe('locale updates', function () {
         $user->assignRole('Admin');
         $this->actingAs($user);
 
-        $response = $this->get(route('filament.admin.locale.update', ['locale' => 'nl_BE']));
+        $response = $this->post(route('filament.admin.locale.update', ['locale' => 'nl_BE']));
 
         $response->assertRedirect();
         expect($user->fresh()->locale)->toBe('nl_BE')
@@ -38,9 +38,20 @@ describe('locale updates', function () {
         $user->assignRole('Admin');
         $this->actingAs($user);
 
-        $response = $this->get(route('filament.admin.locale.update', ['locale' => 'fr_FR']));
+        $response = $this->post(route('filament.admin.locale.update', ['locale' => 'fr_FR']));
 
         $response->assertStatus(404);
+    });
+
+    test('it rejects GET requests for locale updates', function () {
+        $user = User::factory()->create(['locale' => 'en_US']);
+        $user->assignRole('Admin');
+
+        $this->actingAs($user)
+            ->get(route('filament.admin.locale.update', ['locale' => 'nl_BE']))
+            ->assertStatus(405);
+
+        expect($user->fresh()->locale)->toBe('en_US');
     });
 
     test('it aborts 403 when unauthenticated in controller', function () {

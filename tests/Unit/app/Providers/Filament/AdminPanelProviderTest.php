@@ -181,7 +181,9 @@ test('it configures user menu items correctly', function () {
     $nlItem = $userMenuItems['locale-nl_BE'];
 
     expect($enItem->getUrl())->toBe(route('filament.admin.locale.update', ['locale' => 'en_US']))
-        ->and($nlItem->getUrl())->toBe(route('filament.admin.locale.update', ['locale' => 'nl_BE']));
+        ->and($nlItem->getUrl())->toBe(route('filament.admin.locale.update', ['locale' => 'nl_BE']))
+        ->and($enItem->shouldPostToUrl())->toBeTrue()
+        ->and($nlItem->shouldPostToUrl())->toBeTrue();
 
     $originalLocale = app()->getLocale();
 

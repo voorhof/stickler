@@ -26,14 +26,12 @@
                 </x-filament::link>
 
                 @can('edit settings')
-                    <x-filament::link
-                        color="secondary"
-                        href="{{ route('filament.admin.sitemap.generate') }}"
-                        :icon="Heroicon::OutlinedArrowPath"
-                        :icon-position="IconPosition::Before"
-                    >
-                        @lang('Generate sitemap')
-                    </x-filament::link>
+                    <form method="POST" action="{{ route('filament.admin.sitemap.generate') }}">
+                        @csrf
+                        <x-filament::button type="submit" color="secondary" :icon="Heroicon::OutlinedArrowPath">
+                            @lang('Generate sitemap')
+                        </x-filament::button>
+                    </form>
                 @endcan
             </div>
 

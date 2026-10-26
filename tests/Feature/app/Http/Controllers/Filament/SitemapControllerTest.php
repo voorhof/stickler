@@ -31,7 +31,7 @@ describe('sitemap generation', function () {
 
         $this->actingAs($adminUser);
 
-        $response = $this->get(route('filament.admin.sitemap.generate'));
+        $response = $this->post(route('filament.admin.sitemap.generate'));
         $response->assertStatus(302);
 
         Queue::assertPushed(GenerateSitemapJob::class);
@@ -49,8 +49,17 @@ describe('sitemap generation', function () {
 
         $this->actingAs($user);
 
-        $response = $this->get(route('filament.admin.sitemap.generate'));
+        $response = $this->post(route('filament.admin.sitemap.generate'));
         $response->assertStatus(403);
+
+        Queue::assertNotPushed(GenerateSitemapJob::class);
+    });
+
+    test('it rejects GET requests without queuing sitemap generation', function () {
+        Queue::fake([GenerateSitemapJob::class]);
+
+        $this->get(route('filament.admin.sitemap.generate'))
+            ->assertStatus(405);
 
         Queue::assertNotPushed(GenerateSitemapJob::class);
     });
@@ -73,7 +82,7 @@ describe('sitemap generation', function () {
         $this->actingAs($adminUser);
 
         $response = $this->from(route('filament.admin.pages.dashboard'))
-            ->get(route('filament.admin.sitemap.generate'));
+            ->post(route('filament.admin.sitemap.generate'));
 
         $response->assertRedirect(route('filament.admin.pages.dashboard'));
         Queue::assertPushed(GenerateSitemapJob::class);
