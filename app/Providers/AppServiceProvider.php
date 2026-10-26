@@ -25,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
         // https://laravel.com/framework/docs/pagination#using-bootstrap
         Paginator::useBootstrapFive();
 
-        // Preventing lazy loading catches N+1 queries in admin tables and public pages early.
-        Model::preventLazyLoading(! $this->app->isProduction());
+        // Strict mode catches lazy loading, discarded attributes, and missing attributes early.
+        Model::shouldBeStrict(! $this->app->isProduction());
     }
 }

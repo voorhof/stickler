@@ -18,6 +18,8 @@ test('it uses bootstrap five pagination', function () {
         ->and(Paginator::$defaultSimpleView)->toBe('pagination::simple-bootstrap-5');
 });
 
-test('it prevents lazy loading outside production', function () {
-    expect(Model::preventsLazyLoading())->toBeTrue();
+test('it enables strict Eloquent behavior outside production', function () {
+    expect(Model::preventsLazyLoading())->toBeTrue()
+        ->and(Model::preventsSilentlyDiscardingAttributes())->toBeTrue()
+        ->and(Model::preventsAccessingMissingAttributes())->toBeTrue();
 });
