@@ -12,8 +12,10 @@ use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\Support\LogOptions;
+use Spatie\MediaLibrary\Conversions\Jobs\PerformConversionsJob;
 
 test('a user can be created', function () {
     // All required fields are filled
@@ -107,7 +109,10 @@ test('it can be reordered', function () {
         ->and($user2->fresh()->order_column)->toBe(1);
 });
 
-test('it defers generating the preview conversion', function () {
+test('it queues preview conversions instead of generating them inline', function () {
+    Queue::fake();
+    config(['media-library.queue_conversions_after_database_commit' => false]);
+
     $user = User::factory()->create();
     $this->actingAs($user);
 
@@ -122,10 +127,15 @@ test('it defers generating the preview conversion', function () {
     $media = $user->getFirstMedia('documents');
 
     expect($media->hasGeneratedConversion('preview'))->toBeFalse();
+    Queue::assertPushed(PerformConversionsJob::class);
 });
 
-test('it generates a preview conversion for PDF documents when deferred callbacks run', function () {
-    $this->withoutDefer(); // This is required to ensure that the deferred callbacks are run.
+test('it generates a PDF preview when conversions use the synchronous queue', function () {
+    config([
+        'queue.default' => 'sync',
+        'media-library.queue_connection_name' => 'sync',
+        'media-library.queue_conversions_after_database_commit' => false,
+    ]);
 
     $user = User::factory()->create();
     $this->actingAs($user);

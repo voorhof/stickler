@@ -27,8 +27,7 @@ trait HasMediaConversions
     {
         $this->addMediaConversion('preview')
             ->fit(Fit::Crop, 400, 400)
-            ->nonQueued()
-            ->deferred()
+            ->queued()
             ->format('webp')
             ->performOnCollections(...$collections)
             ->pdfPageNumber(1)
@@ -36,8 +35,7 @@ trait HasMediaConversions
 
         $this->addMediaConversion('thumb')
             ->fit(Fit::Crop, 40, 40)
-            ->nonQueued()
-            ->deferred()
+            ->queued()
             ->format('webp')
             ->performOnCollections(...$collections)
             ->pdfPageNumber(1)
@@ -47,7 +45,7 @@ trait HasMediaConversions
 
         if ($webpCollections) {
             $this->addMediaConversion('webp')
-                ->deferred()
+                ->queued()
                 ->format('webp')
                 ->withResponsiveImages()
                 ->performOnCollections(...$webpCollections);

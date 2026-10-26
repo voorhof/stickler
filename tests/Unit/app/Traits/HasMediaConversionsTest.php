@@ -42,7 +42,7 @@ test('it registers a thumb conversion that crops to 40x40', function () {
         ->and($fitArgs[2])->toBe(40);
 });
 
-test('it defers generating preview and thumb conversions', function () {
+test('it queues preview, thumb, and webp conversions without deferring them', function () {
     User::factory()->create();
     $post = Post::factory()->create();
 
@@ -50,11 +50,14 @@ test('it defers generating preview and thumb conversions', function () {
 
     $preview = collect($post->mediaConversions)->first(fn ($c) => $c->getName() === 'preview');
     $thumb = collect($post->mediaConversions)->first(fn ($c) => $c->getName() === 'thumb');
+    $webp = collect($post->mediaConversions)->first(fn ($c) => $c->getName() === 'webp');
 
-    expect($preview->shouldBeQueued())->toBeFalse()
-        ->and($preview->shouldBeDeferred())->toBeTrue()
-        ->and($thumb->shouldBeQueued())->toBeFalse()
-        ->and($thumb->shouldBeDeferred())->toBeTrue();
+    expect($preview->shouldBeQueued())->toBeTrue()
+        ->and($preview->shouldBeDeferred())->toBeFalse()
+        ->and($thumb->shouldBeQueued())->toBeTrue()
+        ->and($thumb->shouldBeDeferred())->toBeFalse()
+        ->and($webp->shouldBeQueued())->toBeTrue()
+        ->and($webp->shouldBeDeferred())->toBeFalse();
 });
 
 test('it sets webp format on preview and thumb conversions', function () {
