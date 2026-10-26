@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUndefinedMethodInspection */
+
 namespace App\Console\Commands;
 
 use App\Models\Page;

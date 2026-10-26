@@ -2,7 +2,15 @@
 
 use App\Models\PageView;
 
+test('a public page view is stored through deferred processing', function () {
+    $this->get('/contact')->assertOk();
+
+    $this->assertDatabaseCount('page_views', 1);
+});
+
 test('a public page view is stored without the raw ip address', function () {
+    $this->withoutDefer();
+
     $this->get('/contact')->assertOk();
 
     $pageView = PageView::query()->first();
@@ -15,6 +23,8 @@ test('a public page view is stored without the raw ip address', function () {
 });
 
 test('the visitor hash changes from one day to the next', function () {
+    $this->withoutDefer();
+
     $this->get('/contact')->assertOk();
     $hashToday = PageView::query()->value('visitor_hash');
 
@@ -32,7 +42,9 @@ test('non public routes are not tracked', function () {
 });
 
 test('a crawler visit is stored as a bot', function () {
-    $this->withHeaders(['User-Agent' => 'Googlebot/2.1 (+http://www.google.com/bot.html)'])
+    $this->withoutDefer();
+
+    $this->withHeaders(['User-Agent' => 'Googlebot/2.1 (+https://www.google.com/bot.html)'])
         ->get('/contact')
         ->assertOk();
 
@@ -40,6 +52,8 @@ test('a crawler visit is stored as a bot', function () {
 });
 
 test('a browser visit is stored as a human', function () {
+    $this->withoutDefer();
+
     $this->withHeaders(['User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36'])
         ->get('/contact')
         ->assertOk();
