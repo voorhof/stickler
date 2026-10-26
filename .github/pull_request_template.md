@@ -18,4 +18,4 @@ Closes #
 - [ ] I have run `./vendor/bin/pint`.
 - [ ] I have added or updated tests for the changed behaviour.
 - [ ] `php artisan test --compact --parallel` passes.
-- [ ] I have updated the documentation or `CHANGELOG.md` where relevant.
+- [ ] I have updated the documentation where relevant.
