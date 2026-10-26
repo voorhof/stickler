@@ -1044,6 +1044,132 @@ or apply the `doNotCacheResponse` middleware alias to specific routes.
 A custom `ClearResponseCacheAction` was created inside `app/Filament/Actions/Spatie/ClearResponseCacheAction.php` to clear the response cache manually.  
 This action is registered as a header action on the Filament `Health` page (`app/Filament/Pages/Spatie/Health.php`).
 
+### Clearing the cache when content changes (FlushesResponseCache)
+
+Cached responses are kept for a week, so the cache must be cleared whenever public content changes.  
+A custom trait `FlushesResponseCache` was created inside `app/Observers/Traits/FlushesResponseCache.php`.
+It clears the response cache when a model is saved (created, updated or restored) or deleted:
+
+```php
+use Spatie\ResponseCache\Facades\ResponseCache;
+
+use function Illuminate\Support\defer;
+
+trait FlushesResponseCache
+{
+    public function saved(Model $model): void
+    {
+        $this->flushResponseCache();
+    }
+
+    public function deleted(Model $model): void
+    {
+        $this->flushResponseCache();
+    }
+
+    protected function flushResponseCache(): void
+    {
+        if (! config('responsecache.enabled')) {
+            return;
+        }
+
+        defer(fn () => ResponseCache::clear(), 'flush-response-cache', always: true);
+    }
+}
+```
+
+- Nothing happens when response caching is disabled (`RESPONSE_CACHE_ENABLED=false`).
+- The cache is cleared with Laravel's `defer()`, after the response has been sent (and after the database changes are committed).
+- The deferred callback is named, so the cache is cleared only **once** per request, job or command, no matter how many models are saved.
+- `always: true` makes sure the cache is still cleared when the request ends with an error after the data was saved.
+
+The trait is used by the observers of all content that is shown on the public website:
+
+| Observer                                         | Clears the cache on                                                      |
+|--------------------------------------------------|--------------------------------------------------------------------------|
+| `app/Observers/PostObserver.php`                 | `saved`, `deleted`                                                       |
+| `app/Observers/PageObserver.php`                 | `saved`, `deleted`                                                       |
+| `app/Observers/ProjectObserver.php`              | `saved`, `deleted`                                                       |
+| `app/Observers/TagObserver.php`                  | `saved`, `deleted`                                                       |
+| `app/Observers/MediaObserver.php`                | `saved`, `deleted` (for every media collection)                          |
+| `app/Observers/Spatie/BusinessHoursObserver.php` | `saved`, `deleted` (business hours are shown on the cached contact page) |
+
+Observers that already have their own `saved()` or `deleted()` method (that method overrides the one from the trait)
+call `$this->flushResponseCache();` themselves inside that method:
+
+```php
+use App\Observers\Traits\FlushesResponseCache;
+
+class PostObserver
+{
+    use FlushesResponseCache;
+
+    public function saved(Post $post): void
+    {
+        $this->flushResponseCache();
+
+        // ...
+    }
+}
+```
+
+When you add a new model that is shown on the public website, add `use FlushesResponseCache;` to its observer.
+
+> [!NOTE]
+> Spatie Settings are not Eloquent models, so changing settings does not clear the response cache automatically.
+> Use the `ClearResponseCacheAction` on the Health page after changing settings that are shown on the website.
+
+### Clearing the cache for scheduled content (ClearScheduledContentCacheCommand)
+
+Posts, pages and projects can be scheduled with a future `published_at` date.
+When that moment passes no model event is fired, so the `FlushesResponseCache` trait cannot clear the cache.
+A custom command `ClearScheduledContentCacheCommand` was created inside `app/Console/Commands/ClearScheduledContentCacheCommand.php` to handle this:
+
+```bash
+php artisan content:clear-scheduled-cache
+```
+
+How it works:
+
+1. The command reads the time of its previous check from the default cache store (key `scheduled-content:last-checked-at`).
+2. It checks if any `Post`, `Page` or `Project` has a `published_at` between the previous check and now.
+3. If so, the response cache is cleared with `ResponseCache::clear()`.
+4. The current time is stored as the new last-checked time.
+
+- Because the command checks the whole period since its previous run, no content is missed when the scheduler was down for a while.
+- When no previous check is stored (first run, or after `php artisan cache:clear`), the response cache is cleared once to be safe.
+- When response caching is disabled, the cache is never cleared, but the last-checked time is still updated.
+- Soft-deleted content is ignored.
+
+The command uses the `becamePublishedBetween` scope that was added to the `HasPublishedScope` trait (`app/Traits/HasPublishedScope.php`),
+which is used by the `Post`, `Page` and `Project` models:
+
+```php
+public function scopeBecamePublishedBetween(Builder $query, CarbonInterface $from, CarbonInterface $until): Builder
+{
+    return $query
+        ->where('published_at', '>', $from)
+        ->where('published_at', '<=', $until);
+}
+```
+
+The command is scheduled every hour at minute zero inside `routes/console.php`:
+
+```php
+/**
+ * Clear the response cache when scheduled content becomes public.
+ */
+Schedule::command('content:clear-scheduled-cache')
+    ->hourlyAt(0)
+    ->withoutOverlapping()
+    ->onOneServer();
+```
+
+- Scheduled content becomes visible on the website **at most one hour** after its `published_at` date.
+- The Laravel scheduler must be running (a cron job for `php artisan schedule:run`, or `php artisan schedule:work` locally).
+- `onOneServer()` and `withoutOverlapping()` need a cache store that supports atomic locks (e.g. `database` or `redis`).
+  When the application runs on multiple servers, all servers must share the same cache store.
+
 More configuration is possible, for now this project is using the default settings.
 
 ## Spatie HTTP Logger

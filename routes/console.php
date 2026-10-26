@@ -49,6 +49,14 @@ Schedule::command('page-views:clean --days=60 --force')
     ->daily()->at('06:05');
 
 /**
+ * Clear the response cache when scheduled content becomes public.
+ */
+Schedule::command('content:clear-scheduled-cache')
+    ->hourlyAt(0)
+    ->withoutOverlapping()
+    ->onOneServer();
+
+/**
  * Spatie health checks every hour.
  */
 Schedule::command(RunHealthChecksCommand::class)
