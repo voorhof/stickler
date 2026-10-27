@@ -43,8 +43,8 @@ use Spatie\Tags\HasTags;
  * @property string $intro
  * @property string|null $content
  * @property string|null $sku
- * @property int $price
- * @property int|null $discount_price
+ * @property float $price
+ * @property float|null $discount_price
  * @property bool $is_discounted
  * @property int $stock_quantity
  * @property string|null $website_title
@@ -142,8 +142,6 @@ class Product extends Model implements HasMedia, HasRichContent, Sortable
     protected function casts(): array
     {
         return [
-            'price' => 'integer',
-            'discount_price' => 'integer',
             'is_discounted' => 'boolean',
             'stock_quantity' => 'integer',
             'order_column' => 'integer',
@@ -160,6 +158,28 @@ class Product extends Model implements HasMedia, HasRichContent, Sortable
     {
         return Attribute::make(
             get: fn () => $this->published_at !== null,
+        );
+    }
+
+    /**
+     * Convert price from cents (database) to euros (application).
+     */
+    protected function price(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $value !== null ? $value / 100 : null,
+            set: fn ($value) => $value !== null ? (int) round($value * 100) : null,
+        );
+    }
+
+    /**
+     * Convert discount price from cents (database) to euros (application).
+     */
+    protected function discountPrice(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $value !== null ? $value / 100 : null,
+            set: fn ($value) => $value !== null ? (int) round($value * 100) : null,
         );
     }
 

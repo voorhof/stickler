@@ -17,7 +17,7 @@ test('a product can be created', function () {
     $product = Product::forceCreate([
         'title' => 'My First Product',
         'intro' => 'This is the intro of my first product.',
-        'price' => 2999,
+        'price' => 29.99,
         'created_by_user_id' => $user->id,
         'updated_by_user_id' => $user->id,
     ]);
@@ -34,8 +34,8 @@ test('a product can be mass assigned fillable values', function () {
         'intro' => 'Some intro text here.',
         'content' => '<p>Some <strong>rich</strong> content.</p>',
         'sku' => 'SKU-123',
-        'price' => 4999,
-        'discount_price' => 3999,
+        'price' => 49.99,
+        'discount_price' => 39.99,
         'is_discounted' => true,
         'stock_quantity' => 100,
         'website_title' => 'External Site',
@@ -49,8 +49,8 @@ test('a product can be mass assigned fillable values', function () {
         ->and($product->intro)->toBe('Some intro text here.')
         ->and($product->content)->toBe('<p>Some <strong>rich</strong> content.</p>')
         ->and($product->sku)->toBe('SKU-123')
-        ->and($product->price)->toBe(4999)
-        ->and($product->discount_price)->toBe(3999)
+        ->and($product->price)->toBe(49.99)
+        ->and($product->discount_price)->toBe(39.99)
         ->and($product->is_discounted)->toBeTrue()
         ->and($product->stock_quantity)->toBe(100)
         ->and($product->website_title)->toBe('External Site')
@@ -62,7 +62,7 @@ test('it generates a slug from title', function () {
     $product = Product::forceCreate([
         'title' => 'My Product Title',
         'intro' => 'Some intro text here.',
-        'price' => 1999,
+        'price' => 19.99,
     ]);
 
     expect($product->slug)->toBe('my-product-title');
@@ -96,7 +96,7 @@ test('it has a default order_column of one', function () {
     $product = Product::forceCreate([
         'title' => 'Order Column Test',
         'intro' => 'Testing the default order column.',
-        'price' => 999,
+        'price' => 9.99,
         'created_by_user_id' => $user->id,
         'updated_by_user_id' => $user->id,
     ]);
@@ -136,7 +136,7 @@ test('it automatically reorders others when creating a new model with a specific
         'title' => 'Content Product',
         'intro' => 'Intro text.',
         'content' => '<p>This is <strong>rich</strong> content.</p>',
-        'price' => 1999,
+        'price' => 19.99,
         'order_column' => 1,
         'created_by_user_id' => $user->id,
         'updated_by_user_id' => $user->id,
@@ -156,7 +156,7 @@ test('it does reorder when creating a new model without specific order_column', 
         'title' => 'Content Product',
         'intro' => 'Intro text.',
         'content' => '<p>This is <strong>rich</strong> content.</p>',
-        'price' => 1999,
+        'price' => 19.99,
         // order_column will be 1 (because of SortableOnUpdate)
         'created_by_user_id' => $user->id,
         'updated_by_user_id' => $user->id,
@@ -271,15 +271,31 @@ test('it can attach and retrieve tags', function () {
         ->and($product->tags->first()->name)->toBe('Electronics');
 });
 
-test('it casts price and stock_quantity to integers', function () {
+test('it converts price from cents to euros using accessor', function () {
     User::factory()->create();
     $product = Product::factory()->create([
-        'price' => '2999',
+        'price' => 29.99,
         'stock_quantity' => '50',
     ]);
 
-    expect($product->price)->toBe(2999)->toBeInt()
+    expect($product->price)->toBe(29.99)->toBeFloat()
         ->and($product->stock_quantity)->toBe(50)->toBeInt();
+});
+
+test('it converts discount_price from cents to euros using accessor', function () {
+    User::factory()->create();
+    $product = Product::factory()->create([
+        'discount_price' => 19.99,
+    ]);
+
+    expect($product->discount_price)->toBe(19.99)->toBeFloat();
+});
+
+test('it handles null discount_price correctly', function () {
+    User::factory()->create();
+    $product = Product::factory()->create(['discount_price' => null]);
+
+    expect($product->discount_price)->toBeNull();
 });
 
 test('it casts is_discounted to a boolean', function () {
@@ -305,7 +321,7 @@ test('content can be stored and retrieved', function () {
         'title' => 'Content Product',
         'intro' => 'Intro text.',
         'content' => '<p>This is <strong>rich</strong> content.</p>',
-        'price' => 1999,
+        'price' => 19.99,
         'created_by_user_id' => $user->id,
         'updated_by_user_id' => $user->id,
     ]);
@@ -388,12 +404,12 @@ test('sku is unique', function () {
             'title' => 'Duplicate SKU Product',
             'intro' => 'Intro.',
             'sku' => 'UNIQUE-SKU-001',
-            'price' => 999,
+            'price' => 9.99,
         ]);
     })->toThrow(Illuminate\Database\UniqueConstraintViolationException::class);
 });
 
-test('discount_price is nullable', function () {
+test('discount_price accessor returns null when database value is null', function () {
     User::factory()->create();
     $product = Product::factory()->create(['discount_price' => null]);
 

@@ -21,7 +21,8 @@ it('tracks creator and updater on product create and update', function (): void 
     $product = Product::create([
         'title' => 'Observer Test Product',
         'intro' => 'Testing observer tracking.',
-        'price' => 1999,
+        'price' => 19.99,
+        'discount_price' => null,
     ]);
 
     expect($product->created_by_user_id)->toBe($creator->id)
@@ -45,7 +46,8 @@ it('syncs image alt text to media name when a product is saved with rich content
         'title' => 'Product with Rich Content Image',
         'intro' => 'Intro text',
         'content' => '<p><img src="/storage/test.jpg" alt="Observer Test Alt" data-id="'.$uuid.'"></p>',
-        'price' => 2999,
+        'price' => 29.99,
+        'discount_price' => null,
     ]);
 
     $media = Media::create([
@@ -84,7 +86,8 @@ it('calls syncImageAltToMediaName directly via observer saved method', function 
         'title' => 'Product Observer Direct Test',
         'intro' => 'Intro text',
         'content' => '<p><img src="/storage/test.jpg" alt="Direct Observer Alt" data-id="'.$uuid.'"></p>',
-        'price' => 1999,
+        'price' => 19.99,
+        'discount_price' => null,
     ]);
 
     $media = Media::create([
@@ -117,7 +120,8 @@ it('queues sitemap generation when a product is created', function (): void {
     Product::create([
         'title' => 'Sitemap Observer Test Product',
         'intro' => 'Testing sitemap generation.',
-        'price' => 999,
+        'price' => 9.99,
+        'discount_price' => null,
     ]);
 
     Queue::assertPushed(GenerateSitemapJob::class);
