@@ -80,6 +80,11 @@ class AdminUserAndRoleSeeder extends Seeder
         Permission::create(['name' => 'update posts']);
         Permission::create(['name' => 'delete posts']);
 
+        Permission::create(['name' => 'create products']);
+        Permission::create(['name' => 'view products']);
+        Permission::create(['name' => 'update products']);
+        Permission::create(['name' => 'delete products']);
+
         Permission::create(['name' => 'create projects']);
         Permission::create(['name' => 'view projects']);
         Permission::create(['name' => 'update projects']);

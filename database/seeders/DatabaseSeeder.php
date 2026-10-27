@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             MessageSeeder::class,
             PageSeeder::class,
             PostSeeder::class,
+            ProductSeeder::class,
             ProjectSeeder::class,
             TagSeeder::class,
         ]);

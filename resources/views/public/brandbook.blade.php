@@ -379,7 +379,13 @@
                             <label for="floatingInput">Email address</label>
                         </div>
                         <div class="form-floating">
-                            <input type="password" class="form-control" id="floatingPassword" placeholder="Password" autocomplete="new-password" />
+                            <input
+                                type="password"
+                                class="form-control"
+                                id="floatingPassword"
+                                placeholder="Password"
+                                autocomplete="new-password"
+                            />
                             <label for="floatingPassword">Password</label>
                         </div>
                     </form>
