@@ -1,15 +1,6 @@
 <x-layouts.app>
     @push('scripts-head-bottom')
         <style>
-            :root {
-                --st-welcome-title-color: var(--st-body-color);
-                --st-welcome-card-bg: var(--st-body-bg);
-                --st-welcome-card-border: var(--st-border-color);
-                --st-welcome-card-hover-border: var(--st-link-color);
-                --st-welcome-card-title-color: var(--st-body-color);
-                --st-welcome-card-desc-color: var(--st-secondary-color);
-            }
-
             .c-welcome {
                 display: flex;
                 flex-direction: column;
@@ -24,7 +15,7 @@
                 font-weight: 700;
                 font-size: clamp(2rem, 5vw, 3rem);
                 line-height: 1.2;
-                color: var(--st-welcome-title-color);
+                color: var(--st-body-color);
             }
 
             .c-welcome-grid {
@@ -42,9 +33,9 @@
                 justify-content: center;
                 gap: 0.5rem;
                 padding: 2rem 1.5rem;
-                border: 1px solid var(--st-welcome-card-border);
+                border: 1px solid var(--st-border-color);
                 border-radius: var(--st-border-radius-lg);
-                background-color: var(--st-welcome-card-bg);
+                background-color: var(--st-body-bg);
                 text-decoration: none;
                 transition:
                     border-color 0.2s ease,
@@ -52,7 +43,7 @@
             }
 
             .c-welcome-card:hover {
-                border-color: var(--st-welcome-card-hover-border);
+                border-color: var(--st-link-color);
                 box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.075);
                 text-decoration: none;
             }
@@ -62,26 +53,20 @@
                 outline-offset: 2px;
             }
 
-            .c-welcome-card-icon {
-                width: 32px;
-                height: 32px;
-                color: var(--st-link-color);
-            }
-
             .c-welcome-card-title {
                 margin: 0;
                 font-size: 1.25rem;
                 font-weight: 600;
-                color: var(--st-welcome-card-title-color);
+                color: var(--st-body-color);
             }
 
             .c-welcome-card-desc {
                 margin: 0;
                 font-size: 0.85rem;
-                color: var(--st-welcome-card-desc-color);
+                color: var(--st-secondary-color);
             }
 
-            @media (max-width: 767.98px) {
+            @media (max-width: 768px) {
                 .c-welcome-grid {
                     grid-template-columns: 1fr;
                 }
@@ -119,6 +104,18 @@
                         <div class="fs-3"><x-icons.file-earmark /></div>
                         <h2 class="c-welcome-card-title">{{ __('Pages') }}</h2>
                         <p class="c-welcome-card-desc">{{ __('Browse all pages') }}</p>
+                    </a>
+
+                    <a href="{{ route('contact.index') }}" class="c-welcome-card">
+                        <div class="fs-3"><x-icons.envelope /></div>
+                        <h2 class="c-welcome-card-title">{{ __('Contact') }}</h2>
+                        <p class="c-welcome-card-desc">{{ __('Get in touch') }}</p>
+                    </a>
+
+                    <a href="{{ route('brandbook.index') }}" class="c-welcome-card">
+                        <div class="fs-3"><x-icons.palette2 /></div>
+                        <h2 class="c-welcome-card-title">{{ __('Brandbook') }}</h2>
+                        <p class="c-welcome-card-desc">{{ __('View our style guide') }}</p>
                     </a>
                 </div>
             </div>
