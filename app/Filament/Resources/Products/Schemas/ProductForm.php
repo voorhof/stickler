@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Products\Schemas;
 
 use App\Filament\Resources\Products\Schemas\Sections\ProductInfoSection;
+use App\Filament\Resources\Products\Schemas\Sections\ProductVariantsSection;
 use App\Filament\Schemas\Sections\ActivityHistorySection;
 use App\Filament\Schemas\Sections\ContentSection;
 use App\Filament\Schemas\Sections\DatabaseInfoSection;
@@ -27,6 +28,7 @@ class ProductForm
                             hasWebsite: true,
                         ),
                         ProductInfoSection::make(),
+                        ProductVariantsSection::make(),
                         ImageUploadSection::make(),
                         VideoUploadSection::make(),
                         DocumentUploadSection::make(),

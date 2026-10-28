@@ -324,6 +324,122 @@ it('denies loading edit product page when the user does not have update permissi
         ->assertForbidden();
 });
 
+it('can create a product with variants', function () {
+    $colorType = App\Models\ProductVariantOptionType::factory()->create(['name' => 'Color']);
+    $redOption = App\Models\ProductVariantOption::factory()->create([
+        'product_variant_option_type_id' => $colorType->id,
+        'name' => 'Red',
+    ]);
+
+    livewire(CreateProduct::class)
+        ->fillForm([
+            'title' => 'Product with Variants',
+            'intro' => 'A product with variants.',
+            'price' => 29.99,
+            'stock_quantity' => 10,
+            'variants' => [
+                [
+                    'sku' => 'PRD-VAR-RED',
+                    'price' => 29.99,
+                    'discount_price' => null,
+                    'is_discounted' => false,
+                    'stock_quantity' => 5,
+                    'options' => [$redOption->id],
+                ],
+            ],
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors()
+        ->assertNotified();
+
+    $this->assertDatabaseHas(Product::class, [
+        'title' => 'Product with Variants',
+    ]);
+    $this->assertDatabaseHas('product_variants', [
+        'sku' => 'PRD-VAR-RED',
+    ]);
+});
+
+it('can edit a product with variants', function () {
+    $product = Product::factory()->create();
+    $colorType = App\Models\ProductVariantOptionType::factory()->create(['name' => 'Size']);
+    $largeOption = App\Models\ProductVariantOption::factory()->create([
+        'product_variant_option_type_id' => $colorType->id,
+        'name' => 'Large',
+    ]);
+
+    livewire(EditProduct::class, ['record' => $product->getRouteKey()])
+        ->fillForm([
+            'variants' => [
+                [
+                    'sku' => 'PRD-VAR-LARGE',
+                    'price' => 39.99,
+                    'discount_price' => null,
+                    'is_discounted' => false,
+                    'stock_quantity' => 10,
+                    'options' => [$largeOption->id],
+                ],
+            ],
+        ])
+        ->call('save')
+        ->assertHasNoFormErrors()
+        ->assertNotified();
+
+    $this->assertDatabaseHas('product_variants', [
+        'sku' => 'PRD-VAR-LARGE',
+    ]);
+});
+
+it('validates variant price cannot exceed product price', function () {
+    livewire(CreateProduct::class)
+        ->fillForm([
+            'title' => 'Product with Expensive Variant',
+            'intro' => 'Variant price exceeds product price.',
+            'price' => 29.99,
+            'stock_quantity' => 10,
+            'variants' => [
+                [
+                    'sku' => 'PRD-VAR-EXPENSIVE',
+                    'price' => 99.99,
+                    'discount_price' => null,
+                    'is_discounted' => false,
+                    'stock_quantity' => 5,
+                ],
+            ],
+        ])
+        ->call('create')
+        ->assertHasFormErrors([
+            'variants.0.price' => 'max',
+        ])
+        ->assertNotNotified();
+});
+
+it('allows variant price equal to product price', function () {
+    livewire(CreateProduct::class)
+        ->fillForm([
+            'title' => 'Product with Equal Variant Price',
+            'intro' => 'Variant price equals product price.',
+            'price' => 29.99,
+            'stock_quantity' => 10,
+            'variants' => [
+                [
+                    'sku' => 'PRD-VAR-EQUAL',
+                    'price' => 29.99,
+                    'discount_price' => null,
+                    'is_discounted' => false,
+                    'stock_quantity' => 5,
+                ],
+            ],
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors()
+        ->assertNotified();
+
+    $this->assertDatabaseHas(Product::class, [
+        'title' => 'Product with Equal Variant Price',
+    ]);
+});
+
 it('denies deleting a product when the user does not have delete permission', function () {
     $restrictedRole = Role::factory()->create(['name' => 'Restricted']);
     $restrictedRole->givePermissionTo(['access admin', 'view products', 'update products']);

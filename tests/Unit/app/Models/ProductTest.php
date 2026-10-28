@@ -426,3 +426,16 @@ test('website fields are nullable', function () {
     expect($product->website_title)->toBeNull()
         ->and($product->website_url)->toBeNull();
 });
+
+test('it has many product variants', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->create();
+    $variants = App\Models\ProductVariant::factory()->count(3)->create([
+        'product_id' => $product->id,
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
+
+    expect($product->variants)->toHaveCount(3)
+        ->and($product->variants->pluck('id')->toArray())->toBe($variants->pluck('id')->toArray());
+});

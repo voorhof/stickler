@@ -8,6 +8,8 @@ use Illuminate\Support\Str;
 
 /**
  * @extends Factory<Product>
+ *
+ * @method hasVariants(int $int)
  */
 class ProductFactory extends Factory
 {
