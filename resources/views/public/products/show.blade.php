@@ -182,6 +182,117 @@
                 outline-offset: 2px;
             }
 
+            .c-product-variants {
+                margin-top: 2.5rem;
+                padding-top: 2rem;
+                border-top: 1px solid var(--st-border-color);
+            }
+
+            .c-product-variants-title {
+                margin: 0 0 1.25rem;
+                font-size: 1.25rem;
+                font-weight: 600;
+                color: var(--st-body-color);
+            }
+
+            .c-product-variants-list {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .c-product-variant-card {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 1rem;
+                padding: 1rem 1.25rem;
+                border: 1px solid var(--st-border-color);
+                border-radius: var(--st-border-radius);
+                background-color: var(--st-body-bg);
+            }
+
+            .c-product-variant-options {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                flex: 1 1 auto;
+                min-width: 200px;
+            }
+
+            .c-product-variant-option-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.35rem;
+                padding: 0.25rem 0.65rem;
+                font-size: 0.8rem;
+                font-weight: 500;
+                border-radius: var(--st-border-radius);
+                background-color: var(--st-border-color-translucent);
+                color: var(--st-body-color);
+            }
+
+            .c-product-variant-option-color-dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                border: 1px solid var(--st-border-color);
+            }
+
+            .c-product-variant-meta {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 0.75rem;
+                font-size: 0.85rem;
+            }
+
+            .c-product-variant-sku {
+                color: var(--st-secondary-color);
+                font-family: var(--st-font-mono, monospace);
+            }
+
+            .c-product-variant-price {
+                font-weight: 600;
+                color: var(--st-body-color);
+            }
+
+            .c-product-variant-discount-price {
+                font-weight: 700;
+                color: var(--st-product-show-discount-price-color);
+            }
+
+            .c-product-variant-original-price {
+                text-decoration: line-through;
+                color: var(--st-product-show-meta-color);
+                font-size: 0.8rem;
+                font-weight: 400;
+                margin-left: 0.25rem;
+            }
+
+            .c-product-variant-stock {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.3rem;
+                font-size: 0.8rem;
+                font-weight: 500;
+            }
+
+            .c-product-variant-stock--in-stock {
+                color: var(--st-product-show-stock-color);
+            }
+
+            .c-product-variant-stock--out-of-stock {
+                color: var(--st-product-show-out-of-stock-color);
+            }
+
+            .c-product-variant-stock-dot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background-color: currentColor;
+            }
+
             @media (max-width: 767.98px) {
                 :root {
                     --st-product-show-banner-height: 220px;
@@ -263,6 +374,60 @@
 
                 @if ($product->content)
                     <div class="c-rich-content">{!! $product->renderResponsiveRichContent() !!}</div>
+                @endif
+
+                @if ($product->variants->isNotEmpty())
+                    <div class="c-product-variants">
+                        <h2 class="c-product-variants-title">{{ __('Variants') }}</h2>
+                        <div class="c-product-variants-list">
+                            @foreach ($product->variants as $variant)
+                                <div class="c-product-variant-card">
+                                    @if ($variant->options->isNotEmpty())
+                                        <div class="c-product-variant-options">
+                                            @foreach ($variant->options as $option)
+                                                <span class="c-product-variant-option-badge">
+                                                    @if ($option->value && str_starts_with($option->value, '#'))
+                                                        <span
+                                                            class="c-product-variant-option-color-dot"
+                                                            style="background-color: {{ $option->value }}"
+                                                        ></span>
+                                                    @endif
+                                                    {{ $option->name }}
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    @endif
+
+                                    <div class="c-product-variant-meta">
+                                        @if ($variant->sku)
+                                            <span class="c-product-variant-sku">{{ __('SKU') }}: {{ $variant->sku }}</span>
+                                        @endif
+
+                                        @if ($variant->is_discounted && $variant->discount_price)
+                                            <span class="c-product-variant-discount-price">
+                                                {{ number_format($variant->discount_price, 2) }} €
+                                            </span>
+                                            <span class="c-product-variant-original-price">{{ number_format($variant->price, 2) }} €</span>
+                                        @elseif ($variant->price)
+                                            <span class="c-product-variant-price">{{ number_format($variant->price, 2) }} €</span>
+                                        @endif
+
+                                        @if ($variant->stock_quantity > 0)
+                                            <span class="c-product-variant-stock c-product-variant-stock--in-stock">
+                                                <span class="c-product-variant-stock-dot"></span>
+                                                {{ __('In stock') }}
+                                            </span>
+                                        @else
+                                            <span class="c-product-variant-stock c-product-variant-stock--out-of-stock">
+                                                <span class="c-product-variant-stock-dot"></span>
+                                                {{ __('Out of stock') }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
                 @endif
 
                 <a href="{{ route('products.index') }}" class="c-product-show-back-btn">

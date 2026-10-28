@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\Public\ProductController;
 use App\Models\Product;
+use App\Models\ProductVariant;
+use App\Models\ProductVariantOption;
+use App\Models\ProductVariantOptionType;
 use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
@@ -120,6 +123,49 @@ describe('products show', function () {
         $response = $this->get(route('products.show', 'non-existent-product-slug'));
 
         $response->assertNotFound();
+    });
+
+    test('it displays product with variants and their options', function () {
+        User::factory()->create();
+
+        $colorType = ProductVariantOptionType::factory()->create(['name' => 'Color']);
+        $redOption = ProductVariantOption::factory()->create([
+            'product_variant_option_type_id' => $colorType->id,
+            'name' => 'Red',
+            'value' => '#FF0000',
+        ]);
+
+        $product = Product::factory()->create([
+            'published_at' => now()->subHour(),
+        ]);
+
+        $variant = ProductVariant::factory()->create([
+            'product_id' => $product->id,
+            'sku' => 'TSHIRT-RED-M',
+            'price' => 2999,
+            'stock_quantity' => 10,
+        ]);
+        $variant->options()->attach($redOption);
+
+        $response = $this->get(route('products.show', $product));
+
+        $response->assertSuccessful()
+            ->assertViewIs('public.products.show')
+            ->assertViewHas('product', function (Product $viewProduct) use ($product, $variant, $redOption) {
+                expect($viewProduct->id)->toBe($product->id)
+                    ->and($viewProduct->relationLoaded('variants'))->toBeTrue();
+
+                $viewVariant = $viewProduct->variants->firstWhere('id', $variant->id);
+
+                expect($viewVariant)->not->toBeNull()
+                    ->and($viewVariant->relationLoaded('options'))->toBeTrue()
+                    ->and($viewVariant->options->contains($redOption))->toBeTrue();
+
+                return true;
+            })
+            ->assertSeeText(__('Variants'))
+            ->assertSeeText('Red')
+            ->assertSeeText('TSHIRT-RED-M');
     });
 });
 
