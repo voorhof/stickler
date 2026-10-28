@@ -18,9 +18,11 @@ class TrackPageView
      */
     protected array $trackedRouteNames = [
         'welcome.index',
+        'brandbook.index',
         'contact.index',
         'terms.*',
         'posts.*',
+        'products.*',
         'projects.*',
         'pages.*',
     ];
