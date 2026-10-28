@@ -45,8 +45,7 @@ class ProductInfoSection
                         ->minValue(0)
                         ->maxValue(fn (Get $get): int => $get('price') ?? 0)
                         ->prefix('€')
-                        ->step(0.01)
-                        ->visible(fn ($get) => $get('is_discounted')),
+                        ->step(0.01),
                     Toggle::make('is_discounted')
                         ->label(__('Is discounted'))
                         ->live()
