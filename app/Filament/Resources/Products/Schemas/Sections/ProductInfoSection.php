@@ -2,10 +2,11 @@
 
 namespace App\Filament\Resources\Products\Schemas\Sections;
 
-use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Support\Icons\Heroicon;
 
 class ProductInfoSection
@@ -27,26 +28,30 @@ class ProductInfoSection
                         ->required()
                         ->numeric()
                         ->minValue(0)
-                        ->default(0),
-
+                        ->default(0)
+                        ->belowContent(__('The number of items available in stock.')),
                     TextInput::make('price')
                         ->label(__('Price'))
                         ->required()
                         ->numeric()
-                        ->minValue(0)
+                        ->minValue(fn (Get $get): int => $get('discount_price') ?? 0)
                         ->prefix('€')
                         ->step(0.01),
                     TextInput::make('discount_price')
                         ->label(__('Discount price'))
+                        ->required(fn (Get $get): bool => $get('is_discounted'))
+                        ->visible(fn (Get $get): bool => $get('is_discounted'))
                         ->numeric()
                         ->minValue(0)
+                        ->maxValue(fn (Get $get): int => $get('price') ?? 0)
                         ->prefix('€')
                         ->step(0.01)
                         ->visible(fn ($get) => $get('is_discounted')),
-
-                    Checkbox::make('is_discounted')
+                    Toggle::make('is_discounted')
                         ->label(__('Is discounted'))
-                        ->default(false),
+                        ->live()
+                        ->belowContent(__('Discounted price is now valid.'))
+                        ->columnSpanFull(),
                 ]),
             ]);
     }
