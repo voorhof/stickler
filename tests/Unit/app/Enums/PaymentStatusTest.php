@@ -3,6 +3,7 @@
 /** @noinspection PhpCaseWithValueNotFoundInEnumInspection, PhpMultipleClassDeclarationsInspection */
 
 use App\Enums\PaymentStatus;
+use Filament\Support\Contracts\HasLabel;
 
 test('payment status has all expected cases', function () {
     expect(PaymentStatus::cases())->toHaveCount(3);
@@ -42,4 +43,19 @@ test('payment status is backed string enum', function () {
 test('payment status cases are unique', function () {
     $values = array_map(fn ($case) => $case->value, PaymentStatus::cases());
     expect($values)->toHaveCount(count(array_unique($values)));
+});
+
+test('payment status implements HasLabel', function () {
+    expect(PaymentStatus::Unpaid)->toBeInstanceOf(HasLabel::class);
+});
+
+test('payment status getLabel returns translated label', function () {
+    $originalLocale = app()->getLocale();
+    app()->setLocale('en');
+
+    expect(PaymentStatus::Unpaid->getLabel())->toBe('Unpaid')
+        ->and(PaymentStatus::Paid->getLabel())->toBe('Paid')
+        ->and(PaymentStatus::Refunded->getLabel())->toBe('Refunded');
+
+    app()->setLocale($originalLocale);
 });

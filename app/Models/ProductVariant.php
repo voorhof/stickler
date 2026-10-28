@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\HigherOrderCollectionProxy;
 
 /**
  * @property int $id
@@ -27,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property int $stock_quantity
  * @property Product $product
  * @property Collection<ProductVariantOption> $options
+ * @property HigherOrderCollectionProxy|mixed $label
  *
  * @method static create(mixed $validated)
  * @method static forceCreate(array $array)
@@ -111,5 +113,19 @@ class ProductVariant extends Model
     public function options(): BelongsToMany
     {
         return $this->belongsToMany(ProductVariantOption::class);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    * Accessors
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Get a label for this variant built from its option names.
+     */
+    public function getLabelAttribute(): string
+    {
+        return $this->options->pluck('name')->implode(' / ');
     }
 }

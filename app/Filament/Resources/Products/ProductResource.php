@@ -40,7 +40,7 @@ class ProductResource extends Resource
         ];
     }
 
-    protected static ?int $navigationSort = 2100; // Specify the order in which navigation items are listed.
+    protected static ?int $navigationSort = 2200; // Specify the order in which navigation items are listed.
 
     public static function getNavigationGroup(): ?string
     {

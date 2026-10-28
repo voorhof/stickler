@@ -37,7 +37,7 @@ class OrderResource extends Resource
         ];
     }
 
-    protected static ?int $navigationSort = 2300;
+    protected static ?int $navigationSort = 2100;
 
     public static function getNavigationGroup(): ?string
     {

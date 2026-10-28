@@ -22,7 +22,7 @@ class ProductVariantOptionTypeResource extends Resource
 
     protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::RectangleStack;
 
-    protected static ?int $navigationSort = 2200;
+    protected static ?int $navigationSort = 2300;
 
     public static function getNavigationGroup(): ?string
     {

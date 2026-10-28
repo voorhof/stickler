@@ -73,6 +73,7 @@ use Spatie\Tags\HasTags;
  * @method static where(string $column, mixed $operator, mixed $value = null)
  * @method static isPublicPublished()
  * @method static first()
+ * @method static find($state)
  */
 #[Fillable([
     'slug',

@@ -3,6 +3,7 @@
 /** @noinspection PhpCaseWithValueNotFoundInEnumInspection, PhpMultipleClassDeclarationsInspection */
 
 use App\Enums\OrderStatus;
+use Filament\Support\Contracts\HasLabel;
 
 test('order status has all expected cases', function () {
     expect(OrderStatus::cases())->toHaveCount(6);
@@ -48,4 +49,22 @@ test('order status is backed string enum', function () {
 test('order status cases are unique', function () {
     $values = array_map(fn ($case) => $case->value, OrderStatus::cases());
     expect($values)->toHaveCount(count(array_unique($values)));
+});
+
+test('order status implements HasLabel', function () {
+    expect(OrderStatus::Pending)->toBeInstanceOf(HasLabel::class);
+});
+
+test('order status getLabel returns translated label', function () {
+    $originalLocale = app()->getLocale();
+    app()->setLocale('en');
+
+    expect(OrderStatus::Pending->getLabel())->toBe('Pending')
+        ->and(OrderStatus::Confirmed->getLabel())->toBe('Confirmed')
+        ->and(OrderStatus::Processing->getLabel())->toBe('Processing')
+        ->and(OrderStatus::Shipped->getLabel())->toBe('Shipped')
+        ->and(OrderStatus::Delivered->getLabel())->toBe('Delivered')
+        ->and(OrderStatus::Cancelled->getLabel())->toBe('Cancelled');
+
+    app()->setLocale($originalLocale);
 });
