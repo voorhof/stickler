@@ -98,7 +98,6 @@ class Project extends Model implements HasMedia, HasRichContent, Sortable
 
     use HasMediaConversions;
     use HasPublishedScope;
-    use HasStandardActivitylogOptions;
     use HasStandardActivitylogOptions {
         HasStandardActivitylogOptions::getActivitylogOptions insteadof LogsActivity;
     }

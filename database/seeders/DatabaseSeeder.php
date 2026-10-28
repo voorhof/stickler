@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             ProjectSeeder::class,
             CategorySeeder::class,
             TagSeeder::class,
+            OrderSeeder::class,
         ]);
     }
 }
