@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Observers\ProductObserver;
 use App\Policies\ProductPolicy;
+use App\Traits\HasCategories;
 use App\Traits\HasCreatorAndUpdater;
 use App\Traits\HasMediaConversions;
 use App\Traits\HasPublishedScope;
@@ -23,6 +24,7 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\RouteKey;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -61,6 +63,7 @@ use Spatie\Tags\HasTags;
  * @property Attribute $published
  * @property BelongsTo $creator
  * @property BelongsTo $updater
+ * @property Collection<Category> $categories
  * @property HigherOrderCollectionProxy|mixed $variants
  *
  * @method static creator()
@@ -101,6 +104,7 @@ use Spatie\Tags\HasTags;
 #[UsePolicy(ProductPolicy::class)]
 class Product extends Model implements HasMedia, HasRichContent, Sortable
 {
+    use HasCategories;
     use HasCreatorAndUpdater;
 
     /** @use HasFactory<ProductFactory> */

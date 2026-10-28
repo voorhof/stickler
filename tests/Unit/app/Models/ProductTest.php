@@ -2,6 +2,7 @@
 
 /** @noinspection PhpPossiblePolymorphicInvocationInspection */
 
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
 use App\Policies\ProductPolicy;
@@ -425,6 +426,20 @@ test('website fields are nullable', function () {
 
     expect($product->website_title)->toBeNull()
         ->and($product->website_url)->toBeNull();
+});
+
+test('product has many categories', function () {
+    User::factory()->create();
+    $product = Product::factory()->create();
+    $categories = Category::factory()
+        ->count(3)
+        ->create(['for_pages' => false, 'for_posts' => false, 'for_products' => true, 'for_projects' => false]);
+
+    $product->categories()->attach($categories->pluck('id'));
+
+    expect($product->categories)->toHaveCount(3)
+        ->and($product->categories->pluck('id')->sort()->values()->toArray())
+        ->toBe($categories->pluck('id')->sort()->values()->toArray());
 });
 
 test('it has many product variants', function () {

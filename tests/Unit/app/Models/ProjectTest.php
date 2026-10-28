@@ -2,6 +2,7 @@
 
 /** @noinspection PhpUndefinedFieldInspection,PhpPossiblePolymorphicInvocationInspection */
 
+use App\Models\Category;
 use App\Models\Project;
 use App\Models\User;
 use App\Policies\ProjectPolicy;
@@ -320,6 +321,20 @@ test('it registers standard media conversions', function () {
     expect($names)->toContain('preview')
         ->and($names)->toContain('thumb')
         ->and($names)->toContain('webp');
+});
+
+test('project has many categories', function () {
+    User::factory()->create();
+    $project = Project::factory()->create();
+    $categories = Category::factory()
+        ->count(3)
+        ->create(['for_pages' => false, 'for_posts' => false, 'for_products' => false, 'for_projects' => true]);
+
+    $project->categories()->attach($categories->pluck('id'));
+
+    expect($project->categories)->toHaveCount(3)
+        ->and($project->categories->pluck('id')->sort()->values()->toArray())
+        ->toBe($categories->pluck('id')->sort()->values()->toArray());
 });
 
 test('project model has project policy attribute configured', function () {

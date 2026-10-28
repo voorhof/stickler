@@ -2,6 +2,7 @@
 
 /** @noinspection PhpPossiblePolymorphicInvocationInspection */
 
+use App\Models\Category;
 use App\Models\Page;
 use App\Models\User;
 use App\Policies\PagePolicy;
@@ -318,6 +319,20 @@ test('it registers standard media conversions', function () {
     expect($names)->toContain('preview')
         ->and($names)->toContain('thumb')
         ->and($names)->toContain('webp');
+});
+
+test('page has many categories', function () {
+    User::factory()->create();
+    $page = Page::factory()->create();
+    $categories = Category::factory()
+        ->count(3)
+        ->create(['for_pages' => true, 'for_posts' => false, 'for_products' => false, 'for_projects' => false]);
+
+    $page->categories()->attach($categories->pluck('id'));
+
+    expect($page->categories)->toHaveCount(3)
+        ->and($page->categories->pluck('id')->sort()->values()->toArray())
+        ->toBe($categories->pluck('id')->sort()->values()->toArray());
 });
 
 test('page model has page policy attribute configured', function () {

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Observers\ProjectObserver;
 use App\Policies\ProjectPolicy;
+use App\Traits\HasCategories;
 use App\Traits\HasCreatorAndUpdater;
 use App\Traits\HasMediaConversions;
 use App\Traits\HasPublishedScope;
@@ -23,6 +24,7 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\RouteKey;
 use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -54,6 +56,7 @@ use Spatie\Tags\HasTags;
  * @property Attribute $published
  * @property BelongsTo $creator
  * @property BelongsTo $updater
+ * @property Collection<Category> $categories
  *
  * @method static creator()
  * @method static updater()
@@ -87,6 +90,7 @@ use Spatie\Tags\HasTags;
 #[UsePolicy(ProjectPolicy::class)]
 class Project extends Model implements HasMedia, HasRichContent, Sortable
 {
+    use HasCategories;
     use HasCreatorAndUpdater;
 
     /** @use HasFactory<ProjectFactory> */

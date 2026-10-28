@@ -39,6 +39,5 @@ class TagSeeder extends Seeder
             $project->tags()->attach(Tag::inRandomOrder()->take(2)->pluck('id'));
         }
 
-
     }
 }

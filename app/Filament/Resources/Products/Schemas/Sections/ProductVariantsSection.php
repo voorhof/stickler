@@ -64,6 +64,7 @@ class ProductVariantsSection
                                 ->columnSpanFull(),
                         ]),
                     ])
+                    ->defaultItems(0)
                     ->columns(1)
                     ->reorderable()
                     ->addable()

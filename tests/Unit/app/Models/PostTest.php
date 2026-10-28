@@ -2,6 +2,7 @@
 
 /** @noinspection PhpPossiblePolymorphicInvocationInspection */
 
+use App\Models\Category;
 use App\Models\Post;
 use App\Models\User;
 use App\Policies\PostPolicy;
@@ -335,6 +336,20 @@ test('it registers standard media conversions', function () {
     expect($names)->toContain('preview')
         ->and($names)->toContain('thumb')
         ->and($names)->toContain('webp');
+});
+
+test('post has many categories', function () {
+    User::factory()->create();
+    $post = Post::factory()->create();
+    $categories = Category::factory()
+        ->count(3)
+        ->create(['for_pages' => false, 'for_posts' => true, 'for_products' => false, 'for_projects' => false]);
+
+    $post->categories()->attach($categories->pluck('id'));
+
+    expect($post->categories)->toHaveCount(3)
+        ->and($post->categories->pluck('id')->sort()->values()->toArray())
+        ->toBe($categories->pluck('id')->sort()->values()->toArray());
 });
 
 test('post model has post policy attribute configured', function () {
