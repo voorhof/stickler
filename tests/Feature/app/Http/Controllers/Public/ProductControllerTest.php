@@ -188,8 +188,8 @@ describe('products show', function () {
             ->assertViewHas('product', function (Product $viewProduct) use ($product, $categories) {
                 expect($viewProduct->id)->toBe($product->id)
                     ->and($viewProduct->relationLoaded('categories'))->toBeTrue()
-                    ->and($viewProduct->categories->pluck('id')->sort()->toArray())
-                    ->toBe($categories->pluck('id')->sort()->toArray());
+                    ->and($viewProduct->categories->pluck('id')->sort()->values()->toArray())
+                        ->toBe($categories->pluck('id')->sort()->values()->toArray());
 
                 return true;
             })
