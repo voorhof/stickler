@@ -27,14 +27,14 @@ class EditProduct extends EditRecord
             $this->getSaveFormAction()
                 ->formId('form')
                 ->size('sm'),
-            //            Action::make('viewPublicPage')
-            //                ->label(__('View'))
-            //                ->icon(Heroicon::OutlinedEye)
-            //                ->color('gray')
-            //                ->outlined()
-            //                ->size('sm')
-            //                ->url(fn (): string => route('products.show', $this->getRecord()))
-            //                ->visible(fn (): bool => $this->getRecord()?->published_at <= now() && $this->getRecord()?->published_at !== null),
+            Action::make('viewPublicPage')
+                ->label(__('View'))
+                ->icon(Heroicon::OutlinedEye)
+                ->color('gray')
+                ->outlined()
+                ->size('sm')
+                ->url(fn (): string => route('products.show', $this->getRecord()))
+                ->visible(fn (): bool => $this->getRecord()?->published_at <= now() && $this->getRecord()?->published_at !== null),
             PublishAction::make(),
             UnpublishAction::make(),
             SoftDeleteAction::make(),

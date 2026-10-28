@@ -58,6 +58,14 @@
             <a
                 @class([
                     'nav-link link-body-emphasis text-uppercase',
+                    'active' => request()->routeIs('products.*'),
+                ])
+                href="{{ route('products.index') }}"
+            >{{ __('Products') }}</a>
+
+            <a
+                @class([
+                    'nav-link link-body-emphasis text-uppercase',
                     'active' => request()->routeIs('contact.index'),
                 ])
                 href="{{ route('contact.index') }}"

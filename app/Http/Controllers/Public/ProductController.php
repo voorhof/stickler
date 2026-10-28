@@ -1,0 +1,43 @@
+<?php
+
+namespace App\Http\Controllers\Public;
+
+use App\Http\Controllers\Controller;
+use App\Models\Product;
+use Laravel\Head\Facades\Head;
+
+class ProductController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+        $products = Product::isPublicPublished()
+            ->with('media')
+            ->orderBy('order_column', 'asc')
+            ->paginate(6);
+
+        Head::title(__('Products'))
+            ->description(__('Products').' '.config('app.name'));
+
+        return view('public.products.index', [
+            'products' => $products,
+        ]);
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Product $product)
+    {
+        abort_unless($product->isPublished(), 404);
+
+        Head::title($product->title)
+            ->description($product->intro);
+
+        return view('public.products.show', [
+            'product' => $product,
+        ]);
+    }
+}

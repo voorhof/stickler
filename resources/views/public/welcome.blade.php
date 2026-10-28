@@ -106,6 +106,12 @@
                         <p class="c-welcome-card-desc">{{ __('Browse all pages') }}</p>
                     </a>
 
+                    <a href="{{ route('products.index') }}" class="c-welcome-card">
+                        <div class="fs-3"><x-icons.handbag /></div>
+                        <h2 class="c-welcome-card-title">{{ __('Products') }}</h2>
+                        <p class="c-welcome-card-desc">{{ __('Discover our products') }}</p>
+                    </a>
+
                     <a href="{{ route('contact.index') }}" class="c-welcome-card">
                         <div class="fs-3"><x-icons.envelope /></div>
                         <h2 class="c-welcome-card-title">{{ __('Contact') }}</h2>
