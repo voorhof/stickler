@@ -28,9 +28,10 @@ return new class extends Migration
 
             $table->integer('quantity');
             $table->integer('unit_price');
-            $table->integer('total_price');
+            $table->integer('total_price')->nullable();
 
             $table->timestamps();
+            $table->softDeletes();
             $table->foreignIdFor(User::class, 'created_by_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignIdFor(User::class, 'updated_by_user_id')->nullable()->constrained('users')->nullOnDelete();
 

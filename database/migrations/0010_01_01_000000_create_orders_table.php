@@ -34,6 +34,7 @@ return new class extends Migration
             $table->text('notes')->nullable();
 
             $table->timestamps();
+            $table->softDeletes();
             $table->foreignIdFor(User::class, 'created_by_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignIdFor(User::class, 'updated_by_user_id')->nullable()->constrained('users')->nullOnDelete();
 

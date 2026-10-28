@@ -113,9 +113,9 @@ test('order items are deleted when order is deleted', function () {
     $order = Order::factory()->create();
     OrderItem::factory()->count(2)->create(['order_id' => $order->id]);
 
-    $order->delete();
+    $order->forceDelete();
 
-    expect(OrderItem::where('order_id', $order->id)->count())->toBe(0);
+    expect(OrderItem::withTrashed()->where('order_id', $order->id)->count())->toBe(0);
 });
 
 test('status is cast to order status enum', function () {

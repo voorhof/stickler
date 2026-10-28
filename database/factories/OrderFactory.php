@@ -129,4 +129,14 @@ class OrderFactory extends Factory
             'user_id' => null,
         ]);
     }
+
+    /**
+     * Indicate that the model is soft-deleted.
+     */
+    public function softDeleted(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'deleted_at' => now(),
+        ]);
+    }
 }

@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 
@@ -46,6 +47,7 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
  * @method static create(mixed $validated)
  * @method static forceCreate(array $array)
  * @method static where(string $column, mixed $operator, mixed $value = null)
+ * @method static latest()
  */
 #[Fillable([
     'order_number',
@@ -76,6 +78,7 @@ class Order extends Model
     }
     use LogsActivity;
     use LogsTrashedActivity;
+    use SoftDeletes;
 
     /*
     |--------------------------------------------------------------------------
@@ -150,6 +153,16 @@ class Order extends Model
         return $this->user?->name ?? __('Guest');
     }
 
+    /**
+     * Get the title for Filament actions (uses order_number).
+     */
+    protected function title(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->order_number,
+        );
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Boot & Lifecycle
@@ -179,11 +192,11 @@ class Order extends Model
         $prefix = 'ORD-'.$year.'-';
 
         do {
-            $count = self::where('order_number', 'like', $prefix.'%')->count();
+            $count = self::withTrashed()->where('order_number', 'like', $prefix.'%')->count();
             $nextNumber = $count + 1;
             $sequence = Str::padLeft((string) $nextNumber, 5, '0');
             $orderNumber = $prefix.$sequence;
-        } while (self::where('order_number', $orderNumber)->exists());
+        } while (self::withTrashed()->where('order_number', $orderNumber)->exists());
 
         return $orderNumber;
     }

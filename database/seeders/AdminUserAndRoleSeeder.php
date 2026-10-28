@@ -95,6 +95,11 @@ class AdminUserAndRoleSeeder extends Seeder
         Permission::create(['name' => 'update categories']);
         Permission::create(['name' => 'delete categories']);
 
+        Permission::create(['name' => 'create orders']);
+        Permission::create(['name' => 'view orders']);
+        Permission::create(['name' => 'update orders']);
+        Permission::create(['name' => 'delete orders']);
+
         Permission::create(['name' => 'create tags']);
         Permission::create(['name' => 'view tags']);
         Permission::create(['name' => 'update tags']);
