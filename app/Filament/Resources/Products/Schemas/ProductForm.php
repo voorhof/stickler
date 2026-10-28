@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Products\Schemas;
 use App\Filament\Resources\Products\Schemas\Sections\ProductInfoSection;
 use App\Filament\Resources\Products\Schemas\Sections\ProductVariantsSection;
 use App\Filament\Schemas\Sections\ActivityHistorySection;
+use App\Filament\Schemas\Sections\CategoriesSection;
 use App\Filament\Schemas\Sections\ContentSection;
 use App\Filament\Schemas\Sections\DatabaseInfoSection;
 use App\Filament\Schemas\Sections\DocumentUploadSection;
@@ -32,6 +33,9 @@ class ProductForm
                         ImageUploadSection::make(),
                         VideoUploadSection::make(),
                         DocumentUploadSection::make(),
+                        CategoriesSection::make(
+                            forModel: 'for_products',
+                        ),
                         TagsSection::make(),
                         SettingsSection::make(),
                         DatabaseInfoSection::make(),

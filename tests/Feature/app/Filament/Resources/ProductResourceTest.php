@@ -8,6 +8,7 @@ use App\Filament\Actions\SoftDeleteAction;
 use App\Filament\Resources\Products\Pages\CreateProduct;
 use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\Pages\ListProducts;
+use App\Models\Category;
 use App\Models\Permission;
 use App\Models\Product;
 use App\Models\Role;
@@ -438,6 +439,43 @@ it('allows variant price equal to product price', function () {
     $this->assertDatabaseHas(Product::class, [
         'title' => 'Product with Equal Variant Price',
     ]);
+});
+
+it('can create a product with categories', function () {
+    $categories = Category::factory()->count(2)->create(['for_products' => true]);
+
+    livewire(CreateProduct::class)
+        ->fillForm([
+            'title' => 'Product with Categories',
+            'intro' => 'A product with categories.',
+            'price' => 29.99,
+            'stock_quantity' => 10,
+            'categories' => $categories->pluck('id')->toArray(),
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors()
+        ->assertNotified();
+
+    $product = Product::where('title', 'Product with Categories')->first();
+    expect($product->categories->pluck('id')->sort()->toArray())
+        ->toBe($categories->pluck('id')->sort()->toArray());
+});
+
+it('can edit product categories', function () {
+    $product = Product::factory()->create();
+    $newCategory = Category::factory()->create(['for_products' => true]);
+
+    livewire(EditProduct::class, ['record' => $product->getRouteKey()])
+        ->fillForm([
+            'categories' => [$newCategory->id],
+        ])
+        ->call('save')
+        ->assertHasNoFormErrors()
+        ->assertNotified();
+
+    $product->refresh();
+    expect($product->categories->pluck('id')->toArray())
+        ->toBe([$newCategory->id]);
 });
 
 it('denies deleting a product when the user does not have delete permission', function () {
