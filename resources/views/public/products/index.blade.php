@@ -117,6 +117,22 @@
                 gap: 0.5rem;
             }
 
+            .c-product-categories {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.35rem;
+            }
+
+            .c-product-category-badge {
+                display: inline-block;
+                padding: 0.15rem 0.5rem;
+                font-size: 0.7rem;
+                font-weight: 500;
+                border-radius: var(--st-border-radius);
+                background-color: var(--st-tertiary-bg);
+                color: var(--st-product-meta-color);
+            }
+
             .c-product-title {
                 margin: 0;
                 font-weight: 600;
@@ -220,6 +236,14 @@
 
                                 <div class="c-product-body">
                                     <h2 class="c-product-title">{{ $product->title }}</h2>
+
+                                    @if ($product->categories->isNotEmpty())
+                                        <div class="c-product-categories">
+                                            @foreach ($product->categories as $category)
+                                                <span class="c-product-category-badge">{{ $category->title }}</span>
+                                            @endforeach
+                                        </div>
+                                    @endif
 
                                     @if ($product->intro)
                                         <p class="c-product-intro">{{ $product->intro }}</p>

@@ -41,6 +41,31 @@
                 color: #fff;
             }
 
+            .c-product-show-categories {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                margin-top: 0.75rem;
+            }
+
+            .c-product-show-category-badge {
+                display: inline-block;
+                padding: 0.2rem 0.6rem;
+                font-size: 0.75rem;
+                font-weight: 500;
+                border-radius: var(--st-border-radius);
+                background-color: rgba(255, 255, 255, 0.2);
+                color: #fff;
+                text-decoration: none;
+                transition: background-color 0.2s ease;
+            }
+
+            .c-product-show-category-badge:hover {
+                background-color: rgba(255, 255, 255, 0.35);
+                color: #fff;
+                text-decoration: none;
+            }
+
             .c-product-show-title {
                 margin: 0;
                 font-weight: 700;
@@ -329,6 +354,14 @@
 
                 <div class="c-product-show-banner-overlay">
                     <h1 class="c-product-show-title">{{ $product->title }}</h1>
+
+                    @if ($product->categories->isNotEmpty())
+                        <div class="c-product-show-categories">
+                            @foreach ($product->categories as $category)
+                                <span class="c-product-show-category-badge">{{ $category->title }}</span>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
             </div>
 

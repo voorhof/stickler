@@ -14,7 +14,7 @@ class ProductController extends Controller
     public function index()
     {
         $products = Product::isPublicPublished()
-            ->with('media')
+            ->with(['media', 'categories'])
             ->orderBy('order_column', 'asc')
             ->paginate(6);
 
@@ -33,7 +33,7 @@ class ProductController extends Controller
     {
         abort_unless($product->isPublished(), 404);
 
-        $product->load(['variants.options']);
+        $product->load(['variants.options', 'categories']);
 
         Head::title($product->title)
             ->description($product->intro);

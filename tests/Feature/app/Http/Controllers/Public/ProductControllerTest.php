@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Public\ProductController;
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\ProductVariantOption;
@@ -46,6 +47,7 @@ describe('products index', function () {
                     ->and($products->contains($futureProduct))->toBeFalse()
                     ->and($products->contains($unpublishedProduct))->toBeFalse()
                     ->and($products->first()->relationLoaded('media'))->toBeTrue()
+                    ->and($products->first()->relationLoaded('categories'))->toBeTrue()
                     ->and($products->perPage())->toBe(6);
 
                 return true;
@@ -153,7 +155,8 @@ describe('products show', function () {
             ->assertViewIs('public.products.show')
             ->assertViewHas('product', function (Product $viewProduct) use ($product, $variant, $redOption) {
                 expect($viewProduct->id)->toBe($product->id)
-                    ->and($viewProduct->relationLoaded('variants'))->toBeTrue();
+                    ->and($viewProduct->relationLoaded('variants'))->toBeTrue()
+                    ->and($viewProduct->relationLoaded('categories'))->toBeTrue();
 
                 $viewVariant = $viewProduct->variants->firstWhere('id', $variant->id);
 
@@ -166,6 +169,32 @@ describe('products show', function () {
             ->assertSeeText(__('Variants'))
             ->assertSeeText('Red')
             ->assertSeeText('TSHIRT-RED-M');
+    });
+
+    test('it displays product with categories', function () {
+        User::factory()->create();
+
+        $categories = Category::factory()->count(2)->create(['for_products' => true]);
+
+        $product = Product::factory()->create([
+            'published_at' => now()->subHour(),
+        ]);
+        $product->categories()->sync($categories->pluck('id'));
+
+        $response = $this->get(route('products.show', $product));
+
+        $response->assertSuccessful()
+            ->assertViewIs('public.products.show')
+            ->assertViewHas('product', function (Product $viewProduct) use ($product, $categories) {
+                expect($viewProduct->id)->toBe($product->id)
+                    ->and($viewProduct->relationLoaded('categories'))->toBeTrue()
+                    ->and($viewProduct->categories->pluck('id')->sort()->toArray())
+                    ->toBe($categories->pluck('id')->sort()->toArray());
+
+                return true;
+            })
+            ->assertSeeText($categories[0]->title)
+            ->assertSeeText($categories[1]->title);
     });
 });
 
