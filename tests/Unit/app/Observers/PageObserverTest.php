@@ -9,9 +9,14 @@ use App\Models\User;
 use App\Observers\PageObserver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+
+use function Illuminate\Support\defer;
+
 use Illuminate\Support\Facades\Queue;
 
 use function Pest\Laravel\actingAs;
+
+use Spatie\ResponseCache\Facades\ResponseCache;
 
 it('tracks creator and updater on page create and update', function (): void {
     $creator = User::factory()->create();
@@ -252,4 +257,41 @@ it('queues sitemap generation when a page is deleted', function (): void {
     $page->delete();
 
     Queue::assertPushed(GenerateSitemapJob::class);
+});
+
+it('flushes response cache when a page is saved', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    config(['responsecache.enabled' => true]);
+
+    ResponseCache::shouldReceive('clear')->once();
+
+    Page::create([
+        'title' => 'Cache Flush Test Page',
+        'intro' => 'Testing cache flush on save.',
+    ]);
+
+    defer()->invoke();
+
+    ResponseCache::shouldReceive('clear')->once();
+
+    Page::first()->update(['title' => 'Cache Flush Updated Page']);
+
+    defer()->invoke();
+});
+
+it('flushes response cache when a page is deleted', function (): void {
+    $user = User::factory()->create();
+    $page = Model::withoutEvents(fn (): Page => Page::factory()->create([
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]));
+
+    config(['responsecache.enabled' => true]);
+    ResponseCache::shouldReceive('clear')->once();
+
+    $page->delete();
+
+    defer()->invoke();
 });

@@ -8,9 +8,14 @@ use App\Models\Post;
 use App\Models\User;
 use App\Observers\PostObserver;
 use Illuminate\Database\Eloquent\Model;
+
+use function Illuminate\Support\defer;
+
 use Illuminate\Support\Facades\Queue;
 
 use function Pest\Laravel\actingAs;
+
+use Spatie\ResponseCache\Facades\ResponseCache;
 
 it('tracks creator and updater on post create and update', function (): void {
     $creator = User::factory()->create();
@@ -130,4 +135,41 @@ it('queues sitemap generation when a post is deleted', function (): void {
     $post->delete();
 
     Queue::assertPushed(GenerateSitemapJob::class);
+});
+
+it('flushes response cache when a post is saved', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    config(['responsecache.enabled' => true]);
+
+    ResponseCache::shouldReceive('clear')->once();
+
+    Post::create([
+        'title' => 'Cache Flush Test Post',
+        'intro' => 'Testing cache flush on save.',
+    ]);
+
+    defer()->invoke();
+
+    ResponseCache::shouldReceive('clear')->once();
+
+    Post::first()->update(['title' => 'Cache Flush Updated Post']);
+
+    defer()->invoke();
+});
+
+it('flushes response cache when a post is deleted', function (): void {
+    $user = User::factory()->create();
+    $post = Model::withoutEvents(fn (): Post => Post::factory()->create([
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]));
+
+    config(['responsecache.enabled' => true]);
+    ResponseCache::shouldReceive('clear')->once();
+
+    $post->delete();
+
+    defer()->invoke();
 });

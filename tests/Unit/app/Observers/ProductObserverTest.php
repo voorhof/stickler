@@ -8,9 +8,14 @@ use App\Models\Product;
 use App\Models\User;
 use App\Observers\ProductObserver;
 use Illuminate\Database\Eloquent\Model;
+
+use function Illuminate\Support\defer;
+
 use Illuminate\Support\Facades\Queue;
 
 use function Pest\Laravel\actingAs;
+
+use Spatie\ResponseCache\Facades\ResponseCache;
 
 it('tracks creator and updater on product create and update', function (): void {
     $creator = User::factory()->create();
@@ -138,4 +143,43 @@ it('queues sitemap generation when a product is deleted', function (): void {
     $product->delete();
 
     Queue::assertPushed(GenerateSitemapJob::class);
+});
+
+it('flushes response cache when a product is saved', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    config(['responsecache.enabled' => true]);
+
+    ResponseCache::shouldReceive('clear')->once();
+
+    Product::create([
+        'title' => 'Cache Flush Test Product',
+        'intro' => 'Testing cache flush on save.',
+        'price' => 9.99,
+        'discount_price' => null,
+    ]);
+
+    defer()->invoke();
+
+    ResponseCache::shouldReceive('clear')->once();
+
+    Product::first()->update(['title' => 'Cache Flush Updated Product']);
+
+    defer()->invoke();
+});
+
+it('flushes response cache when a product is deleted', function (): void {
+    $user = User::factory()->create();
+    $product = Model::withoutEvents(fn (): Product => Product::factory()->create([
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]));
+
+    config(['responsecache.enabled' => true]);
+    ResponseCache::shouldReceive('clear')->once();
+
+    $product->delete();
+
+    defer()->invoke();
 });

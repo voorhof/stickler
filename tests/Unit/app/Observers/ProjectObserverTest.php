@@ -7,9 +7,14 @@ use App\Models\Media;
 use App\Models\Project;
 use App\Models\User;
 use App\Observers\ProjectObserver;
+
+use function Illuminate\Support\defer;
+
 use Illuminate\Support\Facades\Queue;
 
 use function Pest\Laravel\actingAs;
+
+use Spatie\ResponseCache\Facades\ResponseCache;
 
 it('tracks creator and updater on project create and update', function (): void {
     $creator = User::factory()->create();
@@ -129,4 +134,41 @@ it('queues sitemap generation when a project is deleted', function (): void {
     $project->delete();
 
     Queue::assertPushed(GenerateSitemapJob::class);
+});
+
+it('flushes response cache when a project is saved', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    config(['responsecache.enabled' => true]);
+
+    ResponseCache::shouldReceive('clear')->once();
+
+    Project::create([
+        'title' => 'Cache Flush Test Project',
+        'intro' => 'Testing cache flush on save.',
+    ]);
+
+    defer()->invoke();
+
+    ResponseCache::shouldReceive('clear')->once();
+
+    Project::first()->update(['title' => 'Cache Flush Updated Project']);
+
+    defer()->invoke();
+});
+
+it('flushes response cache when a project is deleted', function (): void {
+    $user = User::factory()->create();
+    $project = Project::withoutEvents(fn (): Project => Project::factory()->create([
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]));
+
+    config(['responsecache.enabled' => true]);
+    ResponseCache::shouldReceive('clear')->once();
+
+    $project->delete();
+
+    defer()->invoke();
 });
