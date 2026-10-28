@@ -109,9 +109,11 @@ class Product extends Model implements HasMedia, HasRichContent, Sortable
     use HasMediaConversions;
     use HasPublishedScope;
     use HasStandardActivitylogOptions;
+    use HasStandardActivitylogOptions {
+        HasStandardActivitylogOptions::getActivitylogOptions insteadof LogsActivity;
+    }
     use HasStandardMediaCollections {
         HasStandardMediaCollections::registerMediaCollections insteadof InteractsWithMedia;
-        HasStandardActivitylogOptions::getActivitylogOptions insteadof LogsActivity;
     }
     use HasTags;
     use InteractsWithMedia;

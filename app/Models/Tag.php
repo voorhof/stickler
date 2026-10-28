@@ -148,6 +148,24 @@ class Tag extends BaseTag implements Sortable
     }
 
     /**
+     * Get all the pages that are assigned to the tag.
+     */
+    public function pages(): MorphToMany
+    {
+        return $this->morphedByMany(Page::class, 'taggable')
+            ->orderBy('order_column');
+    }
+
+    /**
+     * Get all the products that are assigned to the tag.
+     */
+    public function products(): MorphToMany
+    {
+        return $this->morphedByMany(Product::class, 'taggable')
+            ->orderBy('order_column');
+    }
+
+    /**
      * Get all the projects that are assigned to the tag.
      */
     public function projects(): MorphToMany
