@@ -189,7 +189,7 @@ describe('products show', function () {
                 expect($viewProduct->id)->toBe($product->id)
                     ->and($viewProduct->relationLoaded('categories'))->toBeTrue()
                     ->and($viewProduct->categories->pluck('id')->sort()->values()->toArray())
-                        ->toBe($categories->pluck('id')->sort()->values()->toArray());
+                    ->toBe($categories->pluck('id')->sort()->values()->toArray());
 
                 return true;
             })

@@ -160,12 +160,16 @@
             </div>
 
             @php
-                $coverMedia = $project->getFirstMedia('cover');
+                $coverMedia = $project->getCoverMedia();
             @endphp
 
             <div class="c-project-show-banner">
                 @if ($coverMedia)
-                    {{ $coverMedia->img('webp', ['alt' => $project->title]) }}
+                    <img
+                        src="{{ $project->getCoverImageUrl() }}"
+                        alt="{{ $project->title }}"
+                        class="c-project-show-banner-img"
+                    />
                 @endif
 
                 <div class="c-project-show-banner-overlay">

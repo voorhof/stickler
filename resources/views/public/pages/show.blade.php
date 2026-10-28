@@ -152,11 +152,13 @@
             </div>
 
             @php
-                $coverMedia = $page->getFirstMedia('cover');
+                $coverMedia = $page->getCoverMedia();
             @endphp
 
             @if ($coverMedia)
-                <div class="c-page-show-cover">{{ $coverMedia->img('webp', ['alt' => $page->title]) }}</div>
+                <div class="c-page-show-cover">
+                    <img src="{{ $page->getCoverImageUrl() }}" alt="{{ $page->title }}" />
+                </div>
             @endif
 
             <div class="c-page-show-content">

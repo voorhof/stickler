@@ -140,11 +140,13 @@
             </div>
 
             @php
-                $coverMedia = $post->getFirstMedia('cover');
+                $coverMedia = $post->getCoverMedia();
             @endphp
 
             @if ($coverMedia)
-                <div class="c-post-show-cover">{{ $coverMedia->img('webp', ['alt' => $post->title]) }}</div>
+                <div class="c-post-show-cover">
+                    <img src="{{ $post->getCoverImageUrl() }}" alt="{{ $post->title }}" />
+                </div>
             @endif
 
             <div class="c-post-show-content">

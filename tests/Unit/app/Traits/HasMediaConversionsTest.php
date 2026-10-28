@@ -5,6 +5,7 @@
 use App\Models\Post;
 use App\Models\User;
 use Spatie\Image\Enums\Fit;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 test('it registers a preview conversion that crops to 400x400', function () {
     User::factory()->create();
@@ -147,4 +148,119 @@ test('it applies conversions to all specified collections', function () {
         ->and($preview->getPerformOnCollections())->toContain('videos')
         ->and($preview->getPerformOnCollections())->toContain('documents')
         ->and($preview->getPerformOnCollections())->toContain('content');
+});
+
+test('getCoverMedia returns null when no cover media exists', function () {
+    User::factory()->create();
+    $post = Post::factory()->create();
+
+    expect($post->getCoverMedia())->toBeNull();
+});
+
+test('getCoverMedia returns the cover media item', function () {
+    User::factory()->create();
+    $post = Post::factory()->create();
+
+    $media = Media::create([
+        'model_type' => Post::class,
+        'model_id' => $post->id,
+        'collection_name' => 'cover',
+        'name' => 'cover-image',
+        'file_name' => 'cover-image.jpg',
+        'mime_type' => 'image/jpeg',
+        'disk' => 'public',
+        'conversions_disk' => 'public',
+        'size' => 1024,
+        'manipulations' => [],
+        'custom_properties' => [],
+        'generated_conversions' => [],
+        'responsive_images' => [],
+    ]);
+
+    expect($post->getCoverMedia())->not->toBeNull()
+        ->and($post->getCoverMedia()->id)->toBe($media->id);
+});
+
+test('getCoverImageUrl returns null when no cover media exists', function () {
+    User::factory()->create();
+    $post = Post::factory()->create();
+
+    expect($post->getCoverImageUrl())->toBeNull();
+});
+
+test('getCoverImageUrl returns original url when webp conversion is not generated', function () {
+    User::factory()->create();
+    $post = Post::factory()->create();
+
+    Media::create([
+        'model_type' => Post::class,
+        'model_id' => $post->id,
+        'collection_name' => 'cover',
+        'name' => 'cover-image',
+        'file_name' => 'cover-image.jpg',
+        'mime_type' => 'image/jpeg',
+        'disk' => 'public',
+        'conversions_disk' => 'public',
+        'size' => 1024,
+        'manipulations' => [],
+        'custom_properties' => [],
+        'generated_conversions' => [],
+        'responsive_images' => [],
+    ]);
+
+    $url = $post->getCoverImageUrl();
+
+    expect($url)->not->toBeNull()
+        ->and(str_ends_with($url, 'cover-image.jpg'))->toBeTrue();
+});
+
+test('getCoverImageUrl returns webp url when conversion is generated', function () {
+    User::factory()->create();
+    $post = Post::factory()->create();
+
+    Media::create([
+        'model_type' => Post::class,
+        'model_id' => $post->id,
+        'collection_name' => 'cover',
+        'name' => 'cover-image',
+        'file_name' => 'cover-image.jpg',
+        'mime_type' => 'image/jpeg',
+        'disk' => 'public',
+        'conversions_disk' => 'public',
+        'size' => 1024,
+        'manipulations' => [],
+        'custom_properties' => [],
+        'generated_conversions' => ['webp' => true],
+        'responsive_images' => [],
+    ]);
+
+    $url = $post->getCoverImageUrl();
+
+    expect($url)->not->toBeNull()
+        ->and(str_contains($url, 'webp'))->toBeTrue();
+});
+
+test('getCoverImageUrl accepts custom conversions array', function () {
+    User::factory()->create();
+    $post = Post::factory()->create();
+
+    Media::create([
+        'model_type' => Post::class,
+        'model_id' => $post->id,
+        'collection_name' => 'cover',
+        'name' => 'cover-image',
+        'file_name' => 'cover-image.jpg',
+        'mime_type' => 'image/jpeg',
+        'disk' => 'public',
+        'conversions_disk' => 'public',
+        'size' => 1024,
+        'manipulations' => [],
+        'custom_properties' => [],
+        'generated_conversions' => [],
+        'responsive_images' => [],
+    ]);
+
+    $url = $post->getCoverImageUrl(['preview', '']);
+
+    expect($url)->not->toBeNull();
 });

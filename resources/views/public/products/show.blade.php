@@ -344,12 +344,16 @@
             </div>
 
             @php
-                $coverMedia = $product->getFirstMedia('cover');
+                $coverMedia = $product->getCoverMedia();
             @endphp
 
             <div class="c-product-show-banner">
                 @if ($coverMedia)
-                    {{ $coverMedia->img('webp', ['alt' => $product->title]) }}
+                    <img
+                        src="{{ $product->getCoverImageUrl() }}"
+                        alt="{{ $product->title }}"
+                        class="c-product-show-banner-img"
+                    />
                 @endif
 
                 <div class="c-product-show-banner-overlay">

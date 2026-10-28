@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use Spatie\Image\Enums\Fit;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
  * Centralizes standard media conversion definitions across models.
@@ -63,5 +64,30 @@ trait HasMediaConversions
     protected function webpCollections(): array
     {
         return ['cover', 'images', 'content'];
+    }
+
+    /**
+     * Get the first media item from the cover collection, if available.
+     */
+    public function getCoverMedia(): ?Media
+    {
+        return $this->getFirstMedia('cover');
+    }
+
+    /**
+     * Get the best available URL for the cover image.
+     *
+     * Returns the WebP conversion URL if it has been generated; otherwise,
+     * falls back to the original image URL. Returns null if no cover image
+     * is attached to the model.
+     *
+     * @param  array<string>  $conversions  Ordered list of conversion names to try before falling back to the original.
+     * @return string|null The best available URL, or null if no cover image exists.
+     */
+    public function getCoverImageUrl(array $conversions = ['webp', '']): ?string
+    {
+        $coverMedia = $this->getCoverMedia();
+
+        return $coverMedia?->getAvailableUrl($conversions);
     }
 }
