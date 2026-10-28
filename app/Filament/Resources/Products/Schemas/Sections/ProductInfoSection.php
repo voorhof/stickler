@@ -15,6 +15,7 @@ class ProductInfoSection
     {
         return Section::make(__('Product Info'))
             ->icon(Heroicon::OutlinedShoppingBag)
+            ->collapsible()
             ->schema([
                 Grid::make()->schema([
                     TextInput::make('sku')
