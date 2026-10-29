@@ -118,11 +118,14 @@ trait HasEditDefaults
 
     public array $oldRoles = [];
 
+    public array $oldOptions = [];
+
     protected function beforeSave(): void
     {
         $this->oldTags = method_exists($this->record, 'tags') ? $this->record->tags()->pluck('name')->toArray() : [];
         $this->oldPermissions = method_exists($this->record, 'permissions') ? $this->record->permissions()->pluck('name')->toArray() : [];
         $this->oldRoles = method_exists($this->record, 'getRoleNames') ? $this->record->getRoleNames() : [];
+        $this->oldOptions = method_exists($this->record, 'options') ? $this->record->options()->pluck('name')->toArray() : [];
     }
 
     protected function afterSave(): void
@@ -188,11 +191,13 @@ trait HasEditDefaults
         // Log changes if any (only if NO other activity was logged)
         $newTags = method_exists($this->record, 'tags') ? $this->record->tags()->pluck('name')->toArray() : [];
         $newRoles = method_exists($this->record, 'getRoleNames') ? $this->record->getRoleNames() : [];
+        $newOptions = method_exists($this->record, 'options') ? $this->record->options()->pluck('name')->toArray() : [];
 
         $tagsChanged = array_diff($this->oldTags, $newTags) || array_diff($newTags, $this->oldTags);
         $rolesChanged = array_diff($this->oldRoles, $newRoles) || array_diff($newRoles, $this->oldRoles);
+        $optionsChanged = array_diff($this->oldOptions, $newOptions) || array_diff($newOptions, $this->oldOptions);
 
-        if ($tagsChanged || $rolesChanged) {
+        if ($tagsChanged || $rolesChanged || $optionsChanged) {
             // Check if an activity was already logged in this request for this coachingPlan and event 'updated'
             $activity = Activity::where('subject_type', $this->record->getMorphClass())
                 ->where('subject_id', $this->record->getKey())
@@ -207,7 +212,9 @@ trait HasEditDefaults
                     ->put('tags', $tagsChanged ? $newTags : null)
                     ->put('old_tags', $tagsChanged ? $this->oldTags : null)
                     ->put('roles', $rolesChanged ? $newRoles : null)
-                    ->put('old_roles', $rolesChanged ? $this->oldRoles : null);
+                    ->put('old_roles', $rolesChanged ? $this->oldRoles : null)
+                    ->put('options', $optionsChanged ? $newOptions : null)
+                    ->put('old_options', $optionsChanged ? $this->oldOptions : null);
 
                 $activity->save();
             } else {
@@ -220,6 +227,8 @@ trait HasEditDefaults
                         'old_tags' => $tagsChanged ? $this->oldTags : null,
                         'roles' => $rolesChanged ? $newRoles : null,
                         'old_roles' => $rolesChanged ? $this->oldRoles : null,
+                        'options' => $optionsChanged ? $newOptions : null,
+                        'old_options' => $optionsChanged ? $this->oldOptions : null,
                     ])
                     ->log(__('This item has been :event', ['event' => __('updated')]));
             }

@@ -20,21 +20,21 @@ class AdminUserAndRoleSeeder extends Seeder
         // Reset cached roles and permissions
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Create admin user
-        $admin = User::factory()->create([
-            'slug' => Str::slug(config('stickler.admin_users.admin.name')),
-            'name' => config('stickler.admin_users.admin.name'),
-            'email' => config('stickler.admin_users.admin.email'),
-            'password' => Hash::make(config('stickler.admin_users.admin.password')),
-            'locale' => config('app.faker_locale'),
-        ]);
-
         // Create ceo user
         $ceo = User::factory()->create([
             'slug' => Str::slug(config('stickler.admin_users.ceo.name')),
             'name' => config('stickler.admin_users.ceo.name'),
             'email' => config('stickler.admin_users.ceo.email'),
             'password' => Hash::make(config('stickler.admin_users.ceo.password')),
+            'locale' => config('app.faker_locale'),
+        ]);
+
+        // Create admin user
+        $admin = User::factory()->create([
+            'slug' => Str::slug(config('stickler.admin_users.admin.name')),
+            'name' => config('stickler.admin_users.admin.name'),
+            'email' => config('stickler.admin_users.admin.email'),
+            'password' => Hash::make(config('stickler.admin_users.admin.password')),
             'locale' => config('app.faker_locale'),
         ]);
 
@@ -80,10 +80,25 @@ class AdminUserAndRoleSeeder extends Seeder
         Permission::create(['name' => 'update posts']);
         Permission::create(['name' => 'delete posts']);
 
+        Permission::create(['name' => 'create products']);
+        Permission::create(['name' => 'view products']);
+        Permission::create(['name' => 'update products']);
+        Permission::create(['name' => 'delete products']);
+
         Permission::create(['name' => 'create projects']);
         Permission::create(['name' => 'view projects']);
         Permission::create(['name' => 'update projects']);
         Permission::create(['name' => 'delete projects']);
+
+        Permission::create(['name' => 'create categories']);
+        Permission::create(['name' => 'view categories']);
+        Permission::create(['name' => 'update categories']);
+        Permission::create(['name' => 'delete categories']);
+
+        Permission::create(['name' => 'create orders']);
+        Permission::create(['name' => 'view orders']);
+        Permission::create(['name' => 'update orders']);
+        Permission::create(['name' => 'delete orders']);
 
         Permission::create(['name' => 'create tags']);
         Permission::create(['name' => 'view tags']);

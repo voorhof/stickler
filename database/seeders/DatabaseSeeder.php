@@ -20,8 +20,11 @@ class DatabaseSeeder extends Seeder
             MessageSeeder::class,
             PageSeeder::class,
             PostSeeder::class,
+            ProductSeeder::class,
             ProjectSeeder::class,
+            CategorySeeder::class,
             TagSeeder::class,
+            OrderSeeder::class,
         ]);
     }
 }

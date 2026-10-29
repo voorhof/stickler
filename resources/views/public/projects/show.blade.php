@@ -92,7 +92,7 @@
                 gap: 0.4rem;
                 font-size: 0.85rem;
                 font-weight: 500;
-                padding: 0.35rem 0.85rem;
+                padding: 0.5rem 0.85rem;
                 border-radius: var(--st-border-radius);
                 background-color: var(--st-body-color);
                 color: var(--st-body-bg);
@@ -160,12 +160,16 @@
             </div>
 
             @php
-                $coverMedia = $project->getFirstMedia('cover');
+                $coverMedia = $project->getCoverMedia();
             @endphp
 
             <div class="c-project-show-banner">
                 @if ($coverMedia)
-                    {{ $coverMedia->img('webp', ['alt' => $project->title]) }}
+                    <img
+                        src="{{ $project->getCoverImageUrl() }}"
+                        alt="{{ $project->title }}"
+                        class="c-project-show-banner-img"
+                    />
                 @endif
 
                 <div class="c-project-show-banner-overlay">
@@ -193,11 +197,7 @@
                             rel="noopener noreferrer"
                         >
                             {{ $project->website_title ?: __('Visit site') }}
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                                <polyline points="15 3 21 3 21 9" />
-                                <line x1="10" y1="14" x2="21" y2="3" />
-                            </svg>
+                            <x-icons.box-arrow-up-right />
                         </a>
                     @endif
                 </div>
@@ -207,10 +207,7 @@
                 @endif
 
                 <a href="{{ route('projects.index') }}" class="c-project-show-back-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="19" y1="12" x2="5" y2="12" />
-                        <polyline points="12 19 5 12 12 5" />
-                    </svg>
+                    <x-icons.arrow-left />
                     {{ __('Back to overview') }}
                 </a>
             </div>

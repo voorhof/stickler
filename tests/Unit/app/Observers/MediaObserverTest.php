@@ -4,7 +4,10 @@ use App\Models\Media;
 use App\Models\Post;
 use App\Models\User;
 
+use function Illuminate\Support\defer;
 use function Pest\Laravel\actingAs;
+
+use Spatie\ResponseCache\Facades\ResponseCache;
 
 it('tracks creator and updater on media create and update', function (): void {
     $creator = User::factory()->create();
@@ -131,4 +134,61 @@ it('does nothing when content media belongs to a model without rich content', fu
 
     expect(Media::find($media->id))->toBeNull()
         ->and(User::find($user->id))->not->toBeNull();
+});
+
+it('flushes response cache when media is saved', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    config(['responsecache.enabled' => true]);
+
+    ResponseCache::shouldReceive('clear')->once();
+
+    Media::create([
+        'name' => 'Cache Flush Test Media',
+        'model_type' => 'App\Models\Media',
+        'model_id' => 1,
+        'collection_name' => 'default',
+        'file_name' => 'test.jpg',
+        'disk' => 'public',
+        'size' => 1024,
+        'manipulations' => [],
+        'custom_properties' => [],
+        'generated_conversions' => [],
+        'responsive_images' => [],
+    ]);
+
+    defer()->invoke();
+
+    ResponseCache::shouldReceive('clear')->once();
+
+    Media::first()->update(['name' => 'Cache Flush Updated Media']);
+
+    defer()->invoke();
+});
+
+it('flushes response cache when media is deleted', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $media = Media::create([
+        'name' => 'Cache Flush Delete Test Media',
+        'model_type' => 'App\Models\Media',
+        'model_id' => 1,
+        'collection_name' => 'default',
+        'file_name' => 'test.jpg',
+        'disk' => 'public',
+        'size' => 1024,
+        'manipulations' => [],
+        'custom_properties' => [],
+        'generated_conversions' => [],
+        'responsive_images' => [],
+    ]);
+
+    config(['responsecache.enabled' => true]);
+    ResponseCache::shouldReceive('clear')->once();
+
+    $media->delete();
+
+    defer()->invoke();
 });

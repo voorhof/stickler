@@ -8,7 +8,7 @@
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 469.7 128.8"
                     class="c-pp-logo img-fluid"
-                    style="fill: #000; width: 83px"
+                    style="fill: #000; width: 88px"
                     aria-label="Pietje Precies Logo"
                 >
                     <path class="c-pp-logo__face" stroke="#fafafa" stroke-width="6" d="M0 0h128v128H0z" />

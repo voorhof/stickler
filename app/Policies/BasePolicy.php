@@ -40,7 +40,7 @@ abstract class BasePolicy
      */
     protected function permissionName(string $action): string
     {
-        return "{$action} {$this->resourceName()}";
+        return "$action {$this->resourceName()}";
     }
 
     /**

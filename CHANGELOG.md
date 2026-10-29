@@ -7,6 +7,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased](https://github.com/voorhof/stickler/compare/v1.5.3...HEAD)
 
+## [v1.5.3](https://github.com/voorhof/stickler/compare/v1.5.2...v1.5.3) - 2026-10-26
+
+### What's Changed
+
+- Backend updates by @voorhof in https://github.com/voorhof/stickler/pull/17
+- Added UsePolicy to PageView model
+- Updated testcases
+- Created Actions for contact message and sitemap creation
+- Created HasPublishedScope for publishable models and updated controllers
+- Added automatic deferred Spatie response-cache invalidation for public content changes.
+- Added a becamePublishedBetween scope and console ClearScheduledContentCacheCommand
+- Deferred page-view tracking
+- Queued media conversions
+- Queued Sitemap generation with job with automatic dispatching in observers
+- Added database indexes to page_views, posts, pages, and projects
+- Updated RenderResponsiveRichContent to remove N+1
+- Updated public show pages to return 404 instead of redirecting unpublished records
+- Replaced Model::preventLazyLoading() with Model::shouldBeStrict() in AppServiceProvider
+- Refactored various files to function under the Eloquent strict mode
+- Use `^11.23` for `spatie/laravel-medialibrary`
+- Refactored admin GET request for locale and sitemap to POST action
+- Disabled Telescope in production
+- Composer & NPM updates
+- Updated readme files
+
+**Full Changelog**: https://github.com/voorhof/stickler/compare/v1.5.2...v1.5.3
+
+## [v1.5.2](https://github.com/voorhof/stickler/compare/v1.5.1...v1.5.2) - 2026-10-24
+
+### What's Changed
+
+- General backend CMS optimisations by @voorhof in https://github.com/voorhof/stickler/pull/16
+- Added extra badges to README.md
+- Added CHANGELOG.md and GitHub workflow for updating changelog
+- Added Github GitHub Community Standards files
+- Added Model::preventLazyLoading to AppServiceProvider
+- UserResource::getEloquentQuery() eager-loads `roles`
+- Added failure handling and duplicate protection to ContactController::store()
+- Moved opening-hours window logic out of the controller into a testable service
+- Filament CMS code improvements
+    * Fixed the Filament `authorize()` finding: seven actions passed a pre-evaluated boolean, which Filament does not expect as an ability or closure.
+    * Permission checks now run lazily, so each action is only authorized when used.
+    * Replaced the correlated subquery used to sort the Users table role column with a deterministic aggregate alias.
+    * The role column sorts on `primary_role_name`, which is computed once per user in the resource query.
+    * Consolidated the duplicated bulk status-toggle logic (archive, dearchive, publish, unpublish, complete) into one shared base class.
+    * Action behaviour is unchanged: each action keeps its own label, notifications, icon, color, and filter visibility.
+    * Added focused Filament tests for UsersTable filters and for the restricted-user access rules of converted actions. All 136 tests in the affected Feature and Unit files pass.
+    * Re-checked the Unit Filament test files: most already cover permissions, but several action test files still have no direct restricted-user check.
+
+**Full Changelog**: https://github.com/voorhof/stickler/compare/v1.5.1...v1.5.2
+
 ## [1.5.1](https://github.com/voorhof/stickler/compare/v1.5.0...v1.5.1) - 2026-10-24
 
 - Updated PageViewsWidget layout
@@ -111,84 +162,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0](https://github.com/voorhof/stickler/releases/tag/v1.0.0) - 2026-09-05
 
 - Initial release: package installation and setup (#1), frontend Blade UI setup (#2), Bootstrap toolkit and preprocessor updates (#3)
-
-## [v1.5.3](https://github.com/voorhof/stickler/compare/v1.5.2...v1.5.3) - 2026-10-26
-
-### What's Changed
-
-* Backend updates by @voorhof in https://github.com/voorhof/stickler/pull/17
-  
-* Added UsePolicy to PageView model
-  
-* Updated testcases
-  
-* Created Actions for contact message and sitemap creation
-  
-* Created HasPublishedScope for publishable models and updated controllers
-  
-* Added automatic deferred Spatie response-cache invalidation for public content changes.
-  
-* Added a becamePublishedBetween scope and console ClearScheduledContentCacheCommand
-  
-* Deferred page-view tracking
-  
-* Queued media conversions
-  
-* Queued Sitemap generation with job with automatic dispatching in observers
-  
-* Added database indexes to page_views, posts, pages, and projects
-  
-* Updated RenderResponsiveRichContent to remove N+1
-  
-* Updated public show pages to return 404 instead of redirecting unpublished records
-  
-* Replaced Model::preventLazyLoading() with Model::shouldBeStrict() in AppServiceProvider
-  
-* Refactored various files to function under the Eloquent strict mode
-  
-* Use `^11.23` for `spatie/laravel-medialibrary`
-  
-* Refactored admin GET request for locale and sitemap to POST action
-  
-* Disabled Telescope in production
-  
-* Composer & NPM updates
-  
-* Updated readme files
-  
-
-**Full Changelog**: https://github.com/voorhof/stickler/compare/v1.5.2...v1.5.3
-
-## [v1.5.2](https://github.com/voorhof/stickler/compare/v1.5.1...v1.5.2) - 2026-10-24
-
-### What's Changed
-
-* General backend CMS optimisations by @voorhof in https://github.com/voorhof/stickler/pull/16
-  
-* Added extra badges to README.md
-  
-* Added CHANGELOG.md and GitHub workflow for updating changelog
-  
-* Added Github GitHub Community Standards files
-  
-* Added Model::preventLazyLoading to AppServiceProvider
-  
-* UserResource::getEloquentQuery() eager-loads `roles`
-  
-* Added failure handling and duplicate protection to ContactController::store()
-  
-* Moved opening-hours window logic out of the controller into a testable service
-  
-* Filament CMS code improvements
-  
-  - Fixed the Filament `authorize()` finding: seven actions passed a pre-evaluated boolean, which Filament does not expect as an ability or closure.
-  - Permission checks now run lazily, so each action is only authorized when used.
-  - Replaced the correlated subquery used to sort the Users table role column with a deterministic aggregate alias.
-  - The role column sorts on `primary_role_name`, which is computed once per user in the resource query.
-  - Consolidated the duplicated bulk status-toggle logic (archive, dearchive, publish, unpublish, complete) into one shared base class.
-  - Action behaviour is unchanged: each action keeps its own label, notifications, icon, color, and filter visibility.
-  - Added focused Filament tests for UsersTable filters and for the restricted-user access rules of converted actions. All 136 tests in the affected Feature and Unit files pass.
-  - Re-checked the Unit Filament test files: most already cover permissions, but several action test files still have no direct restricted-user check.
-  
-
-**Full Changelog**: https://github.com/voorhof/stickler/compare/v1.5.1...v1.5.2

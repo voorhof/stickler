@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\Public\BrandbookController;
 use App\Http\Controllers\Public\ContactController;
 use App\Http\Controllers\Public\PageController;
 use App\Http\Controllers\Public\PostController;
+use App\Http\Controllers\Public\ProductController;
 use App\Http\Controllers\Public\ProjectController;
 use App\Http\Controllers\Public\TermsController;
 use App\Http\Controllers\Public\WelcomeController;
@@ -22,6 +24,12 @@ Route::middleware('cache.headers:public;max_age=60;s_maxage=300;stale_while_reva
      */
     Route::get('/', [WelcomeController::class, 'index'])
         ->name('welcome.index');
+
+    /**
+     * BrandbookController routes
+     */
+    Route::get('/brandbook', [BrandbookController::class, 'index'])
+        ->name('brandbook.index');
 
     /**
      * ContactController routes
@@ -51,6 +59,14 @@ Route::middleware('cache.headers:public;max_age=60;s_maxage=300;stale_while_reva
         ->name('posts.index');
     Route::get('/posts/{post}', [PostController::class, 'show'])
         ->name('posts.show');
+
+    /**
+     * ProductController routes
+     */
+    Route::get('/products', [ProductController::class, 'index'])
+        ->name('products.index');
+    Route::get('/products/{product}', [ProductController::class, 'show'])
+        ->name('products.show');
 
     /**
      * ProjectController routes

@@ -152,11 +152,13 @@
             </div>
 
             @php
-                $coverMedia = $page->getFirstMedia('cover');
+                $coverMedia = $page->getCoverMedia();
             @endphp
 
             @if ($coverMedia)
-                <div class="c-page-show-cover">{{ $coverMedia->img('webp', ['alt' => $page->title]) }}</div>
+                <div class="c-page-show-cover">
+                    <img src="{{ $page->getCoverImageUrl() }}" alt="{{ $page->title }}" />
+                </div>
             @endif
 
             <div class="c-page-show-content">
@@ -165,10 +167,7 @@
                 @endif
 
                 <a href="{{ route('pages.index') }}" class="c-page-show-back-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="19" y1="12" x2="5" y2="12" />
-                        <polyline points="12 19 5 12 12 5" />
-                    </svg>
+                    <x-icons.arrow-left />
                     {{ __('Back to overview') }}
                 </a>
             </div>
