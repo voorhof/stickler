@@ -20,9 +20,9 @@ class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingBag;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCube;
 
-    protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::ShoppingBag;
+    protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::Cube;
 
     protected static ?string $recordTitleAttribute = 'title'; // Used for global search and navigation.
 

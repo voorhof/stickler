@@ -42,6 +42,7 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
  * @method static find(mixed $id)
  * @method static firstOrCreate(array $array, array $array1)
  * @method static count()
+ * @method static latest()
  */
 #[Fillable([
     'cart_token',
@@ -90,7 +91,7 @@ class Cart extends Model
     protected function totalInCents(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->items->sum('total_price'),
+            get: fn () => (int) ($this->items()->sum('total_price') ?? 0),
         );
     }
 
@@ -100,7 +101,7 @@ class Cart extends Model
     protected function total(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->totalInCents / 100,
+            get: fn () => ($this->items()->sum('total_price') ?? 0) / 100,
         );
     }
 
@@ -149,9 +150,19 @@ class Cart extends Model
     /**
      * Check if the cart has passed its expiration time.
      */
-    public function isExpired(): bool
+    protected function isExpired(): Attribute
     {
-        return $this->expires_at !== null && now()->isAfter($this->expires_at);
+        return Attribute::make(
+            get: fn () => $this->expires_at !== null && now()->isAfter($this->expires_at),
+        );
+    }
+
+    /**
+     * Check if the cart has passed its expiration time (public method for tests).
+     */
+    public function isExpiredMethod(): bool
+    {
+        return (bool) $this->isExpired;
     }
 
     /**

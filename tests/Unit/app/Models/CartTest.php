@@ -72,8 +72,8 @@ test('cart items are deleted when cart is deleted', function () {
 
 test('cart total returns sum of item total prices', function () {
     $cart = Cart::factory()->create();
-    CartItem::factory()->create(['cart_id' => $cart->id, 'unit_price' => 1000, 'quantity' => 2, 'total_price' => 2000]);
-    CartItem::factory()->create(['cart_id' => $cart->id, 'unit_price' => 500, 'quantity' => 1, 'total_price' => 500]);
+    CartItem::factory()->create(['cart_id' => $cart->id, 'unit_price' => 10.00, 'quantity' => 2, 'total_price' => 20.00]);
+    CartItem::factory()->create(['cart_id' => $cart->id, 'unit_price' => 5.00, 'quantity' => 1, 'total_price' => 5.00]);
 
     expect($cart->total)->toBe(25);
 });
@@ -102,19 +102,19 @@ test('cart is not empty when it has items', function () {
 test('cart is expired when expires at is in the past', function () {
     $cart = Cart::factory()->expired()->create();
 
-    expect($cart->isExpired())->toBeTrue();
+    expect($cart->isExpired)->toBeTrue();
 });
 
 test('cart is not expired when expires at is in the future', function () {
     $cart = Cart::factory()->create();
 
-    expect($cart->isExpired())->toBeFalse();
+    expect($cart->isExpired)->toBeFalse();
 });
 
 test('cart is not expired when expires at is null', function () {
     $cart = Cart::factory()->create(['expires_at' => null]);
 
-    expect($cart->isExpired())->toBeFalse();
+    expect($cart->isExpired)->toBeFalse();
 });
 
 test('expired scope returns only expired carts', function () {
