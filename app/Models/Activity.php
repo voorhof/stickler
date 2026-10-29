@@ -95,6 +95,10 @@ class Activity extends SpatieActivity
             return 'filament.admin.resources.media.edit';
         }
 
+        if ($modelRouteSlug === 'productvariantoptiontypes') {
+            return 'filament.admin.resources.product-variant-option-types.edit';
+        }
+
         return 'filament.admin.resources.'.$modelRouteSlug.'.edit';
     }
 }
