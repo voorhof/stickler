@@ -5,7 +5,15 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/voorhof/stickler/compare/v1.5.3...HEAD)
+## [Unreleased](https://github.com/voorhof/stickler/compare/v1.6.1...HEAD)
+
+## [v1.6.1](https://github.com/voorhof/stickler/compare/v1.5.3...v1.6.1) - 2026-10-29
+
+### What's Changed
+
+* Updated actions in test.yml by @voorhof in https://github.com/voorhof/stickler/pull/24
+
+**Full Changelog**: https://github.com/voorhof/stickler/compare/v1.6.0...v1.6.1
 
 ## [v1.5.3](https://github.com/voorhof/stickler/compare/v1.5.2...v1.5.3) - 2026-10-26
 
@@ -47,14 +55,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added failure handling and duplicate protection to ContactController::store()
 - Moved opening-hours window logic out of the controller into a testable service
 - Filament CMS code improvements
-    * Fixed the Filament `authorize()` finding: seven actions passed a pre-evaluated boolean, which Filament does not expect as an ability or closure.
-    * Permission checks now run lazily, so each action is only authorized when used.
-    * Replaced the correlated subquery used to sort the Users table role column with a deterministic aggregate alias.
-    * The role column sorts on `primary_role_name`, which is computed once per user in the resource query.
-    * Consolidated the duplicated bulk status-toggle logic (archive, dearchive, publish, unpublish, complete) into one shared base class.
-    * Action behaviour is unchanged: each action keeps its own label, notifications, icon, color, and filter visibility.
-    * Added focused Filament tests for UsersTable filters and for the restricted-user access rules of converted actions. All 136 tests in the affected Feature and Unit files pass.
-    * Re-checked the Unit Filament test files: most already cover permissions, but several action test files still have no direct restricted-user check.
+  * Fixed the Filament `authorize()` finding: seven actions passed a pre-evaluated boolean, which Filament does not expect as an ability or closure.
+  * Permission checks now run lazily, so each action is only authorized when used.
+  * Replaced the correlated subquery used to sort the Users table role column with a deterministic aggregate alias.
+  * The role column sorts on `primary_role_name`, which is computed once per user in the resource query.
+  * Consolidated the duplicated bulk status-toggle logic (archive, dearchive, publish, unpublish, complete) into one shared base class.
+  * Action behaviour is unchanged: each action keeps its own label, notifications, icon, color, and filter visibility.
+  * Added focused Filament tests for UsersTable filters and for the restricted-user access rules of converted actions. All 136 tests in the affected Feature and Unit files pass.
+  * Re-checked the Unit Filament test files: most already cover permissions, but several action test files still have no direct restricted-user check.
+  
 
 **Full Changelog**: https://github.com/voorhof/stickler/compare/v1.5.1...v1.5.2
 
