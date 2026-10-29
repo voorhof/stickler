@@ -51,15 +51,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Share cart item count with all views
         View::composer('*', function ($view) {
-            $cartToken = request()->cookie('cart_token');
-
-            if (! $cartToken) {
-                $view->with('cartItemCount', 0);
-
-                return;
-            }
-
-            $cart = app(CartService::class)->getByToken($cartToken);
+            $cart = app(CartService::class)->findCurrentCart(auth()->user());
 
             // Use a simple SUM query instead of loading the full items relationship
             $view->with('cartItemCount', $cart ? (int) $cart->items()->sum('quantity') : 0);

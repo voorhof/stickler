@@ -3,6 +3,7 @@
 /** @noinspection PhpUnhandledExceptionInspection */
 
 use App\Models\Cart;
+use App\Models\User;
 use App\Providers\AppServiceProvider;
 use App\Providers\TelescopeServiceProvider;
 use App\Services\CartService;
@@ -79,4 +80,21 @@ test('it shares cart item count when cart token cookie is present', function () 
         ->get('/');
 
     $response->assertViewHas('cartItemCount', 5);
+});
+
+test('it shares cart item count of the logged in user cart', function () {
+    $user = User::factory()->create();
+    $cart = Cart::factory()->create(['user_id' => $user->id, 'is_guest' => false]);
+    $cart->items()->create([
+        'product_id' => null,
+        'product_name' => 'Test Product',
+        'sku' => 'TEST',
+        'quantity' => 4,
+        'unit_price' => 1000,
+        'total_price' => 4000,
+    ]);
+
+    $response = $this->actingAs($user)->get('/');
+
+    $response->assertViewHas('cartItemCount', 4);
 });

@@ -8,10 +8,12 @@ use Spatie\ResponseCache\CacheProfiles\CacheAllSuccessfulGetRequests;
 class CacheAllSuccessfulGetRequestsWithoutCart extends CacheAllSuccessfulGetRequests
 {
     /**
-     * Visitors with a cart cookie get personalised pages (cart badge), so they bypass the response cache.
+     * Visitors with a cart cookie or a logged-in account get personalised pages (cart badge), so they bypass the response cache.
      */
     public function enabled(Request $request): bool
     {
-        return parent::enabled($request) && ! $request->cookies->has('cart_token');
+        return parent::enabled($request)
+            && ! $request->cookies->has('cart_token')
+            && ! auth()->check();
     }
 }
