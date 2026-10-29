@@ -9,7 +9,7 @@
     "devDependencies": {
         "@rollup/plugin-replace": "^6.0.3",
         "bootstrap-icons": "^1.13.2",
-        "fontaine": "^0.8.2",
+        "fontaine": "^1.0.3",
         "laravel-vite-plugin": "^3.2.0",
         "prettier": "^3.9.10",
         "prettier-plugin-blade": "^3.3.3",
