@@ -93,7 +93,6 @@ Route::post('/contact', [ContactController::class, 'store'])
     ->name('contact.store')
     ->middleware([HttpLogger::class, ProtectAgainstSpam::class, 'throttle:3,1']);
 
-
 /**
  * CartController GET route (personal, never cached)
  */
