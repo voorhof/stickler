@@ -20,21 +20,21 @@ class AdminUserAndRoleSeeder extends Seeder
         // Reset cached roles and permissions
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Create admin user
-        $admin = User::factory()->create([
-            'slug' => Str::slug(config('stickler.admin_users.admin.name')),
-            'name' => config('stickler.admin_users.admin.name'),
-            'email' => config('stickler.admin_users.admin.email'),
-            'password' => Hash::make(config('stickler.admin_users.admin.password')),
-            'locale' => config('app.faker_locale'),
-        ]);
-
         // Create ceo user
         $ceo = User::factory()->create([
             'slug' => Str::slug(config('stickler.admin_users.ceo.name')),
             'name' => config('stickler.admin_users.ceo.name'),
             'email' => config('stickler.admin_users.ceo.email'),
             'password' => Hash::make(config('stickler.admin_users.ceo.password')),
+            'locale' => config('app.faker_locale'),
+        ]);
+
+        // Create admin user
+        $admin = User::factory()->create([
+            'slug' => Str::slug(config('stickler.admin_users.admin.name')),
+            'name' => config('stickler.admin_users.admin.name'),
+            'email' => config('stickler.admin_users.admin.email'),
+            'password' => Hash::make(config('stickler.admin_users.admin.password')),
             'locale' => config('app.faker_locale'),
         ]);
 
