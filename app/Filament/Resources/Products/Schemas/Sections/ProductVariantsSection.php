@@ -69,7 +69,8 @@ class ProductVariantsSection
                     ->reorderable()
                     ->addable()
                     ->deletable()
-                    ->collapsible(),
+                    ->collapsible()
+                    ->itemLabel(fn (array $state): ?string => $state['sku'] ?? null),
             ]);
     }
 }
