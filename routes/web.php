@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Public\BrandbookController;
+use App\Http\Controllers\Public\CartController;
 use App\Http\Controllers\Public\ContactController;
 use App\Http\Controllers\Public\PageController;
 use App\Http\Controllers\Public\PostController;
@@ -91,6 +92,29 @@ Route::middleware('cache.headers:public;max_age=60;s_maxage=300;stale_while_reva
 Route::post('/contact', [ContactController::class, 'store'])
     ->name('contact.store')
     ->middleware([HttpLogger::class, ProtectAgainstSpam::class, 'throttle:3,1']);
+
+
+/**
+ * CartController GET route (personal, never cached)
+ */
+Route::get('/cart', [CartController::class, 'index'])
+    ->middleware('doNotCacheResponse')
+    ->name('cart.index');
+
+/**
+ * CartController POST routes
+ */
+Route::post('/cart/add/{product}/{productVariant?}', [CartController::class, 'store'])
+    ->name('cart.add');
+
+Route::post('/cart/items/{item}/update', [CartController::class, 'update'])
+    ->name('cart.items.update');
+
+Route::post('/cart/items/{item}/remove', [CartController::class, 'destroy'])
+    ->name('cart.items.remove');
+
+Route::post('/cart/checkout', [CartController::class, 'checkout'])
+    ->name('cart.checkout');
 
 /**
  * Test route

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Carts\Pages;
 
+use App\Filament\Actions\CartCleanupAction;
 use App\Filament\Resources\Carts\CartResource;
 use App\Filament\Traits\CanResetTable;
 use App\Filament\Traits\HasCreateAction;
@@ -20,6 +21,7 @@ class ListCarts extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            CartCleanupAction::make(),
             CreateAction::make()
                 ->size('sm'),
         ];

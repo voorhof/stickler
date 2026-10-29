@@ -23,6 +23,8 @@ return [
     'excluded_from_slug' => [
         'admin',
         'algemene-voorwaarden',
+        'brandbook',
+        'cart',
         'contact',
         'cookie-policy',
         'filament',
@@ -32,6 +34,8 @@ return [
         'posts',
         'post',
         'privacy-policy',
+        'products',
+        'product',
         'projects',
         'project',
         'storage',

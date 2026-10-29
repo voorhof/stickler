@@ -49,6 +49,13 @@ Schedule::command('page-views:clean --days=60 --force')
     ->daily()->at('06:05');
 
 /**
+ * Expired cart cleanup
+ * Deletes carts that have expired.
+ */
+Schedule::command('carts:cleanup --force')
+    ->daily()->at('06:06');
+
+/**
  * Clear the response cache when scheduled content becomes public.
  */
 Schedule::command('content:clear-scheduled-cache')

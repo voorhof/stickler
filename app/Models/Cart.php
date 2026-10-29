@@ -32,6 +32,7 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
  * @property DateTime $updated_at
  * @property BelongsTo<User>|null $user
  * @property Collection<CartItem> $items
+ * @property mixed $isExpired
  *
  * @method static create(mixed $validated)
  * @method static forceCreate(array $array)
@@ -43,6 +44,7 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
  * @method static firstOrCreate(array $array, array $array1)
  * @method static count()
  * @method static latest()
+ * @method static first()
  */
 #[Fillable([
     'cart_token',
@@ -73,6 +75,11 @@ class Cart extends Model
     */
 
     /**
+     * Cached items sum to avoid duplicate queries within a single request.
+     */
+    protected ?float $itemsSumCache = null;
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -86,12 +93,24 @@ class Cart extends Model
     }
 
     /**
+     * Get the sum of all cart item total prices in cents, cached per request.
+     */
+    protected function getItemsSumInCents(): float
+    {
+        if ($this->itemsSumCache === null) {
+            $this->itemsSumCache = (float) $this->items()->sum('total_price');
+        }
+
+        return $this->itemsSumCache;
+    }
+
+    /**
      * Get the total value of all cart items in cents.
      */
     protected function totalInCents(): Attribute
     {
         return Attribute::make(
-            get: fn () => (int) ($this->items()->sum('total_price') ?? 0),
+            get: fn () => (int) $this->getItemsSumInCents(),
         );
     }
 
@@ -101,7 +120,7 @@ class Cart extends Model
     protected function total(): Attribute
     {
         return Attribute::make(
-            get: fn () => ($this->items()->sum('total_price') ?? 0) / 100,
+            get: fn () => (int) ($this->getItemsSumInCents() / 100),
         );
     }
 

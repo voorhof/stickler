@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Public\ProductController;
+use App\Models\Cart;
+use App\Models\CartItem;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -69,6 +71,20 @@ describe('products index', function () {
 });
 
 describe('products show', function () {
+    test('it shows the variant error flash after a rejected main product add', function () {
+        User::factory()->create();
+
+        $product = Product::factory()->create(['stock_quantity' => 10]);
+        ProductVariant::factory()->create(['product_id' => $product->id, 'stock_quantity' => 5]);
+
+        $this->from(route('products.show', $product))
+            ->post(route('cart.add', $product), ['quantity' => 1]);
+
+        $this->get(route('products.show', $product))
+            ->assertOk()
+            ->assertSee(__('Please choose a variant'));
+    });
+
     test('it displays published product in show route', function () {
         User::factory()->create();
 
@@ -169,6 +185,93 @@ describe('products show', function () {
             ->assertSeeText(__('Variants'))
             ->assertSeeText('Red')
             ->assertSeeText('TSHIRT-RED-M');
+    });
+
+    test('it displays main add to cart button for product without variants', function () {
+        User::factory()->create();
+
+        $product = Product::factory()->create([
+            'published_at' => now()->subHour(),
+            'stock_quantity' => 5,
+        ]);
+
+        $this->get(route('products.show', $product))
+            ->assertSuccessful()
+            ->assertSee(route('cart.add', $product).'"', false);
+    });
+
+    test('it hides main add to cart button for product with variants and shows variant buttons', function () {
+        User::factory()->create();
+
+        $product = Product::factory()->create([
+            'published_at' => now()->subHour(),
+            'stock_quantity' => 5,
+        ]);
+
+        $variant = ProductVariant::factory()->create([
+            'product_id' => $product->id,
+            'stock_quantity' => 10,
+        ]);
+
+        $this->get(route('products.show', $product))
+            ->assertSuccessful()
+            ->assertDontSee(route('cart.add', $product).'"', false)
+            ->assertSee(route('cart.add', [$product, $variant]), false);
+    });
+
+    test('it shows link to cart instead of main add to cart button when product is in cart', function () {
+        User::factory()->create();
+
+        $product = Product::factory()->create([
+            'published_at' => now()->subHour(),
+            'stock_quantity' => 5,
+        ]);
+
+        $cart = Cart::factory()->create();
+        CartItem::factory()->create([
+            'cart_id' => $cart->id,
+            'product_id' => $product->id,
+            'product_variant_id' => null,
+        ]);
+
+        $this->withCookie('cart_token', $cart->cart_token)
+            ->get(route('products.show', $product))
+            ->assertSuccessful()
+            ->assertDontSee(route('cart.add', $product).'"', false)
+            ->assertSee('href="'.route('cart.index').'"', false)
+            ->assertSeeText(__('View cart'));
+    });
+
+    test('it shows link to cart instead of variant add to cart button when variant is in cart', function () {
+        User::factory()->create();
+
+        $product = Product::factory()->create([
+            'published_at' => now()->subHour(),
+            'stock_quantity' => 5,
+        ]);
+
+        $inCartVariant = ProductVariant::factory()->create([
+            'product_id' => $product->id,
+            'stock_quantity' => 10,
+        ]);
+        $otherVariant = ProductVariant::factory()->create([
+            'product_id' => $product->id,
+            'stock_quantity' => 10,
+        ]);
+
+        $cart = Cart::factory()->create();
+        CartItem::factory()->create([
+            'cart_id' => $cart->id,
+            'product_id' => $product->id,
+            'product_variant_id' => $inCartVariant->id,
+        ]);
+
+        $this->withCookie('cart_token', $cart->cart_token)
+            ->get(route('products.show', $product))
+            ->assertSuccessful()
+            ->assertDontSee(route('cart.add', [$product, $inCartVariant]), false)
+            ->assertSee(route('cart.add', [$product, $otherVariant]), false)
+            ->assertSeeText(__('View cart'));
     });
 
     test('it displays product with categories', function () {

@@ -22,6 +22,11 @@ class CartService
     protected int $defaultExpirationDays = 30;
 
     /**
+     * Cache for cart lookups within a single request to avoid duplicate queries.
+     */
+    protected ?array $cartCache = null;
+
+    /**
      * Get or create a cart for the given user or a guest cart.
      */
     public function getOrCreateCart(?User $user = null): Cart
@@ -36,9 +41,9 @@ class CartService
         $cartToken = request()->cookie('cart_token');
 
         if ($cartToken) {
-            $cart = Cart::where('cart_token', $cartToken)->first();
+            $cart = $this->getByToken($cartToken);
 
-            if ($cart && ! $cart->isExpired()) {
+            if ($cart && ! $cart->isExpired) {
                 return $cart;
             }
         }
@@ -50,11 +55,41 @@ class CartService
     }
 
     /**
-     * Get a cart by its token.
+     * Find the current non-expired cart without creating one.
+     */
+    public function findCurrentCart(?User $user = null): ?Cart
+    {
+        if ($user) {
+            return Cart::where('user_id', $user->id)
+                ->where('is_guest', false)
+                ->first();
+        }
+
+        $cartToken = request()->cookie('cart_token');
+
+        if (! $cartToken) {
+            return null;
+        }
+
+        $cart = $this->getByToken($cartToken);
+
+        return $cart && ! $cart->isExpired ? $cart : null;
+    }
+
+    /**
+     * Get a cart by its token, cached within the request lifecycle.
      */
     public function getByToken(string $cartToken): ?Cart
     {
-        return Cart::where('cart_token', $cartToken)->first();
+        if ($this->cartCache === null) {
+            $this->cartCache = ['token' => $cartToken, 'cart' => Cart::where('cart_token', $cartToken)->first()];
+        }
+
+        if ($this->cartCache['token'] !== $cartToken) {
+            return Cart::where('cart_token', $cartToken)->first();
+        }
+
+        return $this->cartCache['cart'];
     }
 
     /**
@@ -191,6 +226,14 @@ class CartService
     }
 
     /**
+     * Delete all carts that have not been updated within the given number of days.
+     */
+    public function cleanupOlderThan(int $maxAgeInDays): int
+    {
+        return Cart::where('updated_at', '<', now()->subDays($maxAgeInDays))->delete();
+    }
+
+    /**
      * Validate that sufficient stock is available for the given quantity.
      *
      * @throws Exception If insufficient stock is available.
@@ -221,12 +264,12 @@ class CartService
     /**
      * Resolve the unit price for a product, optionally using a variant's price.
      */
-    protected function resolveUnitPrice(Product $product, ?ProductVariant $variant = null): int
+    protected function resolveUnitPrice(Product $product, ?ProductVariant $variant = null): float
     {
         if ($variant && $variant->price !== null) {
-            return (int) $variant->price;
+            return (float) $variant->price;
         }
 
-        return (int) $product->price;
+        return $product->price;
     }
 }
