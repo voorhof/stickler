@@ -76,14 +76,6 @@ Route::middleware('cache.headers:public;max_age=60;s_maxage=300;stale_while_reva
         ->name('projects.index');
     Route::get('/projects/{project}', [ProjectController::class, 'show'])
         ->name('projects.show');
-
-    /**
-     * PageController routes (put these routes last)
-     */
-    Route::get('/pages', [PageController::class, 'index'])
-        ->name('pages.index');
-    Route::get('/{page}', [PageController::class, 'show'])
-        ->name('pages.show');
 });
 
 /**
@@ -119,9 +111,21 @@ Route::post('/cart/checkout', [CartController::class, 'checkout'])
  * Test route
  */
 if (app()->environment('local')) {
-    Route::get('/test/test', function () {
+    Route::get('/test', function () {
         return view('test', [
             'headTitle' => 'TEST',
         ]);
     });
 }
+
+/**
+ * GET routes with Cache-Control header and TrackPageView middleware
+ *
+ * PageController routes (!put these routes last!)
+ */
+Route::middleware('cache.headers:public;max_age=60;s_maxage=300;stale_while_revalidate=600;etag')->group(function () {
+    Route::get('/pages', [PageController::class, 'index'])
+        ->name('pages.index');
+    Route::get('/{page}', [PageController::class, 'show'])
+        ->name('pages.show');
+});
