@@ -457,8 +457,8 @@ it('can create a product with categories', function () {
         ->assertNotified();
 
     $product = Product::where('title', 'Product with Categories')->first();
-    expect($product->categories->pluck('id')->sort()->toArray())
-        ->toBe($categories->pluck('id')->sort()->toArray());
+    expect($product->categories->pluck('id')->sort()->values()->toArray())
+        ->toBe($categories->pluck('id')->sort()->values()->toArray());
 });
 
 it('can edit product categories', function () {
