@@ -262,6 +262,45 @@ The button label and modal heading use the `"Source code"` translation key in `l
 - `tests/Feature/app/Filament/Resources/PostResourceTest.php`: opens and submits the action on the Edit Post page.
 
 
+## Store Management
+
+The store resources manage the product catalogue, categories, orders and carts. They follow the same structure as the other resources: the main resource class delegates its form and table to the `Schemas` and `Tables` classes.
+
+### Products and product variants
+
+- `ProductResource` (`app/Filament/Resources/Products`) manages products. The variants section (`Schemas/Sections/ProductVariantsSection.php`) adds variants to a product.
+- `ProductVariantOptionTypeResource` (`app/Filament/Resources/ProductVariantOptionTypes`) manages option types, such as size or colour. Its edit page shows the `ProductVariantOptionsRelationManager`, where the options of that type are maintained.
+- A variant has its own SKU, stock quantity and optional price. A variant price overrides the product price only when it is set.
+
+### Categories
+
+- `CategoryResource` (`app/Filament/Resources/Categories`) manages categories. Categories are assigned to models through the `HasCategories` trait, for example to products.
+
+### Orders
+
+- `OrderResource` (`app/Filament/Resources/Orders`) manages orders. Its table uses the `HasOrderTableDefaults` trait.
+- `OrderStatus` and `PaymentStatus` (`app/Enums`) implement Filament's `HasLabel`, so the labels in the table, filters and forms are translated through `lang/en.json` and `lang/nl.json`.
+
+### Carts
+
+- `CartResource` (`app/Filament/Resources/Carts`) manages carts with a customer, a guest flag and an expiration date. Carts have no soft deletes, so expired carts are hard deleted.
+- `CartItemsRelationManager` lists the items of a cart. When adding an item, you choose a product and, for products with variants, a variant. The item stores snapshots of the name, variant label, SKU and price.
+- The **Clear carts** header action (`app/Filament/Actions/CartCleanupAction.php`) asks for a `max_days` value in a confirmation modal and deletes carts not updated within that many days. The default is 30 days.
+- The scheduled `carts:cleanup --force` command runs daily at 06:06 and deletes carts whose `expires_at` has passed.
+
+### Dashboard widget: PendingOrdersWidget
+
+Located at `app/Filament/Widgets/PendingOrdersWidget.php`, this stats widget shows the number of orders with the `Pending` status. The number is shown in the warning color when there are pending orders, and in the success color when there are none. Clicking the widget opens the Orders list with the Pending status filter active.
+
+The link passes the filter with the `filters` query key, the same way `UnreadMessagesWidget` does.
+
+### Tests
+
+- `tests/Feature/app/Filament/Resources/CartResourceTest.php`: the cart list, forms, and the cart items relation manager.
+- `tests/Unit/app/Filament/Actions/CartCleanupActionTest.php`: the cart cleanup action.
+- `tests/Unit/app/Filament/Widgets/PendingOrdersWidgetTest.php`: the count, the filtered link and the color.
+- `tests/Feature/app/Filament/Resources/ProductVariantOptionTypeResourceTest.php` and `tests/Feature/app/Filament/Resources/OrderResourceTest.php`: the variant option types and orders.
+
 ## Page Views
 
 Public page views are tracked on the server, without cookies or a consent banner.
@@ -272,7 +311,7 @@ The admin panel shows the results in a dashboard widget and in a view-only resou
 - `App\Models\PageView` stores one row per visit in the `page_views` table: `path`, `route_name`, `referrer_host`, `visitor_hash`, `viewed_on` and `created_at`. The table has no `updated_at` column.
 - `App\Http\Middleware\TrackPageView` is registered with `prepend` in `bootstrap/app.php`, so it runs before `CacheResponse`. Cached responses are therefore still counted.
 - A qualifying view is inserted using Laravel's `defer()` helper after the response has been sent, keeping the database write off the request's response path.
-- Only successful `GET` requests (status 200) on these route names are tracked: `welcome.index`, `contact.index`, `terms.*`, `posts.*`, `projects.*` and `pages.*`. Admin and other routes are never tracked.
+- Only successful `GET` requests (status 200) on these route names are tracked: `welcome.index`, `brandbook.index`, `contact.index`, `terms.*`, `posts.*`, `products.*`, `projects.*`, `pages.*` and `cart.index`. Admin and other routes are never tracked. Cart actions such as adding an item are POST requests and are not tracked.
 - The visitor is stored as `hash_hmac('sha256', ip|user-agent, app.key|date)`. The salt changes every day, so the same visitor cannot be followed across days. The raw IP address is never stored.
 - Only the referrer host is stored, never the full referrer URL. The referrer is `null` for internal navigation.
 
