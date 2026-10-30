@@ -407,7 +407,7 @@
                             >{{ __('View cart') }}</a>
                         @else
                             <form action="{{ route('cart.add', $product) }}" method="POST" class="d-inline">
-                                @csrf
+                                <x-csrf-input />
                                 <input type="hidden" name="quantity" value="1" />
                                 <button type="submit" class="btn btn-primary btn-sm">{{ __('Add to cart') }}</button>
                             </form>
@@ -479,7 +479,7 @@
                                                     method="POST"
                                                     class="d-inline"
                                                 >
-                                                    @csrf
+                                                    <x-csrf-input />
                                                     <input type="hidden" name="quantity" value="1" />
                                                     <button type="submit" class="btn btn-primary btn-sm">
                                                         {{ __('Add to cart') }}

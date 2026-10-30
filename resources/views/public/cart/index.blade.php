@@ -63,7 +63,7 @@
                                             method="POST"
                                             class="d-inline"
                                         >
-                                            @csrf
+                                            <x-csrf-input />
                                             <div class="input-group input-group-sm" style="width: 140px">
                                                 <input
                                                     type="number"
@@ -86,7 +86,7 @@
                                             method="POST"
                                             class="d-inline"
                                         >
-                                            @csrf
+                                            <x-csrf-input />
                                             <button type="submit" class="btn btn-outline-danger btn-sm">
                                                 {{ __('Remove') }}
                                             </button>
@@ -109,7 +109,7 @@
                         {{ __('Continue shopping') }}
                     </a>
                     <form action="{{ route('cart.checkout') }}" method="POST" class="d-inline">
-                        @csrf
+                        <x-csrf-input />
                         <button type="submit" class="btn btn-primary">{{ __('Proceed to checkout') }}</button>
                     </form>
                 </div>
