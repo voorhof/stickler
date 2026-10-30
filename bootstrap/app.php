@@ -11,7 +11,10 @@ use Spatie\ResponseCache\Middlewares\DoNotCacheResponse;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
-        web: __DIR__.'/../routes/web.php',
+        web: [
+            __DIR__.'/../routes/redirect.php', // Before web.php, so the /{page} catch-all does not swallow the redirects
+            __DIR__.'/../routes/web.php',
+        ],
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function () {
@@ -20,9 +23,6 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->prefix('admin')
                 ->name('filament.admin.')
                 ->group(base_path('routes/filament.php'));
-            // Redirect routes
-            Route::middleware(['web'])
-                ->group(base_path('routes/redirect.php'));
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
