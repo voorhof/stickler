@@ -114,6 +114,8 @@ trait HasEditDefaults
 
     public array $oldTags = [];
 
+    public array $oldCategories = [];
+
     public array $oldPermissions = [];
 
     public array $oldRoles = [];
@@ -123,6 +125,7 @@ trait HasEditDefaults
     protected function beforeSave(): void
     {
         $this->oldTags = method_exists($this->record, 'tags') ? $this->record->tags()->pluck('name')->toArray() : [];
+        $this->oldCategories = method_exists($this->record, 'categories') ? $this->record->categories()->pluck('title')->toArray() : [];
         $this->oldPermissions = method_exists($this->record, 'permissions') ? $this->record->permissions()->pluck('name')->toArray() : [];
         $this->oldRoles = method_exists($this->record, 'getRoleNames') ? $this->record->getRoleNames() : [];
         $this->oldOptions = method_exists($this->record, 'options') ? $this->record->options()->pluck('name')->toArray() : [];
@@ -190,14 +193,16 @@ trait HasEditDefaults
 
         // Log changes if any (only if NO other activity was logged)
         $newTags = method_exists($this->record, 'tags') ? $this->record->tags()->pluck('name')->toArray() : [];
+        $newCategories = method_exists($this->record, 'categories') ? $this->record->categories()->pluck('title')->toArray() : [];
         $newRoles = method_exists($this->record, 'getRoleNames') ? $this->record->getRoleNames() : [];
         $newOptions = method_exists($this->record, 'options') ? $this->record->options()->pluck('name')->toArray() : [];
 
         $tagsChanged = array_diff($this->oldTags, $newTags) || array_diff($newTags, $this->oldTags);
+        $categoriesChanged = array_diff($this->oldCategories, $newCategories) || array_diff($newCategories, $this->oldCategories);
         $rolesChanged = array_diff($this->oldRoles, $newRoles) || array_diff($newRoles, $this->oldRoles);
         $optionsChanged = array_diff($this->oldOptions, $newOptions) || array_diff($newOptions, $this->oldOptions);
 
-        if ($tagsChanged || $rolesChanged || $optionsChanged) {
+        if ($tagsChanged || $categoriesChanged || $rolesChanged || $optionsChanged) {
             // Check if an activity was already logged in this request for this coachingPlan and event 'updated'
             $activity = Activity::where('subject_type', $this->record->getMorphClass())
                 ->where('subject_id', $this->record->getKey())
@@ -211,6 +216,8 @@ trait HasEditDefaults
                 $activity->properties = $activity->properties
                     ->put('tags', $tagsChanged ? $newTags : null)
                     ->put('old_tags', $tagsChanged ? $this->oldTags : null)
+                    ->put('categories', $categoriesChanged ? $newCategories : null)
+                    ->put('old_categories', $categoriesChanged ? $this->oldCategories : null)
                     ->put('roles', $rolesChanged ? $newRoles : null)
                     ->put('old_roles', $rolesChanged ? $this->oldRoles : null)
                     ->put('options', $optionsChanged ? $newOptions : null)
@@ -225,6 +232,8 @@ trait HasEditDefaults
                     ->withProperties([
                         'tags' => $tagsChanged ? $newTags : null,
                         'old_tags' => $tagsChanged ? $this->oldTags : null,
+                        'categories' => $categoriesChanged ? $newCategories : null,
+                        'old_categories' => $categoriesChanged ? $this->oldCategories : null,
                         'roles' => $rolesChanged ? $newRoles : null,
                         'old_roles' => $rolesChanged ? $this->oldRoles : null,
                         'options' => $optionsChanged ? $newOptions : null,

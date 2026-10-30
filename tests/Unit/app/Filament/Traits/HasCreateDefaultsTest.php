@@ -4,6 +4,7 @@
 
 use App\Filament\Resources\Posts\Pages\CreatePost;
 use App\Filament\Resources\Roles\Pages\CreateRole;
+use App\Models\Category;
 use App\Models\Permission;
 use App\Models\Post;
 use App\Models\Role;
@@ -136,5 +137,23 @@ describe('after create behavior', function () {
             ->first();
 
         expect($activity)->not->toBeNull();
+    });
+
+    it('logs tags and categories in activity properties on afterCreate', function () {
+        $category = Category::factory()->create(['for_posts' => true]);
+        $post = Post::factory()->create();
+        $post->syncTags(['tag1', 'tag2']);
+        $post->categories()->attach($category->id);
+
+        callAfterCreateFor(CreatePost::class, $post);
+
+        $activity = Activity::where('subject_type', $post->getMorphClass())
+            ->where('subject_id', $post->getKey())
+            ->where('event', 'created')
+            ->latest()
+            ->first();
+
+        expect($activity->properties->get('tags'))->toHaveCount(2)
+            ->and($activity->properties->get('categories'))->toBe([$category->title]);
     });
 });

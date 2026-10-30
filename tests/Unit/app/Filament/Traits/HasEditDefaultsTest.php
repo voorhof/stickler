@@ -7,6 +7,7 @@ use App\Filament\Resources\Posts\Pages\EditPost;
 use App\Filament\Resources\Roles\Pages\EditRole;
 use App\Filament\Resources\Tags\Pages\EditTag;
 use App\Filament\Resources\Users\Pages\EditUser;
+use App\Models\Category;
 use App\Models\Message;
 use App\Models\Permission;
 use App\Models\Post;
@@ -286,5 +287,51 @@ describe('save behavior', function () {
             ->first();
 
         expect($activity)->not->toBeNull();
+    });
+
+    it('logs tag changes in afterSave', function () {
+        $post = Post::factory()->create();
+        $post->syncTags(['oldtag']);
+
+        $page = callBeforeSaveFor(EditPost::class, $post);
+
+        $post->syncTags(['newtag']);
+        $page->record = $post->fresh();
+
+        callAfterSaveFor($page);
+
+        $activity = Activity::where('subject_type', $post->getMorphClass())
+            ->where('subject_id', $post->getKey())
+            ->where('event', 'updated')
+            ->latest()
+            ->first();
+
+        expect($activity)->not->toBeNull()
+            ->and($activity->properties->get('tags'))->toBe(['newtag'])
+            ->and($activity->properties->get('old_tags'))->toBe(['oldtag']);
+    });
+
+    it('logs category changes in afterSave', function () {
+        $oldCategory = Category::factory()->create(['for_posts' => true]);
+        $newCategory = Category::factory()->create(['for_posts' => true]);
+        $post = Post::factory()->create();
+        $post->categories()->attach($oldCategory->id);
+
+        $page = callBeforeSaveFor(EditPost::class, $post);
+
+        $post->categories()->sync($newCategory->id);
+        $page->record = $post->fresh();
+
+        callAfterSaveFor($page);
+
+        $activity = Activity::where('subject_type', $post->getMorphClass())
+            ->where('subject_id', $post->getKey())
+            ->where('event', 'updated')
+            ->latest()
+            ->first();
+
+        expect($activity)->not->toBeNull()
+            ->and($activity->properties->get('categories'))->toBe([$newCategory->title])
+            ->and($activity->properties->get('old_categories'))->toBe([$oldCategory->title]);
     });
 });

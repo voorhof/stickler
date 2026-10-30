@@ -114,6 +114,7 @@ trait HasCreateDefaults
 
         // Log linked models for newly created records (merging with existing 'created' activity if possible)
         $tags = method_exists($this->record, 'tags') ? $this->record->tags()->pluck('name')->toArray() : [];
+        $categories = method_exists($this->record, 'categories') ? $this->record->categories()->pluck('title')->toArray() : [];
         $permissions = method_exists($this->record, 'permissions') ? $this->record->permissions()->pluck('name')->toArray() : [];
         $roles = method_exists($this->record, 'getRoleNames') ? $this->record->getRoleNames() : [];
 
@@ -127,6 +128,7 @@ trait HasCreateDefaults
         if ($activity) {
             $activity->properties = $activity->properties
                 ->put('tags', $tags)
+                ->put('categories', $categories)
                 ->put('permissions', $permissions)
                 ->put('roles', $roles);
             $activity->save();
@@ -137,6 +139,7 @@ trait HasCreateDefaults
                 ->event('created')
                 ->withProperties([
                     'tags' => $tags,
+                    'categories' => $categories,
                     'permissions' => $permissions,
                     'roles' => $roles,
                 ])
