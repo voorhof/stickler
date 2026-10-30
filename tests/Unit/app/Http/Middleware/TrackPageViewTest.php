@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\PageView;
+use App\Models\Product;
+use App\Models\User;
 
 test('a public page view is stored through deferred processing', function () {
     $this->get('/contact')->assertOk();
@@ -37,6 +39,31 @@ test('the visitor hash changes from one day to the next', function () {
 
 test('non public routes are not tracked', function () {
     $this->post('/contact')->assertRedirect();
+
+    expect(PageView::count())->toBe(0);
+});
+
+test('the cart page is tracked as a page view', function () {
+    $this->withoutDefer();
+
+    $this->get('/cart')->assertOk();
+
+    $pageView = PageView::query()->first();
+
+    expect(PageView::count())->toBe(1)
+        ->and($pageView->path)->toBe('/cart')
+        ->and($pageView->route_name)->toBe('cart.index');
+});
+
+test('cart actions are not tracked as page views', function () {
+    $this->withoutDefer();
+
+    User::factory()->create();
+
+    $product = Product::factory()->create();
+
+    $this->post(route('cart.add', $product))
+        ->assertRedirect();
 
     expect(PageView::count())->toBe(0);
 });

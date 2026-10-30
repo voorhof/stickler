@@ -192,16 +192,38 @@ so that route binding works based on the slug rather than the ID:
 
 ### Excluded Slugs Configuration (excluded_from_slug)
 
-A custom configuration array excluded_from_slug is defined in config/sluggable.php to blacklist reserved keywords and system route names (e.g. contact, admin, pages, privacy-policy, etc.):
+A custom configuration array excluded_from_slug is defined in config/sluggable.php to blacklist reserved keywords and system route names (e.g. contact, admin, pages, privacy-policy, cart, products, etc.):
 
 ```php
 'excluded_from_slug' => [
-    'contact',
+    'admin',
     'algemene-voorwaarden',
+    'brandbook',
+    'cart',
+    'contact',
+    'cookie-policy',
+    'filament',
+    'home',
+    'pages',
+    'page',
+    'posts',
+    'post',
     'privacy-policy',
-    '...',
+    'products',
+    'product',
+    'projects',
+    'project',
+    'storage',
+    'test',
+    'up',
+    'welcome',
+    'xxx',
+    'yyy',
+    'zzz',
 ],
 ```
+
+The `products`, `product`, `cart` and `brandbook` entries were added for the store and public routes, so a page or product can never take a slug that collides with `/products`, `/product`, `/cart` or `/brandbook`.
 
 This list is used across the application:
 1. Filament Form Validation (SlugInput): The reusable SlugInput component (App\Filament\Schemas\Components\SlugInput) applies Rule::notIn(config('sluggable.excluded_from_slug')) to prevent users from manually entering reserved slugs in the admin panel.

@@ -27,7 +27,7 @@
 
                 @can('edit settings')
                     <form method="POST" action="{{ route('filament.admin.sitemap.generate') }}">
-                        @csrf
+                        <x-csrf-input />
                         <x-filament::button type="submit" color="secondary" :icon="Heroicon::OutlinedArrowPath">
                             @lang('Generate sitemap')
                         </x-filament::button>

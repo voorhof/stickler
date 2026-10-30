@@ -1,23 +1,10 @@
 <x-layouts.app>
     @push('scripts-head-bottom')
         <style>
-            :root {
-                --st-product-show-title-color: var(--st-body-color);
-                --st-product-show-meta-color: var(--st-secondary-color);
-                --st-product-show-btn-bg: var(--st-body-color);
-                --st-product-show-btn-color: var(--st-body-bg);
-                --st-product-show-btn-hover-bg: var(--st-link-color);
-                --st-product-show-price-color: var(--st-body-color);
-                --st-product-show-discount-price-color: var(--st-link-color);
-                --st-product-show-banner-height: 320px;
-                --st-product-show-stock-color: var(--st-success-color, #198754);
-                --st-product-show-out-of-stock-color: var(--st-danger-color, #dc3545);
-            }
-
             .c-product-show-banner {
                 position: relative;
                 width: 100%;
-                height: var(--st-product-show-banner-height);
+                height: 320px;
                 margin-bottom: 2rem;
                 border-radius: var(--st-border-radius-lg);
                 overflow: hidden;
@@ -112,25 +99,25 @@
                 flex-wrap: wrap;
                 gap: 0.75rem;
                 font-size: 0.85rem;
-                color: var(--st-product-show-meta-color);
+                color: var(--st-secondary-color);
                 margin-bottom: 2rem;
             }
 
             .c-product-show-price {
                 font-size: 1.5rem;
                 font-weight: 700;
-                color: var(--st-product-show-price-color);
+                color: var(--st-body-color);
             }
 
             .c-product-show-discount-price {
                 font-size: 1.5rem;
                 font-weight: 700;
-                color: var(--st-product-show-discount-price-color);
+                color: var(--st-link-color);
             }
 
             .c-product-show-original-price {
                 text-decoration: line-through;
-                color: var(--st-product-show-meta-color);
+                color: var(--st-secondary-color);
                 font-size: 1.1rem;
                 font-weight: 400;
                 margin-left: 0.35rem;
@@ -145,11 +132,11 @@
             }
 
             .c-product-show-stock--in-stock {
-                color: var(--st-product-show-stock-color);
+                color: var(--st-success);
             }
 
             .c-product-show-stock--out-of-stock {
-                color: var(--st-product-show-out-of-stock-color);
+                color: var(--st-danger);
             }
 
             .c-product-show-stock-dot {
@@ -187,8 +174,8 @@
                 font-weight: 500;
                 padding: 0.5rem 1.25rem;
                 border-radius: var(--st-border-radius);
-                background-color: var(--st-product-show-btn-bg);
-                color: var(--st-product-show-btn-color);
+                background-color: var(--st-body-color);
+                color: var(--st-body-bg);
                 text-decoration: none;
                 transition:
                     background-color 0.2s ease,
@@ -197,7 +184,7 @@
             }
 
             .c-product-show-back-btn:hover {
-                background-color: var(--st-product-show-btn-hover-bg);
+                background-color: var(--st-link-color);
                 color: var(--st-body-bg);
                 text-decoration: none;
             }
@@ -274,7 +261,7 @@
 
             .c-product-variant-sku {
                 color: var(--st-secondary-color);
-                font-family: var(--st-font-mono, monospace);
+                font-family: var(--st-font-monospace), monospace;
             }
 
             .c-product-variant-price {
@@ -284,12 +271,12 @@
 
             .c-product-variant-discount-price {
                 font-weight: 700;
-                color: var(--st-product-show-discount-price-color);
+                color: var(--st-link-color);
             }
 
             .c-product-variant-original-price {
                 text-decoration: line-through;
-                color: var(--st-product-show-meta-color);
+                color: var(--st-secondary-color);
                 font-size: 0.8rem;
                 font-weight: 400;
                 margin-left: 0.25rem;
@@ -304,11 +291,11 @@
             }
 
             .c-product-variant-stock--in-stock {
-                color: var(--st-product-show-stock-color);
+                color: var(--st-success);
             }
 
             .c-product-variant-stock--out-of-stock {
-                color: var(--st-product-show-out-of-stock-color);
+                color: var(--st-danger);
             }
 
             .c-product-variant-stock-dot {
@@ -318,7 +305,7 @@
                 background-color: currentColor;
             }
 
-            @media (max-width: 767.98px) {
+            @media (max-width: 768px) {
                 :root {
                     --st-product-show-banner-height: 220px;
                 }
@@ -370,6 +357,10 @@
             </div>
 
             <div class="c-product-show-body">
+                @if (session('error'))
+                    <div class="alert alert-danger" role="alert">{{ session('error') }}</div>
+                @endif
+
                 @if ($product->intro)
                     <p class="c-product-show-intro">{{ $product->intro }}</p>
                 @endif
@@ -406,6 +397,21 @@
                             {{ $product->website_title ?: __('Visit site') }}
                             <x-icons.box-arrow-up-right />
                         </a>
+                    @endif
+
+                    @if ($product->variants->isEmpty() && $product->stock_quantity > 0)
+                        @if ($cartItems->contains(fn ($item) => $item->product_id === $product->id && $item->product_variant_id === null))
+                            <a
+                                href="{{ route('cart.index') }}"
+                                class="btn btn-outline-primary btn-sm"
+                            >{{ __('View cart') }}</a>
+                        @else
+                            <form action="{{ route('cart.add', $product) }}" method="POST" class="d-inline">
+                                <x-csrf-input />
+                                <input type="hidden" name="quantity" value="1" />
+                                <button type="submit" class="btn btn-primary btn-sm">{{ __('Add to cart') }}</button>
+                            </form>
+                        @endif
                     @endif
                 </div>
 
@@ -459,6 +465,27 @@
                                                 <span class="c-product-variant-stock-dot"></span>
                                                 {{ __('Out of stock') }}
                                             </span>
+                                        @endif
+
+                                        @if ($variant->stock_quantity > 0)
+                                            @if ($cartItems->contains(fn ($item) => $item->product_variant_id === $variant->id))
+                                                <a
+                                                    href="{{ route('cart.index') }}"
+                                                    class="btn btn-outline-primary btn-sm"
+                                                >{{ __('View cart') }}</a>
+                                            @else
+                                                <form
+                                                    action="{{ route('cart.add', [$product, $variant]) }}"
+                                                    method="POST"
+                                                    class="d-inline"
+                                                >
+                                                    <x-csrf-input />
+                                                    <input type="hidden" name="quantity" value="1" />
+                                                    <button type="submit" class="btn btn-primary btn-sm">
+                                                        {{ __('Add to cart') }}
+                                                    </button>
+                                                </form>
+                                            @endif
                                         @endif
                                     </div>
                                 </div>

@@ -25,6 +25,7 @@ class TrackPageView
         'products.*',
         'projects.*',
         'pages.*',
+        'cart.index',
     ];
 
     /**

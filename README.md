@@ -15,6 +15,7 @@ Out of the box, Stickler includes:
 - **A complete Laravel foundation** with environment-based configuration, database migrations, seed data, queues, scheduled tasks, and a structure that is ready to customize.
 - **A Filament 5 admin panel** with user management, navigation, notifications, soft-delete workflows, reusable form schemas and table definitions, resizable columns, and business-hours management. See the [Filament implementation guide](FILAMENT.md) for details.
 - **Content management building blocks** for posts and other content, including slugs, tags, sorting, localized content, rich text editing, and a custom rich-editor source-code tool.
+- **E-commerce building blocks** with products and product variants (option types, options, SKU, stock and price per variant), categories, orders with order and payment status, and a public cart with a navbar badge, stock validation, and an expiry cleanup. See the [Store Management section](FILAMENT.md#store-management) of the Filament guide for the admin side.
 - **Media management** powered by Spatie Media Library, including uploads, image conversions, responsive media support, and integration with Filament.
 - **User access and administration** with roles and permissions, panel access checks, admin configuration through `.env`, and optional two-factor authentication support.
 - **Website essentials** such as HTML head management, sitemap generation, robots.txt support, opening hours, cookie consent, and a Bootstrap-based public frontend.
@@ -46,7 +47,7 @@ When starting a project from Stickler, replace the sample identity and content d
 
 1. Set the application name, URL, locale, administrator credentials, and feature flags in `.env`.
 2. Replace the artwork and branding in `public` and update references to those assets in the Blade layouts and views.
-3. Review the seeded users, roles, permissions, opening-hours record, and sample content before using the project outside local development.
+3. Review the seeded users, roles, permissions, opening-hours record, and sample content (products, orders and carts) before using the project outside local development.
 4. Adapt the public routes, controllers, views, models, and Filament resources to the new project's content model and navigation.
 5. Keep generated or published vendor assets in sync when updating the related package; project-owned source files remain the place for custom behavior.
 6. Regenerate `llms.txt` so it describes the new project's pages and content instead of the starter kit's defaults.
@@ -74,6 +75,8 @@ APP_URL=https://stickler.test
 
 RESPONSE_CACHE_ENABLED=true
 ```
+
+When response caching is enabled, pages are not cached for visitors with a `cart_token` cookie or a logged-in account. Their navbar cart badge is personal, so a cached page would show the wrong count. After upgrading an existing installation, run `php artisan responsecache:clear` once to remove pages cached before this rule existed.
 
 You can log in to the Filament admin dashboard via `/admin` using the login details defined in .env:
 

@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Services\CartService;
+use Illuminate\Support\Facades\Auth;
 use Laravel\Head\Facades\Head;
 
 class ProductController extends Controller
@@ -38,8 +40,11 @@ class ProductController extends Controller
         Head::title($product->title)
             ->description($product->intro);
 
+        $cartItems = app(CartService::class)->findCurrentCart(Auth::user())?->items ?? collect();
+
         return view('public.products.show', [
             'product' => $product,
+            'cartItems' => $cartItems,
         ]);
     }
 }

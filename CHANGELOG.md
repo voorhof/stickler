@@ -15,6 +15,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Full Changelog**: https://github.com/voorhof/stickler/compare/v1.6.0...v1.6.1
 
+## [v1.6.0](https://github.com/voorhof/stickler/compare/v1.5.3...v1.6.0) - 2026-10-29
+
+### What's Changed
+
+* Products and Orders e-commerce additions by @voorhof in https://github.com/voorhof/stickler/pull/18
+* Update CHANGELOG
+* Update changelog.yml
+* GitHub Actions used in the workflows are pinned to a full commit SHA
+* Added dependabot configuration for composer, npm and github-actions
+* Added basic brandbook
+* Added icons to blade components
+* Added brandbook and contact page links to welcome blade view
+* Changed footer logo size
+* Created Product model, migration, factory, seeder, policy, observer and testfiles
+* Created Product Filament resource
+* Added public Product routes and views
+* Added 'products.*' routes to TrackPageView middleware
+* Changed is_discounted form field from checkbox to toggle
+* Updated ProductFactory to make sure discount_price is lower then price field
+* Updated lang files
+* Created ProductVariant model with ProductVariantOption and ProductVariantOptionType
+* Added missing response cache flush tests to Observer testfiles
+* Updated public Product controller & blade for displaying variants
+* Added extra tag relation to models
+* Created Category model, migration, factory, seeder, policy, observer, trait and testfiles
+* Created Category Filament resource
+* Updated public Product controller & blade for displaying categories
+* Added getCoverImageUrl to HasMediaConversions for webp conversion fallback to original image
+* Created Order and OrderItem models, migrations, factories, seeders, policies, observers, enums and testfiles
+* Created Order Filament resource
+* Choose products from select when creating orders
+* Added activity logging to ProductVariantOptionType model
+* Added SKU label to product variants repeater
+* Create ceo user first, before admin user (ceo = id 1)
+* Fix testfiles
+* Composer & NPM updates
+
+**Full Changelog**: https://github.com/voorhof/stickler/compare/v1.5.3...v1.6.0
+
 ## [v1.5.3](https://github.com/voorhof/stickler/compare/v1.5.2...v1.5.3) - 2026-10-26
 
 ### What's Changed

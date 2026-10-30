@@ -9,7 +9,7 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class PageViewsWidget extends StatsOverviewWidget
 {
-    protected static ?int $sort = 50;
+    protected static ?int $sort = 100;
 
     protected int|array|null $columns = 2;
 

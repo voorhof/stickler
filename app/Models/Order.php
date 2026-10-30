@@ -48,6 +48,8 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
  * @method static forceCreate(array $array)
  * @method static where(string $column, mixed $operator, mixed $value = null)
  * @method static latest()
+ * @method static count()
+ * @method static first()
  */
 #[Fillable([
     'order_number',
