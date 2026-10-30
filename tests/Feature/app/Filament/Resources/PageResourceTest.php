@@ -9,6 +9,7 @@ use App\Filament\Resources\Pages\Pages\CreatePage;
 use App\Filament\Resources\Pages\Pages\EditPage;
 use App\Filament\Resources\Pages\Pages\ListPages;
 use App\Filament\RichEditor\Plugins\SourceCodePlugin;
+use App\Models\Category;
 use App\Models\Page;
 use App\Models\Permission;
 use App\Models\Role;
@@ -160,6 +161,54 @@ it('can create a page', function () {
 
     $page = Page::where('title', 'My New Page')->first();
     expect($page->getFirstMedia('cover'))->not->toBeNull();
+});
+
+it('can create a page with categories', function () {
+    $category = Category::factory()->create(['for_pages' => true]);
+
+    livewire(CreatePage::class)
+        ->fillForm([
+            'title' => 'Page With Category',
+            'intro' => 'This is the intro.',
+            'categories' => [$category->id],
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors()
+        ->assertNotified();
+
+    $page = Page::where('title', 'Page With Category')->first();
+
+    expect($page->categories->pluck('id')->all())->toBe([$category->id]);
+});
+
+it('does not accept a category without the for_pages flag on a page', function () {
+    $category = Category::factory()->create(['for_pages' => false]);
+
+    livewire(CreatePage::class)
+        ->fillForm([
+            'title' => 'Page Without Matching Category',
+            'intro' => 'This is the intro.',
+            'categories' => [$category->id],
+        ])
+        ->call('create')
+        ->assertHasFormErrors(['categories']);
+});
+
+it('can edit the categories of a page', function () {
+    $page = Page::factory()->create();
+    $category = Category::factory()->create(['for_pages' => true]);
+
+    livewire(EditPage::class, ['record' => $page->getRouteKey()])
+        ->fillForm([
+            'title' => $page->title,
+            'intro' => $page->intro,
+            'categories' => [$category->id],
+        ])
+        ->call('save')
+        ->assertHasNoFormErrors()
+        ->assertNotified();
+
+    expect($page->fresh()->categories->pluck('id')->all())->toBe([$category->id]);
 });
 
 it('validates required fields when editing a page', function () {

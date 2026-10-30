@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Pages\Schemas;
 
 use App\Filament\Schemas\Sections\ActivityHistorySection;
+use App\Filament\Schemas\Sections\CategoriesSection;
 use App\Filament\Schemas\Sections\ContentSection;
 use App\Filament\Schemas\Sections\DatabaseInfoSection;
 use App\Filament\Schemas\Sections\DocumentUploadSection;
@@ -26,6 +27,9 @@ class PageForm
                         ImageUploadSection::make(),
                         VideoUploadSection::make(),
                         DocumentUploadSection::make(),
+                        CategoriesSection::make(
+                            forModel: 'for_pages',
+                        ),
                         TagsSection::make(),
                         SettingsSection::make(),
                         DatabaseInfoSection::make(),

@@ -9,6 +9,7 @@ use App\Filament\Resources\Posts\Pages\CreatePost;
 use App\Filament\Resources\Posts\Pages\EditPost;
 use App\Filament\Resources\Posts\Pages\ListPosts;
 use App\Filament\RichEditor\Plugins\SourceCodePlugin;
+use App\Models\Category;
 use App\Models\Permission;
 use App\Models\Post;
 use App\Models\Role;
@@ -160,6 +161,54 @@ it('can create a post', function () {
 
     $post = Post::where('title', 'My New Post')->first();
     expect($post->getFirstMedia('cover'))->not->toBeNull();
+});
+
+it('can create a post with categories', function () {
+    $category = Category::factory()->create(['for_posts' => true]);
+
+    livewire(CreatePost::class)
+        ->fillForm([
+            'title' => 'Post With Category',
+            'intro' => 'This is the intro.',
+            'categories' => [$category->id],
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors()
+        ->assertNotified();
+
+    $post = Post::where('title', 'Post With Category')->first();
+
+    expect($post->categories->pluck('id')->all())->toBe([$category->id]);
+});
+
+it('does not accept a category without the for_posts flag on a post', function () {
+    $category = Category::factory()->create(['for_posts' => false]);
+
+    livewire(CreatePost::class)
+        ->fillForm([
+            'title' => 'Post Without Matching Category',
+            'intro' => 'This is the intro.',
+            'categories' => [$category->id],
+        ])
+        ->call('create')
+        ->assertHasFormErrors(['categories']);
+});
+
+it('can edit the categories of a post', function () {
+    $post = Post::factory()->create();
+    $category = Category::factory()->create(['for_posts' => true]);
+
+    livewire(EditPost::class, ['record' => $post->getRouteKey()])
+        ->fillForm([
+            'title' => $post->title,
+            'intro' => $post->intro,
+            'categories' => [$category->id],
+        ])
+        ->call('save')
+        ->assertHasNoFormErrors()
+        ->assertNotified();
+
+    expect($post->fresh()->categories->pluck('id')->all())->toBe([$category->id]);
 });
 
 it('validates required fields when editing a post', function () {

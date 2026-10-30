@@ -3,12 +3,14 @@
 namespace App\Filament\Schemas\Sections;
 
 use App\Models\Category;
+use Closure;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Support\Enums\Operation;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Database\Eloquent\Builder;
 
 class CategoriesSection
 {
@@ -25,7 +27,28 @@ class CategoriesSection
                     ->label(__('Categories'))
                     ->hiddenLabel()
                     ->multiple()
-                    ->relationship(titleAttribute: 'title')
+                    ->relationship(
+                        titleAttribute: 'title',
+                        modifyQueryUsing: fn (Builder $query): Builder => $forModel !== ''
+                            ? $query->where($forModel, true)
+                            : $query,
+                    )
+                    ->rules([
+                        fn (): Closure => function (string $attribute, mixed $value, Closure $fail) use ($forModel): void {
+                            if ($forModel === '' || blank($value)) {
+                                return;
+                            }
+
+                            $hasUnmatchedCategory = Category::query()
+                                ->whereIn('id', (array) $value)
+                                ->where($forModel, false)
+                                ->exists();
+
+                            if ($hasUnmatchedCategory) {
+                                $fail(__('The selected categories are not available for this item.'));
+                            }
+                        },
+                    ])
                     ->searchable()
                     ->preload()
                     ->columnSpanFull()

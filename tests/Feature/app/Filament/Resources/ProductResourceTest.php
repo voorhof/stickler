@@ -461,6 +461,21 @@ it('can create a product with categories', function () {
         ->toBe($categories->pluck('id')->sort()->values()->toArray());
 });
 
+it('does not accept a category without the for_products flag on a product', function () {
+    $category = Category::factory()->create(['for_products' => false]);
+
+    livewire(CreateProduct::class)
+        ->fillForm([
+            'title' => 'Product Without Matching Category',
+            'intro' => 'A product without a matching category.',
+            'price' => 29.99,
+            'stock_quantity' => 10,
+            'categories' => [$category->id],
+        ])
+        ->call('create')
+        ->assertHasFormErrors(['categories']);
+});
+
 it('can edit product categories', function () {
     $product = Product::factory()->create();
     $newCategory = Category::factory()->create(['for_products' => true]);
