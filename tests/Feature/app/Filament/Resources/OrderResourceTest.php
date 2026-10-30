@@ -212,6 +212,41 @@ it('calculates order prices from items correctly', function () {
     // Total = subtotal + tax + shipping = 59.98 + 12.60 + 5.00 = 77.58 EUR
 });
 
+it('rounds calculated price fields to two decimals', function () {
+    $product = Product::factory()->create();
+
+    livewire(CreateOrder::class)
+        ->fillForm([
+            'status' => 'pending',
+            'payment_status' => 'unpaid',
+            'items' => [
+                [
+                    'product_id' => $product->id,
+                    'product_name' => $product->title,
+                    'sku' => $product->sku,
+                    'quantity' => 3,
+                    'unit_price' => 0.1,
+                ],
+            ],
+        ])
+        ->assertSchemaStateSet([
+            'subtotal' => 0.3,
+            'tax_amount' => 0.06,
+            'total' => 0.36,
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors()
+        ->assertNotified();
+
+    $order = Order::latest()->first();
+
+    // 0.1 * 3 = 0.30000000000000004 in floating point, so the calculated values must be rounded to 2 decimals
+    expect($order->subtotal)->toBe(0.3)
+        ->and($order->tax_amount)->toBe(0.06)
+        ->and($order->total)->toBe(0.36)
+        ->and($order->items->first()->total_price)->toBe(0.3);
+});
+
 it('calculates order prices with multiple items', function () {
     $product1 = Product::factory()->create();
     $product2 = Product::factory()->create();

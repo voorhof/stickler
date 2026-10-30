@@ -81,7 +81,7 @@ class OrderForm
                                                         $set('sku', $product->sku);
                                                         $quantity = $get('quantity');
                                                         if ($quantity) {
-                                                            $set('total_price', $product->price * $quantity);
+                                                            $set('total_price', round($product->price * $quantity, 2));
                                                         }
                                                     }
                                                     $set('product_variant_id', null);
@@ -130,7 +130,7 @@ class OrderForm
                                                     $unitPrice = $get('unit_price');
                                                     $quantity = $get('quantity');
                                                     if ($unitPrice && $quantity) {
-                                                        $set('total_price', $unitPrice * $quantity);
+                                                        $set('total_price', round($unitPrice * $quantity, 2));
                                                     }
                                                     self::recalculatePricesFromItem($get, $set);
                                                 }),
@@ -157,7 +157,7 @@ class OrderForm
                                                     $unitPrice = $get('unit_price');
                                                     $quantity = $get('quantity');
                                                     if ($unitPrice && $quantity) {
-                                                        $set('total_price', $unitPrice * $quantity);
+                                                        $set('total_price', round($unitPrice * $quantity, 2));
                                                     }
                                                     self::recalculatePricesFromItem($get, $set);
                                                 }),
@@ -171,7 +171,7 @@ class OrderForm
                                                     $unitPrice = $get('unit_price');
                                                     $quantity = $get('quantity');
                                                     if ($unitPrice && $quantity) {
-                                                        $set('total_price', $unitPrice * $quantity);
+                                                        $set('total_price', round($unitPrice * $quantity, 2));
                                                     }
                                                     self::recalculatePricesFromItem($get, $set);
                                                 }),
@@ -307,9 +307,9 @@ class OrderForm
         $shipping = $get('shipping_amount') ?? 0;
         $total = $subtotal + $tax + $shipping;
 
-        $set('subtotal', $subtotal);
-        $set('tax_amount', $tax);
-        $set('total', $total);
+        $set('subtotal', round($subtotal, 2));
+        $set('tax_amount', round($tax, 2));
+        $set('total', round($total, 2));
     }
 
     /**
@@ -326,8 +326,8 @@ class OrderForm
         $shipping = $get('../../shipping_amount') ?? 0;
         $total = $subtotal + $tax + $shipping;
 
-        $set('../../subtotal', $subtotal);
-        $set('../../tax_amount', $tax);
-        $set('../../total', $total);
+        $set('../../subtotal', round($subtotal, 2));
+        $set('../../tax_amount', round($tax, 2));
+        $set('../../total', round($total, 2));
     }
 }
