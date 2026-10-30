@@ -261,6 +261,8 @@ Filament's RichEditor re-saves newly created records to attach media files. This
 
 To prevent this, the `DisablesActivityLogOnSecondSave` observer trait (`app/Observers/Traits/DisablesActivityLogOnSecondSave.php`) disables activity logging when `wasRecentlyCreated` is `true`. The trait is used by the observers for models with RichEditor fields: `PostObserver`, `PageObserver`, `ProjectObserver`, and `ProductObserver`.
 
+After disabling logging, the trait updates the "created" activity's `attributes` property to include the `content` field that was set by the RichEditor's second save. This ensures the "created" activity reflects the final state of the model, including the content.
+
 `wasRecentlyCreated` is not time-based; it is `true` only during the same HTTP request where the model was inserted. It resets to `false` at the start of each new request, so normal updates are unaffected.
 
 ### Tests

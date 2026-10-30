@@ -230,3 +230,32 @@ it('does not disable activity logging for existing products', function (): void 
     // Logging should remain enabled
     expect($product->enableLoggingModelsEvents)->toBeTrue();
 });
+
+it('updates the created activity with content after the second save', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    // Create a product without content (simulating the first save)
+    $product = Product::create([
+        'title' => 'Content Activity Test Product',
+        'intro' => 'Testing content in activity log.',
+        'price' => 19.99,
+        'discount_price' => null,
+    ]);
+
+    // Simulate the RichEditor setting content on the second save
+    $product->content = '<p>Rich editor content</p>';
+    $product->wasRecentlyCreated = true;
+
+    $observer = new ProductObserver;
+    $observer->saved($product);
+
+    // The "created" activity should now include the content field
+    $activity = $product->activitiesAsSubject()
+        ->where('event', 'created')
+        ->latest('created_at')
+        ->first();
+
+    expect($activity)->not->toBeNull()
+        ->and($activity->properties['attributes']['content'])->toBe('<p>Rich editor content</p>');
+});
