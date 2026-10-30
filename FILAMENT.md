@@ -255,6 +255,16 @@ The button label and modal heading use the `"Source code"` translation key in `l
 - Keep the `data-id` attribute on images intact, it links the image to its Spatie Media Library attachment.
 - Always render rich content with `$model->renderRichContent('content')` or `RichContentRenderer` (which sanitizes the HTML), never with `{!! $model->content !!}`.
 
+### Activity log and the second save
+
+Filament's RichEditor re-saves newly created records to attach media files. This second save fires an `updated` model event, which creates an unwanted duplicate activity log entry.
+
+To prevent this, the `DisablesActivityLogOnSecondSave` observer trait (`app/Observers/Traits/DisablesActivityLogOnSecondSave.php`) disables activity logging when `wasRecentlyCreated` is `true`. The trait is used by the observers for models with RichEditor fields: `PostObserver`, `PageObserver`, `ProjectObserver`, and `ProductObserver`.
+
+After disabling logging, the trait updates the "created" activity's `attributes` property to include the `content` field that was set by the RichEditor's second save. This ensures the "created" activity reflects the final state of the model, including the content.
+
+`wasRecentlyCreated` is not time-based; it is `true` only during the same HTTP request where the model was inserted. It resets to `false` at the start of each new request, so normal updates are unaffected.
+
 ### Tests
 
 - `tests/Unit/app/Filament/RichEditor/Plugins/SourceCodePluginTest.php`: HTML formatting, tool, action and modal width.
@@ -456,20 +466,20 @@ The plugin publishes the following project files:
 - Translations: `lang/vendor/filament-business-hours/`
 - Frontend assets: `public/css/laboiteacode/filament-business-hours/` and `public/js/laboiteacode/filament-business-hours/`
 
-It is registered in `app/Providers/Filament/AdminPanelProvider.php` under the **Settings** navigation group.
-Access is limited to users who have the `edit settings` permission:
+It is registered in `app/Providers/Filament/AdminPanelProvider.php` through the project's `App\Filament\Plugins\BusinessHoursPlugin`, which extends the package plugin. Access is limited to users who have the `edit settings` permission:
 
 ```php
-use LaBoiteACode\FilamentBusinessHours\FilamentBusinessHoursPlugin;
+use App\Filament\Plugins\BusinessHoursPlugin;
 
 ->plugins([
     // ... other plugins
-    FilamentBusinessHoursPlugin::make()
-        ->navigationGroup(__('Settings'))
+    BusinessHoursPlugin::make()
         ->navigationSort(9200)
         ->canAccessUsing(fn (): bool => auth()->user()?->can('edit settings') ?? false),
 ]);
 ```
+
+The subclass overrides `getNavigationGroup()` to return `__('Settings')` at render time. The navigation group is therefore translated per request, so the business hours item sits in the same **Settings** group as Log Viewer and Telescope in both `en` and `nl`. Do not pass a navigation group to the plugin with `navigationGroup()`, because the override ignores it. The tests are in `tests/Unit/app/Filament/Plugins/BusinessHoursPluginTest.php`, and `tests/Unit/app/Providers/Filament/AdminPanelProviderTest.php` checks that the panel registers this plugin.
 
 The custom `database/seeders/BusinessHoursSeeder.php` seeds a `default` schedule with Monday through Friday
 open from `08:00-12:00` and `13:00-18:00`; Saturday and Sunday are closed. The seeder is included in

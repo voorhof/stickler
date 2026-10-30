@@ -894,19 +894,20 @@ It stores opening hours data in the `business_hours` table and uses `spatie/open
 
 **Translation** files were published to `lang/vendor/filament-business-hours/`.
 
-The plugin is registered in `app/Providers/Filament/AdminPanelProvider.php`:
+The plugin is registered in `app/Providers/Filament/AdminPanelProvider.php` through the project's `App\Filament\Plugins\BusinessHoursPlugin`, a subclass of `FilamentBusinessHoursPlugin`:
 
 ```php
-use LaBoiteACode\FilamentBusinessHours\FilamentBusinessHoursPlugin;
+use App\Filament\Plugins\BusinessHoursPlugin;
 
 ->plugins([
     // ... other plugins
-    FilamentBusinessHoursPlugin::make()
-        ->navigationGroup(__('Settings'))
+    BusinessHoursPlugin::make()
         ->navigationSort(9200)
         ->canAccessUsing(fn (): bool => auth()->user()?->can('edit settings') ?? false),
 ]);
 ```
+
+The subclass overrides `getNavigationGroup()` to return `__('Settings')` at render time. The package's `navigationGroup()` setting is not used, because a value resolved at panel boot stayed in the wrong language and split the Settings group in the sidebar.
 
 A custom **seeder** `BusinessHoursSeeder.php` was created to seed default business hours (Monday–Friday, 08:00–12:00 and 13:00–18:00):
 

@@ -295,3 +295,73 @@ it('flushes response cache when a page is deleted', function (): void {
 
     defer()->invoke();
 });
+
+it('disables activity logging on second save for newly created pages', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $page = Page::create([
+        'title' => 'Activity Log Test Page',
+        'intro' => 'Testing activity log suppression.',
+    ]);
+
+    $observer = new PageObserver;
+
+    // Simulate a newly created page
+    $page->wasRecentlyCreated = true;
+
+    // The observer should call disableLogging on the model
+    $observer->saved($page);
+
+    // Logging is disabled then re-enabled, so it ends up true
+    expect($page->enableLoggingModelsEvents)->toBeTrue();
+});
+
+it('does not disable activity logging for existing pages', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $page = Page::create([
+        'title' => 'Existing Page',
+        'intro' => 'Testing existing page.',
+        'content' => '<p>Some content</p>',
+    ]);
+
+    $observer = new PageObserver;
+
+    // Simulate an existing page (not newly created)
+    $page->wasRecentlyCreated = false;
+    $page->enableLoggingModelsEvents = true;
+
+    $observer->saved($page);
+
+    // Logging should remain enabled
+    expect($page->enableLoggingModelsEvents)->toBeTrue();
+});
+
+it('updates the created activity with content after the second save', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    // Create a page without content (simulating the first save)
+    $page = Page::create([
+        'title' => 'Content Activity Test Page',
+        'intro' => 'Testing content in activity log.',
+    ]);
+
+    // Simulate the RichEditor setting content on the second save
+    $page->content = '<p>Rich editor content</p>';
+    $page->wasRecentlyCreated = true;
+
+    $observer = new PageObserver;
+    $observer->saved($page);
+
+    // The "created" activity should now include the content field
+    $activity = $page->activitiesAsSubject()
+        ->where('event', 'created')
+        ->latest('created_at')
+        ->first();
+
+    expect($activity)->not->toBeNull()
+        ->and($activity->properties['attributes']['content'])->toBe('<p>Rich editor content</p>');
+});

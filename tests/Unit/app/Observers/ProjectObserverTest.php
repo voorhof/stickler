@@ -172,3 +172,73 @@ it('flushes response cache when a project is deleted', function (): void {
 
     defer()->invoke();
 });
+
+it('disables activity logging on second save for newly created projects', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $project = Project::create([
+        'title' => 'Activity Log Test Project',
+        'intro' => 'Testing activity log suppression.',
+    ]);
+
+    $observer = new ProjectObserver;
+
+    // Simulate a newly created project
+    $project->wasRecentlyCreated = true;
+
+    // The observer should call disableLogging on the model
+    $observer->saved($project);
+
+    // Logging is disabled then re-enabled, so it ends up true
+    expect($project->enableLoggingModelsEvents)->toBeTrue();
+});
+
+it('does not disable activity logging for existing projects', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $project = Project::create([
+        'title' => 'Existing Project',
+        'intro' => 'Testing existing project.',
+        'content' => '<p>Some content</p>',
+    ]);
+
+    $observer = new ProjectObserver;
+
+    // Simulate an existing project (not newly created)
+    $project->wasRecentlyCreated = false;
+    $project->enableLoggingModelsEvents = true;
+
+    $observer->saved($project);
+
+    // Logging should remain enabled
+    expect($project->enableLoggingModelsEvents)->toBeTrue();
+});
+
+it('updates the created activity with content after the second save', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    // Create a project without content (simulating the first save)
+    $project = Project::create([
+        'title' => 'Content Activity Test Project',
+        'intro' => 'Testing content in activity log.',
+    ]);
+
+    // Simulate the RichEditor setting content on the second save
+    $project->content = '<p>Rich editor content</p>';
+    $project->wasRecentlyCreated = true;
+
+    $observer = new ProjectObserver;
+    $observer->saved($project);
+
+    // The "created" activity should now include the content field
+    $activity = $project->activitiesAsSubject()
+        ->where('event', 'created')
+        ->latest('created_at')
+        ->first();
+
+    expect($activity)->not->toBeNull()
+        ->and($activity->properties['attributes']['content'])->toBe('<p>Rich editor content</p>');
+});

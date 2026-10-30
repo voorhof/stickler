@@ -2,10 +2,18 @@
 
 /** @noinspection PhpUndefinedMethodInspection */
 
+use App\Filament\Resources\Orders\Pages\CreateOrder;
 use App\Filament\Resources\Posts\Pages\CreatePost;
+use App\Filament\Resources\Products\Pages\CreateProduct;
 use App\Filament\Resources\Roles\Pages\CreateRole;
+use App\Models\Category;
+use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Permission;
 use App\Models\Post;
+use App\Models\Product;
+use App\Models\ProductVariant;
+use App\Models\ProductVariantOption;
 use App\Models\Role;
 use App\Models\User;
 use Filament\Facades\Filament;
@@ -136,5 +144,72 @@ describe('after create behavior', function () {
             ->first();
 
         expect($activity)->not->toBeNull();
+    });
+
+    it('logs tags and categories in activity properties on afterCreate', function () {
+        $category = Category::factory()->create(['for_posts' => true]);
+        $post = Post::factory()->create();
+        $post->syncTags(['tag1', 'tag2']);
+        $post->categories()->attach($category->id);
+
+        callAfterCreateFor(CreatePost::class, $post);
+
+        $activity = Activity::where('subject_type', $post->getMorphClass())
+            ->where('subject_id', $post->getKey())
+            ->where('event', 'created')
+            ->latest()
+            ->first();
+
+        expect($activity->properties->get('tags'))->toHaveCount(2)
+            ->and($activity->properties->get('categories'))->toBe([$category->title]);
+    });
+
+    it('logs variants in activity properties on afterCreate', function () {
+        $product = Product::factory()->create();
+        $option1 = ProductVariantOption::factory()->create(['name' => 'Red']);
+        $option2 = ProductVariantOption::factory()->create(['name' => 'Large']);
+
+        $variant1 = ProductVariant::factory()->create(['product_id' => $product->id]);
+        $variant1->options()->attach($option1->id);
+
+        $variant2 = ProductVariant::factory()->create(['product_id' => $product->id]);
+        $variant2->options()->attach($option2->id);
+
+        callAfterCreateFor(CreateProduct::class, $product);
+
+        $activity = Activity::where('subject_type', $product->getMorphClass())
+            ->where('subject_id', $product->getKey())
+            ->where('event', 'created')
+            ->latest()
+            ->first();
+
+        expect($activity->properties->get('variants'))->toHaveCount(2)
+            ->and($activity->properties->get('variants'))->toContain('Red', 'Large');
+    });
+
+    it('logs items in activity properties on afterCreate', function () {
+        $product = Product::factory()->create();
+        $order = Order::factory()->create();
+        OrderItem::factory()->create([
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'product_name' => 'First Product',
+        ]);
+        OrderItem::factory()->create([
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'product_name' => 'Second Product',
+        ]);
+
+        callAfterCreateFor(CreateOrder::class, $order);
+
+        $activity = Activity::where('subject_type', $order->getMorphClass())
+            ->where('subject_id', $order->getKey())
+            ->where('event', 'created')
+            ->latest()
+            ->first();
+
+        expect($activity->properties->get('items'))->toHaveCount(2)
+            ->and($activity->properties->get('items'))->toContain('First Product', 'Second Product');
     });
 });

@@ -195,14 +195,60 @@ it('can create a user', function () {
     // });
 });
 
+it('can create a user with a locale', function () {
+    livewire(CreateUser::class)
+        ->fillForm([
+            'name' => 'User',
+            'email' => 'locale.user@example.com',
+            'password' => 'password',
+            'gender' => 'unknown',
+            'locale' => 'en_GB',
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors()
+        ->assertNotified();
+
+    $this->assertDatabaseHas(User::class, [
+        'email' => 'locale.user@example.com',
+        'locale' => 'en_GB',
+    ]);
+});
+
+it('rejects an unsupported locale when creating a user', function () {
+    livewire(CreateUser::class)
+        ->fillForm([
+            'name' => 'User',
+            'email' => 'unsupported.locale@example.com',
+            'password' => 'password',
+            'gender' => 'unknown',
+            'locale' => 'fr_FR',
+        ])
+        ->call('create')
+        ->assertHasFormErrors(['locale'])
+        ->assertNotNotified();
+});
+
+it('can change the locale of a user', function () {
+    $user = User::factory()->create(['locale' => 'nl_BE']);
+
+    livewire(EditUser::class, ['record' => $user->getRouteKey()])
+        ->fillForm([
+            'locale' => 'en_US',
+        ])
+        ->call('save')
+        ->assertHasNoFormErrors()
+        ->assertNotified();
+
+    expect($user->fresh()->locale)->toBe('en_US');
+});
+
 it('validates unique email when editing a user', function () {
     $user = User::factory()->create();
     $otherUser = User::factory()->create();
 
     livewire(EditUser::class, ['record' => $user->getRouteKey()])
         ->fillForm([
-            'first_name' => $user->first_name,
-            'last_name' => $user->last_name,
+            'name' => $user->name,
             'email' => $otherUser->email,
         ])
         ->call('save')

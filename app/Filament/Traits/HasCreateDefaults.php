@@ -114,6 +114,9 @@ trait HasCreateDefaults
 
         // Log linked models for newly created records (merging with existing 'created' activity if possible)
         $tags = method_exists($this->record, 'tags') ? $this->record->tags()->pluck('name')->toArray() : [];
+        $categories = method_exists($this->record, 'categories') ? $this->record->categories()->pluck('title')->toArray() : [];
+        $variants = method_exists($this->record, 'variants') ? $this->record->variants()->with('options')->get()->pluck('label')->toArray() : [];
+        $items = method_exists($this->record, 'orderItems') ? $this->record->orderItems()->pluck('product_name')->toArray() : [];
         $permissions = method_exists($this->record, 'permissions') ? $this->record->permissions()->pluck('name')->toArray() : [];
         $roles = method_exists($this->record, 'getRoleNames') ? $this->record->getRoleNames() : [];
 
@@ -127,6 +130,9 @@ trait HasCreateDefaults
         if ($activity) {
             $activity->properties = $activity->properties
                 ->put('tags', $tags)
+                ->put('categories', $categories)
+                ->put('variants', $variants)
+                ->put('items', $items)
                 ->put('permissions', $permissions)
                 ->put('roles', $roles);
             $activity->save();
@@ -137,6 +143,9 @@ trait HasCreateDefaults
                 ->event('created')
                 ->withProperties([
                     'tags' => $tags,
+                    'categories' => $categories,
+                    'variants' => $variants,
+                    'items' => $items,
                     'permissions' => $permissions,
                     'roles' => $roles,
                 ])

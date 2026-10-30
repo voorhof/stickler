@@ -201,9 +201,9 @@ it('can add items to a cart via relation manager', function () {
         ->assertNotified();
 
     $cart->refresh();
-    expect($cart->items)->toHaveCount(1);
+    expect($cart->cartItems)->toHaveCount(1);
 
-    $item = $cart->items->first();
+    $item = $cart->cartItems->first();
     expect($item->product_id)->toBe($product->id)
         ->and($item->product_name)->toBe($product->title)
         ->and($item->quantity)->toBe(2);
@@ -250,9 +250,9 @@ it('can add a cart item with a product variant', function () {
         ->assertNotified();
 
     $cart->refresh();
-    expect($cart->items)->toHaveCount(1);
+    expect($cart->cartItems)->toHaveCount(1);
 
-    $item = $cart->items->first();
+    $item = $cart->cartItems->first();
     expect($item->product_id)->toBe($product->id)
         ->and($item->product_variant_id)->toBe($variant->id)
         ->and($item->product_variant_label)->toBe($variant->label)
@@ -277,7 +277,7 @@ it('can delete a cart item via relation manager', function () {
         ->assertNotified();
 
     $cart->refresh();
-    expect($cart->items)->toHaveCount(0);
+    expect($cart->cartItems)->toHaveCount(0);
 });
 
 it('can bulk delete cart items via relation manager', function () {
@@ -297,7 +297,7 @@ it('can bulk delete cart items via relation manager', function () {
         ->assertNotified();
 
     $cart->refresh();
-    expect($cart->items)->toHaveCount(0);
+    expect($cart->cartItems)->toHaveCount(0);
 });
 
 it('denies access to cart items relation manager when user lacks permission', function () {

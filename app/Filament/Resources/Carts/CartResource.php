@@ -8,6 +8,7 @@ use App\Filament\Resources\Carts\Pages\ListCarts;
 use App\Filament\Resources\Carts\Relations\CartItemsRelationManager;
 use App\Filament\Resources\Carts\Schemas\CartForm;
 use App\Filament\Resources\Carts\Tables\CartsTable;
+use App\Filament\Resources\Orders\OrderResource;
 use App\Models\Cart;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -39,6 +40,8 @@ class CartResource extends Resource
     }
 
     protected static ?int $navigationSort = 2150;
+
+    protected static ?string $navigationParentItem = OrderResource::class;
 
     public static function getNavigationGroup(): ?string
     {

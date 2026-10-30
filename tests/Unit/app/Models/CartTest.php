@@ -58,7 +58,7 @@ test('cart has many items', function () {
     $cart = Cart::factory()->create();
     CartItem::factory()->count(3)->create(['cart_id' => $cart->id]);
 
-    expect($cart->items)->toHaveCount(3);
+    expect($cart->cartItems)->toHaveCount(3);
 });
 
 test('cart items are deleted when cart is deleted', function () {
@@ -135,8 +135,8 @@ test('cart merge combines items from another cart', function () {
     $cart1->merge($cart2);
     $cart1->refresh();
 
-    expect($cart1->items)->toHaveCount(1)
-        ->and($cart1->items->first()->quantity)->toBe(3);
+    expect($cart1->cartItems)->toHaveCount(1)
+        ->and($cart1->cartItems->first()->quantity)->toBe(3);
 });
 
 test('cart merge moves unique items', function () {
@@ -152,7 +152,7 @@ test('cart merge moves unique items', function () {
     $cart1->merge($cart2);
     $cart1->refresh();
 
-    expect($cart1->items)->toHaveCount(2);
+    expect($cart1->cartItems)->toHaveCount(2);
 });
 
 test('cart uses observer', function () {

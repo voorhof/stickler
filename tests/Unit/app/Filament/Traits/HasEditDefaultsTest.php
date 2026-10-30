@@ -3,13 +3,21 @@
 /** @noinspection PhpUnusedParameterInspection, PhpUndefinedMethodInspection, PhpUndefinedClassInspection */
 
 use App\Filament\Resources\Messages\Pages\EditMessage;
+use App\Filament\Resources\Orders\Pages\EditOrder;
 use App\Filament\Resources\Posts\Pages\EditPost;
+use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Roles\Pages\EditRole;
 use App\Filament\Resources\Tags\Pages\EditTag;
 use App\Filament\Resources\Users\Pages\EditUser;
+use App\Models\Category;
 use App\Models\Message;
+use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Permission;
 use App\Models\Post;
+use App\Models\Product;
+use App\Models\ProductVariant;
+use App\Models\ProductVariantOption;
 use App\Models\Role;
 use App\Models\User;
 use Filament\Actions\Action;
@@ -286,5 +294,116 @@ describe('save behavior', function () {
             ->first();
 
         expect($activity)->not->toBeNull();
+    });
+
+    it('logs tag changes in afterSave', function () {
+        $post = Post::factory()->create();
+        $post->syncTags(['oldtag']);
+
+        $page = callBeforeSaveFor(EditPost::class, $post);
+
+        $post->syncTags(['newtag']);
+        $page->record = $post->fresh();
+
+        callAfterSaveFor($page);
+
+        $activity = Activity::where('subject_type', $post->getMorphClass())
+            ->where('subject_id', $post->getKey())
+            ->where('event', 'updated')
+            ->latest()
+            ->first();
+
+        expect($activity)->not->toBeNull()
+            ->and($activity->properties->get('tags'))->toBe(['newtag'])
+            ->and($activity->properties->get('old_tags'))->toBe(['oldtag']);
+    });
+
+    it('logs category changes in afterSave', function () {
+        $oldCategory = Category::factory()->create(['for_posts' => true]);
+        $newCategory = Category::factory()->create(['for_posts' => true]);
+        $post = Post::factory()->create();
+        $post->categories()->attach($oldCategory->id);
+
+        $page = callBeforeSaveFor(EditPost::class, $post);
+
+        $post->categories()->sync($newCategory->id);
+        $page->record = $post->fresh();
+
+        callAfterSaveFor($page);
+
+        $activity = Activity::where('subject_type', $post->getMorphClass())
+            ->where('subject_id', $post->getKey())
+            ->where('event', 'updated')
+            ->latest()
+            ->first();
+
+        expect($activity)->not->toBeNull()
+            ->and($activity->properties->get('categories'))->toBe([$newCategory->title])
+            ->and($activity->properties->get('old_categories'))->toBe([$oldCategory->title]);
+    });
+
+    it('logs variant changes in afterSave', function () {
+        $product = Product::factory()->create();
+
+        $oldOption = ProductVariantOption::factory()->create(['name' => 'Red']);
+        $oldVariant = ProductVariant::factory()->create(['product_id' => $product->id]);
+        $oldVariant->options()->attach($oldOption->id);
+
+        $page = callBeforeSaveFor(EditProduct::class, $product);
+
+        expect($page->oldVariants)->toContain('Red');
+
+        $oldVariant->delete();
+
+        $newOption = ProductVariantOption::factory()->create(['name' => 'Large']);
+        $newVariant = ProductVariant::factory()->create(['product_id' => $product->id]);
+        $newVariant->options()->attach($newOption->id);
+        $page->record = $product->fresh();
+
+        callAfterSaveFor($page);
+
+        $activity = Activity::where('subject_type', $product->getMorphClass())
+            ->where('subject_id', $product->getKey())
+            ->where('event', 'updated')
+            ->latest()
+            ->first();
+
+        expect($activity)->not->toBeNull()
+            ->and($activity->properties->get('variants'))->toContain('Large')
+            ->and($activity->properties->get('old_variants'))->toContain('Red');
+    });
+
+    it('logs item changes in afterSave', function () {
+        $product = Product::factory()->create();
+        $order = Order::factory()->create();
+        OrderItem::factory()->create([
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'product_name' => 'Old Product',
+        ]);
+
+        $page = callBeforeSaveFor(EditOrder::class, $order);
+
+        expect($page->oldItems)->toContain('Old Product');
+
+        OrderItem::where('order_id', $order->id)->delete();
+        OrderItem::factory()->create([
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'product_name' => 'New Product',
+        ]);
+        $page->record = $order->fresh();
+
+        callAfterSaveFor($page);
+
+        $activity = Activity::where('subject_type', $order->getMorphClass())
+            ->where('subject_id', $order->getKey())
+            ->where('event', 'updated')
+            ->latest()
+            ->first();
+
+        expect($activity)->not->toBeNull()
+            ->and($activity->properties->get('items'))->toContain('New Product')
+            ->and($activity->properties->get('old_items'))->toContain('Old Product');
     });
 });

@@ -106,7 +106,7 @@ test('order has many items', function () {
     $order = Order::factory()->create();
     OrderItem::factory()->count(3)->create(['order_id' => $order->id]);
 
-    expect($order->items)->toHaveCount(3);
+    expect($order->orderItems)->toHaveCount(3);
 });
 
 test('order items are deleted when order is deleted', function () {

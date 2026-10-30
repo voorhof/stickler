@@ -7,6 +7,12 @@ use Spatie\Health\Commands\RunHealthChecksCommand;
 use Spatie\Health\Commands\ScheduleCheckHeartbeatCommand;
 use Spatie\Health\Models\HealthCheckResultHistoryItem;
 
+/**
+ * Console Command
+ *
+ * These are the console commands for the application.
+ * They are tested in the tests/Feature/ConsoleTest.php file.
+ */
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');

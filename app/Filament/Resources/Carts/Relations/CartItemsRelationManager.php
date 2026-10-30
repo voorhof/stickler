@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class CartItemsRelationManager extends RelationManager
 {
-    protected static string $relationship = 'items';
+    protected static string $relationship = 'cartItems';
 
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {

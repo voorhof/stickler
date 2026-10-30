@@ -38,11 +38,11 @@ class CategoryResource extends Resource
         ];
     }
 
-    protected static ?int $navigationSort = 2800; // Specify the order in which navigation items are listed.
+    protected static ?int $navigationSort = 3100; // Specify the order in which navigation items are listed.
 
     public static function getNavigationGroup(): ?string
     {
-        return __('Shop management');
+        return __('Classifications');
     }
 
     public static function form(Schema $schema): Schema

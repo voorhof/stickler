@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\EditProfile;
+use App\Filament\Plugins\BusinessHoursPlugin;
 use App\Http\Middleware\SetLocaleFromUserPreference;
 use Asmit\ResizedColumn\ResizedColumnPlugin;
 use Filament\Actions\Action;
@@ -23,7 +24,6 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use LaBoiteACode\FilamentBusinessHours\FilamentBusinessHoursPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -102,8 +102,7 @@ class AdminPanelProvider extends PanelProvider
             ->plugins([
                 ResizedColumnPlugin::make()
                     ->preserveOnDB(),
-                FilamentBusinessHoursPlugin::make()
-                    ->navigationGroup(__('Settings'))
+                BusinessHoursPlugin::make()
                     ->navigationSort(9200)
                     ->canAccessUsing(fn (): bool => auth()->user()?->can('edit settings') ?? false),
             ]);

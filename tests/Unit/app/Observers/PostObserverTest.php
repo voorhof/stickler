@@ -173,3 +173,73 @@ it('flushes response cache when a post is deleted', function (): void {
 
     defer()->invoke();
 });
+
+it('disables activity logging on second save for newly created posts', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $post = Post::create([
+        'title' => 'Activity Log Test Post',
+        'intro' => 'Testing activity log suppression.',
+    ]);
+
+    $observer = new PostObserver;
+
+    // Simulate a newly created post
+    $post->wasRecentlyCreated = true;
+
+    // The observer should call disableLogging on the model
+    $observer->saved($post);
+
+    // Logging is disabled then re-enabled, so it ends up true
+    expect($post->enableLoggingModelsEvents)->toBeTrue();
+});
+
+it('does not disable activity logging for existing posts', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $post = Post::create([
+        'title' => 'Existing Post',
+        'intro' => 'Testing existing post.',
+        'content' => '<p>Some content</p>',
+    ]);
+
+    $observer = new PostObserver;
+
+    // Simulate an existing post (not newly created)
+    $post->wasRecentlyCreated = false;
+    $post->enableLoggingModelsEvents = true;
+
+    $observer->saved($post);
+
+    // Logging should remain enabled
+    expect($post->enableLoggingModelsEvents)->toBeTrue();
+});
+
+it('updates the created activity with content after the second save', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    // Create a post without content (simulating the first save)
+    $post = Post::create([
+        'title' => 'Content Activity Test Post',
+        'intro' => 'Testing content in activity log.',
+    ]);
+
+    // Simulate the RichEditor setting content on the second save
+    $post->content = '<p>Rich editor content</p>';
+    $post->wasRecentlyCreated = true;
+
+    $observer = new PostObserver;
+    $observer->saved($post);
+
+    // The "created" activity should now include the content field
+    $activity = $post->activitiesAsSubject()
+        ->where('event', 'created')
+        ->latest('created_at')
+        ->first();
+
+    expect($activity)->not->toBeNull()
+        ->and($activity->properties['attributes']['content'])->toBe('<p>Rich editor content</p>');
+});

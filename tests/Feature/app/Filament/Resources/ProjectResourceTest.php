@@ -9,6 +9,7 @@ use App\Filament\Resources\Projects\Pages\CreateProject;
 use App\Filament\Resources\Projects\Pages\EditProject;
 use App\Filament\Resources\Projects\Pages\ListProject;
 use App\Filament\RichEditor\Plugins\SourceCodePlugin;
+use App\Models\Category;
 use App\Models\Permission;
 use App\Models\Project;
 use App\Models\Role;
@@ -160,6 +161,54 @@ it('can create a project', function () {
 
     $project = Project::where('title', 'My New Project')->first();
     expect($project->getFirstMedia('cover'))->not->toBeNull();
+});
+
+it('can create a project with categories', function () {
+    $category = Category::factory()->create(['for_projects' => true]);
+
+    livewire(CreateProject::class)
+        ->fillForm([
+            'title' => 'Project With Category',
+            'intro' => 'This is the intro.',
+            'categories' => [$category->id],
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors()
+        ->assertNotified();
+
+    $project = Project::where('title', 'Project With Category')->first();
+
+    expect($project->categories->pluck('id')->all())->toBe([$category->id]);
+});
+
+it('does not accept a category without the for_projects flag on a project', function () {
+    $category = Category::factory()->create(['for_projects' => false]);
+
+    livewire(CreateProject::class)
+        ->fillForm([
+            'title' => 'Project Without Matching Category',
+            'intro' => 'This is the intro.',
+            'categories' => [$category->id],
+        ])
+        ->call('create')
+        ->assertHasFormErrors(['categories']);
+});
+
+it('can edit the categories of a project', function () {
+    $project = Project::factory()->create();
+    $category = Category::factory()->create(['for_projects' => true]);
+
+    livewire(EditProject::class, ['record' => $project->getRouteKey()])
+        ->fillForm([
+            'title' => $project->title,
+            'intro' => $project->intro,
+            'categories' => [$category->id],
+        ])
+        ->call('save')
+        ->assertHasNoFormErrors()
+        ->assertNotified();
+
+    expect($project->fresh()->categories->pluck('id')->all())->toBe([$category->id]);
 });
 
 it('validates required fields when editing a project', function () {

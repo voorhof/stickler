@@ -101,7 +101,7 @@ class CartService
     {
         $this->validateStock($product, $variant, $quantity, $cart);
 
-        $existingItem = $cart->items()
+        $existingItem = $cart->cartItems()
             ->where('product_id', $product->id)
             ->where('product_variant_id', $variant?->id)
             ->first();
@@ -169,7 +169,7 @@ class CartService
      */
     public function clear(Cart $cart): void
     {
-        $cart->items()->delete();
+        $cart->cartItems()->delete();
     }
 
     /**
@@ -190,13 +190,13 @@ class CartService
         return DB::transaction(function () use ($cart, $data) {
             $order = Order::create(array_merge([
                 'user_id' => $cart->user_id,
-                'subtotal' => $cart->items->sum('total_price'),
+                'subtotal' => $cart->cartItems->sum('total_price'),
                 'tax_amount' => 0,
                 'shipping_amount' => 0,
             ], $data));
 
             /** @var Collection<CartItem> $items */
-            $items = $cart->items;
+            $items = $cart->cartItems;
             foreach ($items as $cartItem) {
                 OrderItem::create([
                     'order_id' => $order->id,
@@ -211,7 +211,7 @@ class CartService
                 ]);
             }
 
-            $cart->items()->delete();
+            $cart->cartItems()->delete();
 
             return $order;
         });
@@ -254,7 +254,7 @@ class CartService
      */
     protected function getReservedQuantity(Product $product, ?ProductVariant $variant, ?Cart $cart = null): int
     {
-        return (int) $cart?->items()
+        return (int) $cart?->cartItems()
             ->where('product_id', $product->id)
             ->where('product_variant_id', $variant?->id)
             ->sum('quantity');

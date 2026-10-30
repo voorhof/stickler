@@ -27,7 +27,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($cart->items as $item)
+                            @foreach ($cart->cartItems as $item)
                                 <tr>
                                     <td>
                                         @if ($item->product && $item->product->getFirstMediaUrl('cover', 'thumb'))

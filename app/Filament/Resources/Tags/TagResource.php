@@ -39,11 +39,11 @@ class TagResource extends Resource
         ];
     }
 
-    protected static ?int $navigationSort = 1500; // Specify the order in which navigation items are listed.
+    protected static ?int $navigationSort = 3200; // Specify the order in which navigation items are listed.
 
     public static function getNavigationGroup(): ?string
     {
-        return __('Content management');
+        return __('Classifications');
     }
 
     public static function form(Schema $schema): Schema

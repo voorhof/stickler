@@ -54,7 +54,7 @@ class AppServiceProvider extends ServiceProvider
             $cart = app(CartService::class)->findCurrentCart(auth()->user());
 
             // Use a simple SUM query instead of loading the full items relationship
-            $view->with('cartItemCount', $cart ? (int) $cart->items()->sum('quantity') : 0);
+            $view->with('cartItemCount', $cart ? (int) $cart->cartItems()->sum('quantity') : 0);
         });
     }
 }

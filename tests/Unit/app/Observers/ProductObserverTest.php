@@ -183,3 +183,79 @@ it('flushes response cache when a product is deleted', function (): void {
 
     defer()->invoke();
 });
+
+it('disables activity logging on second save for newly created products', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $product = Product::create([
+        'title' => 'Activity Log Test Product',
+        'intro' => 'Testing activity log suppression.',
+        'price' => 19.99,
+        'discount_price' => null,
+    ]);
+
+    $observer = new ProductObserver;
+
+    // Simulate a newly created product
+    $product->wasRecentlyCreated = true;
+
+    // The observer should call disableLogging on the model
+    $observer->saved($product);
+
+    // Logging is disabled then re-enabled, so it ends up true
+    expect($product->enableLoggingModelsEvents)->toBeTrue();
+});
+
+it('does not disable activity logging for existing products', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $product = Product::create([
+        'title' => 'Existing Product',
+        'intro' => 'Testing existing product.',
+        'content' => '<p>Some content</p>',
+        'price' => 19.99,
+        'discount_price' => null,
+    ]);
+
+    $observer = new ProductObserver;
+
+    // Simulate an existing product (not newly created)
+    $product->wasRecentlyCreated = false;
+    $product->enableLoggingModelsEvents = true;
+
+    $observer->saved($product);
+
+    // Logging should remain enabled
+    expect($product->enableLoggingModelsEvents)->toBeTrue();
+});
+
+it('updates the created activity with content after the second save', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    // Create a product without content (simulating the first save)
+    $product = Product::create([
+        'title' => 'Content Activity Test Product',
+        'intro' => 'Testing content in activity log.',
+        'price' => 19.99,
+        'discount_price' => null,
+    ]);
+
+    // Simulate the RichEditor setting content on the second save
+    $product->content = '<p>Rich editor content</p>';
+    $product->wasRecentlyCreated = true;
+
+    $observer = new ProductObserver;
+    $observer->saved($product);
+
+    // The "created" activity should now include the content field
+    $activity = $product->activitiesAsSubject()
+        ->where('event', 'created')
+        ->latest('created_at')
+        ->first();
+
+    expect($activity)->not->toBeNull()
+        ->and($activity->properties['attributes']['content'])->toBe('<p>Rich editor content</p>');
+});

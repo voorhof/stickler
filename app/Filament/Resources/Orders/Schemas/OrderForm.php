@@ -61,7 +61,7 @@ class OrderForm
                             ->icon(Heroicon::OutlinedListBullet)
                             ->collapsible()
                             ->schema([
-                                Repeater::make('items')
+                                Repeater::make('orderItems')
                                     ->relationship()
                                     ->label(__('Order items'))
                                     ->live()
@@ -81,7 +81,7 @@ class OrderForm
                                                         $set('sku', $product->sku);
                                                         $quantity = $get('quantity');
                                                         if ($quantity) {
-                                                            $set('total_price', $product->price * $quantity);
+                                                            $set('total_price', round($product->price * $quantity, 2));
                                                         }
                                                     }
                                                     $set('product_variant_id', null);
@@ -130,7 +130,7 @@ class OrderForm
                                                     $unitPrice = $get('unit_price');
                                                     $quantity = $get('quantity');
                                                     if ($unitPrice && $quantity) {
-                                                        $set('total_price', $unitPrice * $quantity);
+                                                        $set('total_price', round($unitPrice * $quantity, 2));
                                                     }
                                                     self::recalculatePricesFromItem($get, $set);
                                                 }),
@@ -157,7 +157,7 @@ class OrderForm
                                                     $unitPrice = $get('unit_price');
                                                     $quantity = $get('quantity');
                                                     if ($unitPrice && $quantity) {
-                                                        $set('total_price', $unitPrice * $quantity);
+                                                        $set('total_price', round($unitPrice * $quantity, 2));
                                                     }
                                                     self::recalculatePricesFromItem($get, $set);
                                                 }),
@@ -171,7 +171,7 @@ class OrderForm
                                                     $unitPrice = $get('unit_price');
                                                     $quantity = $get('quantity');
                                                     if ($unitPrice && $quantity) {
-                                                        $set('total_price', $unitPrice * $quantity);
+                                                        $set('total_price', round($unitPrice * $quantity, 2));
                                                     }
                                                     self::recalculatePricesFromItem($get, $set);
                                                 }),
@@ -301,15 +301,15 @@ class OrderForm
      */
     protected static function recalculatePrices(Get $get, Set $set): void
     {
-        $items = $get('items') ?? [];
+        $items = $get('orderItems') ?? [];
         $subtotal = collect($items)->sum(fn (array $item) => ($item['unit_price'] ?? 0) * ($item['quantity'] ?? 0));
         $tax = round($subtotal * 0.21, 2);
         $shipping = $get('shipping_amount') ?? 0;
         $total = $subtotal + $tax + $shipping;
 
-        $set('subtotal', $subtotal);
-        $set('tax_amount', $tax);
-        $set('total', $total);
+        $set('subtotal', round($subtotal, 2));
+        $set('tax_amount', round($tax, 2));
+        $set('total', round($total, 2));
     }
 
     /**
@@ -320,14 +320,14 @@ class OrderForm
      */
     protected static function recalculatePricesFromItem(callable $get, callable $set): void
     {
-        $items = $get('../../items') ?? [];
+        $items = $get('../../orderItems') ?? [];
         $subtotal = collect($items)->sum(fn (array $item) => ($item['unit_price'] ?? 0) * ($item['quantity'] ?? 0));
         $tax = round($subtotal * 0.21, 2);
         $shipping = $get('../../shipping_amount') ?? 0;
         $total = $subtotal + $tax + $shipping;
 
-        $set('../../subtotal', $subtotal);
-        $set('../../tax_amount', $tax);
-        $set('../../total', $total);
+        $set('../../subtotal', round($subtotal, 2));
+        $set('../../tax_amount', round($tax, 2));
+        $set('../../total', round($total, 2));
     }
 }

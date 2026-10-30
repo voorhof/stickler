@@ -5,6 +5,7 @@
 namespace App\Observers;
 
 use App\Models\Product;
+use App\Observers\Traits\DisablesActivityLogOnSecondSave;
 use App\Observers\Traits\DispatchesSitemapGeneration;
 use App\Observers\Traits\FlushesResponseCache;
 use App\Observers\Traits\SyncsRichContentImageAltText;
@@ -13,6 +14,7 @@ use Exception;
 
 class ProductObserver
 {
+    use DisablesActivityLogOnSecondSave;
     use DispatchesSitemapGeneration;
     use FlushesResponseCache;
     use SyncsRichContentImageAltText;
@@ -26,6 +28,7 @@ class ProductObserver
      */
     public function saved(Product $product): void
     {
+        $this->disableActivityLogIfRecentlyCreated($product);
         $this->flushResponseCache();
         $this->dispatchSitemapGeneration();
         $this->syncImageAltToMediaName($product); // defaults to ['content']

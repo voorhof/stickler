@@ -60,8 +60,7 @@ it('can assign a role when editing a user with the right permissions', function 
 
     livewire(EditUser::class, ['record' => $user->getRouteKey()])
         ->fillForm([
-            'first_name' => $user->first_name,
-            'last_name' => $user->last_name,
+            'name' => $user->name,
             'email' => $user->email,
             'roles' => $managerRole->id,
         ])
@@ -117,9 +116,9 @@ it('does not change the user role on edit when the user lacks update roles permi
 
     livewire(EditUser::class, ['record' => $user->getRouteKey()])
         ->fillForm([
-            'first_name' => $user->first_name,
-            'last_name' => $user->last_name,
+            'name' => $user->name,
             'email' => $user->email,
+            'locale' => $user->locale,
         ])
         ->call('save')
         ->assertHasNoFormErrors()

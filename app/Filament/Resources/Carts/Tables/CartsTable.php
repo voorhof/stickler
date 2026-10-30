@@ -37,7 +37,7 @@ class CartsTable
                 TextColumn::make('items_count')
                     ->label(__('Items'))
                     ->badge()
-                    ->state(fn ($record): int => $record->items_count ?? $record->items()->count()),
+                    ->state(fn ($record): int => $record->items_count ?? $record->cartItems()->count()),
                 TextColumn::make('total')
                     ->label(__('Total'))
                     ->money('EUR'),

@@ -70,7 +70,7 @@ describe('cart index', function () {
             ->get(route('cart.index'));
 
         $response->assertSuccessful()
-            ->assertViewHas('cart', fn (Cart $viewCart) => $viewCart->items->first()->relationLoaded('product'));
+            ->assertViewHas('cart', fn (Cart $viewCart) => $viewCart->cartItems->first()->relationLoaded('product'));
     });
 
     test('it displays unit and total price of cart items', function () {
@@ -137,7 +137,7 @@ describe('cart index', function () {
         config(['responsecache.enabled' => true]);
         $profile = app(App\Http\CacheProfiles\CacheAllSuccessfulGetRequestsWithoutCart::class);
 
-        $visitorWithoutCart = Illuminate\Http\Request::create('/', 'GET');
+        $visitorWithoutCart = Illuminate\Http\Request::create('/');
         $visitorWithCart = Illuminate\Http\Request::create('/', 'GET', [], ['cart_token' => 'some-token']);
 
         expect($profile->enabled($visitorWithoutCart))->toBeTrue()
@@ -155,7 +155,7 @@ describe('cart add', function () {
             ->assertSessionHas('success', __('Product added to cart'));
 
         expect(Cart::count())->toBe(1)
-            ->and(Cart::first()->items)->toHaveCount(1);
+            ->and(Cart::first()->cartItems)->toHaveCount(1);
     });
 
     test('it adds a product variant to the cart', function () {
@@ -332,8 +332,8 @@ describe('cart checkout', function () {
             ->assertSessionHas('success', __('Order created successfully'));
 
         expect(Order::count())->toBe(1)
-            ->and(Order::first()->items)->toHaveCount(1)
-            ->and($cart->refresh()->items)->toHaveCount(0);
+            ->and(Order::first()->orderItems)->toHaveCount(1)
+            ->and($cart->refresh()->cartItems)->toHaveCount(0);
     });
 
     test('it returns error when cart is empty', function () {
@@ -362,6 +362,6 @@ describe('guest cart persistence', function () {
         $response->assertSuccessful()
             ->assertViewHas('cart', fn (Cart $viewCart) => $viewCart->id === $cart->id);
 
-        expect($cart->items)->toHaveCount(1);
+        expect($cart->cartItems)->toHaveCount(1);
     });
 });

@@ -46,8 +46,8 @@ test('it updates existing item quantity when adding the same product', function 
     $service->addItem($cart, $product, null, 2);
     $service->addItem($cart, $product, null, 3);
 
-    expect($cart->items)->toHaveCount(1)
-        ->and($cart->items->first()->quantity)->toBe(5);
+    expect($cart->cartItems)->toHaveCount(1)
+        ->and($cart->cartItems->first()->quantity)->toBe(5);
 });
 
 test('it validates stock when adding item', function () {
@@ -83,7 +83,7 @@ test('it removes item when quantity is zero or less', function () {
     $service->updateItem($item, 0);
 
     expect(CartItem::withTrashed()->find($item->id))->not->toBeNull()
-        ->and($cart->fresh()->items)->toBeEmpty();
+        ->and($cart->fresh()->cartItems)->toBeEmpty();
 });
 
 test('it removes an item from a cart', function () {
@@ -95,7 +95,7 @@ test('it removes an item from a cart', function () {
 
     $service->removeItem($item);
 
-    expect($cart->fresh()->items)->toBeEmpty();
+    expect($cart->fresh()->cartItems)->toBeEmpty();
 });
 
 test('it clears all items from a cart', function () {
@@ -109,7 +109,7 @@ test('it clears all items from a cart', function () {
 
     $service->clear($cart);
 
-    expect($cart->fresh()->items)->toBeEmpty();
+    expect($cart->fresh()->cartItems)->toBeEmpty();
 });
 
 test('it merges two carts', function () {
@@ -124,8 +124,8 @@ test('it merges two carts', function () {
 
     $service->merge($cart2, $cart1);
 
-    expect($cart1->fresh()->items)->toHaveCount(1)
-        ->and($cart1->fresh()->items->first()->quantity)->toBe(5);
+    expect($cart1->fresh()->cartItems)->toHaveCount(1)
+        ->and($cart1->fresh()->cartItems->first()->quantity)->toBe(5);
 });
 
 test('it converts cart to order', function () {
@@ -139,7 +139,7 @@ test('it converts cart to order', function () {
 
     expect($order->subtotal)->toBe(2000)
         ->and(OrderItem::where('order_id', $order->id)->count())->toBe(1)
-        ->and($cart->fresh()->items)->toBeEmpty();
+        ->and($cart->fresh()->cartItems)->toBeEmpty();
 });
 
 test('it cleans up expired carts', function () {
@@ -264,7 +264,7 @@ test('it converts cart to order with custom data', function () {
 
     expect($order->notes)->toBe('Rush order')
         ->and($order->payment_method)->toBe('cash')
-        ->and($order->items)->toHaveCount(1);
+        ->and($order->orderItems)->toHaveCount(1);
 });
 
 test('it uses product price when variant has no price', function () {
