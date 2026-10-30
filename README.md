@@ -2,10 +2,10 @@
 
 A Laravel application starter kit.
 
-[![🚀 Test Laravel Application](https://github.com/voorhof/stickler/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/voorhof/stickler/actions/workflows/tests.yml)
-[![Plumb score](https://plumbphp.dev/badges/voorhof/stickler/composite.svg)](https://plumbphp.dev/voorhof/stickler)
+[![🚀 Stickler tests](https://github.com/voorhof/stickler/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/voorhof/stickler/actions/workflows/tests.yml)
+[![Plumb](https://plumbphp.dev/badges/voorhof/stickler/composite.svg)](https://plumbphp.dev/voorhof/stickler)
 [![Packagist](https://img.shields.io/packagist/v/voorhof/stickler.svg)](https://packagist.org/packages/voorhof/stickler)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 ## About Stickler
 
