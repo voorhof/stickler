@@ -6,6 +6,7 @@ namespace App\Filament\Pages\Auth;
 
 use App\Filament\Resources\Users\Schemas\Components\AvatarUpload;
 use App\Filament\Resources\Users\Schemas\Components\NameInput;
+use App\Filament\Schemas\Components\LocaleSelect;
 use Closure;
 use Filament\Auth\Pages\EditProfile as BaseEditProfile;
 use Filament\Pages\Concerns\HasUnsavedDataChangesAlert;
@@ -37,6 +38,7 @@ class EditProfile extends BaseEditProfile
                                 NameInput::make(),
                                 $this->getEmailFormComponent()
                                     ->autocomplete('username'),
+                                LocaleSelect::make(),
                                 $this->getPasswordFormComponent()
                                     ->rules([
                                         fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {

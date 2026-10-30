@@ -86,13 +86,12 @@ return [
 
     'supported_languages' => ['nl', 'en'],
 
-    'supported_locales' => ['nl_BE', 'nl_NL', 'en_US', 'en_UK', 'en_GB'],
+    'supported_locales' => ['nl_BE', 'nl_NL', 'en_US', 'en_GB'],
 
     'locale_map' => [
         'nl_BE' => 'nl',
         'nl_NL' => 'nl',
         'en_US' => 'en',
-        'en_UK' => 'en',
         'en_GB' => 'en',
     ],
 

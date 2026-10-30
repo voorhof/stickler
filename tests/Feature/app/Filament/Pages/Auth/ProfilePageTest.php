@@ -114,6 +114,37 @@ describe('profile updates', function () {
 
         expect(Hash::check('new-password', $this->adminUser->fresh()->password))->toBeTrue();
     });
+
+    test('it can update the locale from the profile page', function () {
+        livewire(EditProfile::class)
+            ->fillForm([
+                'name' => $this->adminUser->name,
+                'email' => $this->adminUser->email,
+                'locale' => 'en_GB',
+                'password' => null,
+                'passwordConfirmation' => null,
+                'currentPassword' => 'password',
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors()
+            ->assertNotified();
+
+        expect($this->adminUser->fresh()->locale)->toBe('en_GB');
+    });
+
+    test('it rejects an unsupported locale on the profile page', function () {
+        livewire(EditProfile::class)
+            ->fillForm([
+                'name' => $this->adminUser->name,
+                'email' => $this->adminUser->email,
+                'locale' => 'fr_FR',
+                'password' => null,
+                'passwordConfirmation' => null,
+                'currentPassword' => 'password',
+            ])
+            ->call('save')
+            ->assertHasFormErrors(['locale']);
+    });
 });
 
 describe('avatar management', function () {

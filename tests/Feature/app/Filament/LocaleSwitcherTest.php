@@ -45,11 +45,11 @@ describe('locale switching', function () {
             ->and(app()->getLocale())->toBe('nl');
 
         $response = $this->actingAs($adminUser)->post(route('filament.admin.locale.update', [
-            'locale' => 'en_UK',
+            'locale' => 'en_GB',
         ]));
 
         $response->assertRedirect();
-        expect($adminUser->fresh()->locale)->toBe('en_UK')
+        expect($adminUser->fresh()->locale)->toBe('en_GB')
             ->and(app()->getLocale())->toBe('en');
     });
 

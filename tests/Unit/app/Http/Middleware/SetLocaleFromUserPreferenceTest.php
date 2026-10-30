@@ -75,27 +75,6 @@ describe('supported locales', function () {
         Carbon::setLocale($originalCarbonLocale);
     });
 
-    test('it sets application locale to en when user has en_UK locale', function () {
-        $user = User::factory()->make(['locale' => 'en_UK']);
-        $request = Request::create('/');
-        $request->setUserResolver(fn () => $user);
-
-        $middleware = new SetLocaleFromUserPreference;
-
-        $originalLocale = app()->getLocale();
-        $originalCarbonLocale = Carbon::getLocale();
-
-        $response = $middleware->handle($request, function (Request $req): Response {
-            return response('OK');
-        });
-
-        expect(app()->getLocale())->toBe('en')
-            ->and($response->getContent())->toBe('OK');
-
-        app()->setLocale($originalLocale);
-        Carbon::setLocale($originalCarbonLocale);
-    });
-
     test('it sets application locale to en when user has en_GB locale', function () {
         $user = User::factory()->make(['locale' => 'en_GB']);
         $request = Request::create('/');

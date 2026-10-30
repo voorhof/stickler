@@ -6,6 +6,7 @@ use App\Filament\Resources\Users\Schemas\Components\AvatarUpload;
 use App\Filament\Resources\Users\Schemas\Components\EmailInput;
 use App\Filament\Resources\Users\Schemas\Components\NameInput;
 use App\Filament\Resources\Users\Schemas\Components\PasswordInput;
+use App\Filament\Schemas\Components\LocaleSelect;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Support\Enums\Operation;
@@ -27,6 +28,7 @@ class DetailsSection
                         NameInput::make(),
                         EmailInput::make(),
                         PasswordInput::make(),
+                        LocaleSelect::make(),
                         AvatarUpload::make()
                             ->columnSpanFull(),
                     ]),
