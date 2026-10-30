@@ -190,8 +190,8 @@ it('disables activity logging on second save for newly created projects', functi
     // The observer should call disableLogging on the model
     $observer->saved($project);
 
-    // If disableLogging was called, enableLoggingModelsEvents should be false
-    expect($project->enableLoggingModelsEvents)->toBeFalse();
+    // Logging is disabled then re-enabled, so it ends up true
+    expect($project->enableLoggingModelsEvents)->toBeTrue();
 });
 
 it('does not disable activity logging for existing projects', function (): void {

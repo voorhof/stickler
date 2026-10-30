@@ -42,7 +42,7 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
  * @property DateTime $created_at
  * @property DateTime $updated_at
  * @property BelongsTo<User>|null $user
- * @property Collection<OrderItem> $items
+ * @property Collection<OrderItem> $orderItems
  *
  * @method static create(mixed $validated)
  * @method static forceCreate(array $array)
@@ -220,7 +220,7 @@ class Order extends Model
     /**
      * Get the order items.
      */
-    public function items(): HasMany
+    public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
     }

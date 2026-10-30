@@ -76,10 +76,10 @@ class OrderSeeder extends Seeder
 
             $itemCount = random_int(1, 4);
             for ($j = 0; $j < $itemCount; $j++) {
-                $order->items()->create($this->orderItemAttributes($userId));
+                $order->orderItems()->create($this->orderItemAttributes($userId));
             }
 
-            $this->assignProductsToItems($order->load('items'), $products);
+            $this->assignProductsToItems($order->load('orderItems'), $products);
         }
     }
 
@@ -95,10 +95,10 @@ class OrderSeeder extends Seeder
 
             $itemCount = random_int(1, 3);
             for ($j = 0; $j < $itemCount; $j++) {
-                $order->items()->create($this->orderItemAttributes());
+                $order->orderItems()->create($this->orderItemAttributes());
             }
 
-            $this->assignProductsToItems($order->load('items'), $products);
+            $this->assignProductsToItems($order->load('orderItems'), $products);
         }
     }
 
@@ -148,7 +148,7 @@ class OrderSeeder extends Seeder
      */
     protected function assignProductsToItems(Order $order, $products): void
     {
-        $order->items->each(function (OrderItem $item) use ($products) {
+        $order->orderItems->each(function (OrderItem $item) use ($products) {
             $product = $products->random();
 
             $item->update([

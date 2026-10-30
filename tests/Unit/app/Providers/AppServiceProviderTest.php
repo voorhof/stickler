@@ -59,7 +59,7 @@ test('it shares zero cart item count when no cookie is present', function () {
 
 test('it shares cart item count when cart token cookie is present', function () {
     $cart = Cart::factory()->create();
-    $cart->items()->create([
+    $cart->cartItems()->create([
         'product_id' => null,
         'product_name' => 'Test Product',
         'sku' => 'TEST',
@@ -67,7 +67,7 @@ test('it shares cart item count when cart token cookie is present', function () 
         'unit_price' => 1000,
         'total_price' => 3000,
     ]);
-    $cart->items()->create([
+    $cart->cartItems()->create([
         'product_id' => null,
         'product_name' => 'Another Product',
         'sku' => 'TEST2',
@@ -85,7 +85,7 @@ test('it shares cart item count when cart token cookie is present', function () 
 test('it shares cart item count of the logged in user cart', function () {
     $user = User::factory()->create();
     $cart = Cart::factory()->create(['user_id' => $user->id, 'is_guest' => false]);
-    $cart->items()->create([
+    $cart->cartItems()->create([
         'product_id' => null,
         'product_name' => 'Test Product',
         'sku' => 'TEST',

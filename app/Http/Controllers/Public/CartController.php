@@ -33,7 +33,7 @@ class CartController extends Controller
             ->description(__('View and manage your shopping cart'));
 
         $cart = $this->cartService->getOrCreateCart(Auth::user());
-        $cart->load('items.product.media');
+        $cart->load('cartItems.product.media');
 
         return view('public.cart.index', ['cart' => $cart]);
     }

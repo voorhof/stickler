@@ -61,7 +61,7 @@ class OrderForm
                             ->icon(Heroicon::OutlinedListBullet)
                             ->collapsible()
                             ->schema([
-                                Repeater::make('items')
+                                Repeater::make('orderItems')
                                     ->relationship()
                                     ->label(__('Order items'))
                                     ->live()
@@ -301,7 +301,7 @@ class OrderForm
      */
     protected static function recalculatePrices(Get $get, Set $set): void
     {
-        $items = $get('items') ?? [];
+        $items = $get('orderItems') ?? [];
         $subtotal = collect($items)->sum(fn (array $item) => ($item['unit_price'] ?? 0) * ($item['quantity'] ?? 0));
         $tax = round($subtotal * 0.21, 2);
         $shipping = $get('shipping_amount') ?? 0;
@@ -320,7 +320,7 @@ class OrderForm
      */
     protected static function recalculatePricesFromItem(callable $get, callable $set): void
     {
-        $items = $get('../../items') ?? [];
+        $items = $get('../../orderItems') ?? [];
         $subtotal = collect($items)->sum(fn (array $item) => ($item['unit_price'] ?? 0) * ($item['quantity'] ?? 0));
         $tax = round($subtotal * 0.21, 2);
         $shipping = $get('../../shipping_amount') ?? 0;

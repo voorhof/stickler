@@ -58,7 +58,7 @@ class OrdersTable
                 TextColumn::make('items_count')
                     ->label(__('Items'))
                     ->badge()
-                    ->state(fn ($record): int => $record->items_count ?? $record->items()->count())
+                    ->state(fn ($record): int => $record->items_count ?? $record->orderItems()->count())
                     ->toggleable(isToggledHiddenByDefault: true),
                 CreatedColumn::make(),
                 UpdatedColumn::make(),

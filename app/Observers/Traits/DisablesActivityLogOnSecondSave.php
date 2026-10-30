@@ -26,6 +26,11 @@ trait DisablesActivityLogOnSecondSave
 
             // Update the "created" activity to include the content field set by the RichEditor
             $this->updateCreatedActivityAttributes($model);
+
+            // Re-enable logging so future saves (updates, deletes) are still tracked
+            if (method_exists($model, 'enableLogging')) {
+                $model->enableLogging();
+            }
         }
     }
 

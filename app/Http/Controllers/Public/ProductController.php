@@ -40,7 +40,7 @@ class ProductController extends Controller
         Head::title($product->title)
             ->description($product->intro);
 
-        $cartItems = app(CartService::class)->findCurrentCart(Auth::user())?->items ?? collect();
+        $cartItems = app(CartService::class)->findCurrentCart(Auth::user())?->cartItems ?? collect();
 
         return view('public.products.show', [
             'product' => $product,

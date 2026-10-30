@@ -41,6 +41,7 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
  * @method static forceCreate(array $array)
  * @method static where(string $string, mixed $operator, mixed $value = null)
  * @method static find(mixed $id)
+ * @method static count()
  */
 #[Fillable([
     'cart_id',

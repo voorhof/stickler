@@ -61,10 +61,10 @@ class CartSeeder extends Seeder
 
             $itemCount = random_int(1, 4);
             for ($j = 0; $j < $itemCount; $j++) {
-                $cart->items()->create($this->cartItemAttributes($userId));
+                $cart->cartItems()->create($this->cartItemAttributes($userId));
             }
 
-            $this->assignProductsToItems($cart->load('items'), $products);
+            $this->assignProductsToItems($cart->load('cartItems'), $products);
         }
     }
 
@@ -78,10 +78,10 @@ class CartSeeder extends Seeder
 
             $itemCount = random_int(1, 3);
             for ($j = 0; $j < $itemCount; $j++) {
-                $cart->items()->create($this->cartItemAttributes());
+                $cart->cartItems()->create($this->cartItemAttributes());
             }
 
-            $this->assignProductsToItems($cart->load('items'), $products);
+            $this->assignProductsToItems($cart->load('cartItems'), $products);
         }
     }
 
@@ -104,10 +104,10 @@ class CartSeeder extends Seeder
 
             $itemCount = random_int(1, 3);
             for ($j = 0; $j < $itemCount; $j++) {
-                $cart->items()->create($this->cartItemAttributes($userId));
+                $cart->cartItems()->create($this->cartItemAttributes($userId));
             }
 
-            $this->assignProductsToItems($cart->load('items'), $products);
+            $this->assignProductsToItems($cart->load('cartItems'), $products);
         }
     }
 
@@ -142,7 +142,7 @@ class CartSeeder extends Seeder
      */
     protected function assignProductsToItems(Cart $cart, $products): void
     {
-        $cart->items->each(function (CartItem $item) use ($products) {
+        $cart->cartItems->each(function (CartItem $item) use ($products) {
             $product = $products->random();
 
             $item->update([

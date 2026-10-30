@@ -26,6 +26,13 @@ it('disables activity logging when model was recently created', function () {
 
             return $this;
         }
+
+        public function enableLogging(): self
+        {
+            $this->enableLoggingModelsEvents = true;
+
+            return $this;
+        }
     };
 
     $model->exists = true;
@@ -35,7 +42,8 @@ it('disables activity logging when model was recently created', function () {
 
     $observer->disableActivityLogIfRecentlyCreated($model);
 
-    expect($model->enableLoggingModelsEvents)->toBeFalse();
+    // Logging is disabled then re-enabled, so it ends up true
+    expect($model->enableLoggingModelsEvents)->toBeTrue();
 });
 
 it('does not disable activity logging when model was not recently created', function () {
@@ -55,6 +63,13 @@ it('does not disable activity logging when model was not recently created', func
         public function disableLogging(): self
         {
             $this->enableLoggingModelsEvents = false;
+
+            return $this;
+        }
+
+        public function enableLogging(): self
+        {
+            $this->enableLoggingModelsEvents = true;
 
             return $this;
         }
@@ -109,6 +124,13 @@ it('updates the created activity attributes when model was recently created', fu
             return $this;
         }
 
+        public function enableLogging(): self
+        {
+            $this->enableLoggingModelsEvents = true;
+
+            return $this;
+        }
+
         public function activitiesAsSubject(): self
         {
             return $this;
@@ -150,7 +172,8 @@ it('updates the created activity attributes when model was recently created', fu
 
     $observer->disableActivityLogIfRecentlyCreated($model);
 
-    expect($model->enableLoggingModelsEvents)->toBeFalse();
+    // Logging is disabled then re-enabled, so it ends up true
+    expect($model->enableLoggingModelsEvents)->toBeTrue();
 });
 
 it('does not update activity attributes when model does not have activitiesAsSubject method', function () {
@@ -173,6 +196,13 @@ it('does not update activity attributes when model does not have activitiesAsSub
 
             return $this;
         }
+
+        public function enableLogging(): self
+        {
+            $this->enableLoggingModelsEvents = true;
+
+            return $this;
+        }
     };
 
     $model->exists = true;
@@ -180,5 +210,6 @@ it('does not update activity attributes when model does not have activitiesAsSub
 
     $observer->disableActivityLogIfRecentlyCreated($model);
 
-    expect($model->enableLoggingModelsEvents)->toBeFalse();
+    // Logging is disabled then re-enabled, so it ends up true
+    expect($model->enableLoggingModelsEvents)->toBeTrue();
 });

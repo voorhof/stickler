@@ -191,8 +191,8 @@ it('disables activity logging on second save for newly created posts', function 
     // The observer should call disableLogging on the model
     $observer->saved($post);
 
-    // If disableLogging was called, enableLoggingModelsEvents should be false
-    expect($post->enableLoggingModelsEvents)->toBeFalse();
+    // Logging is disabled then re-enabled, so it ends up true
+    expect($post->enableLoggingModelsEvents)->toBeTrue();
 });
 
 it('does not disable activity logging for existing posts', function (): void {

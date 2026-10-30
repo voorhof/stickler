@@ -203,8 +203,8 @@ it('disables activity logging on second save for newly created products', functi
     // The observer should call disableLogging on the model
     $observer->saved($product);
 
-    // If disableLogging was called, enableLoggingModelsEvents should be false
-    expect($product->enableLoggingModelsEvents)->toBeFalse();
+    // Logging is disabled then re-enabled, so it ends up true
+    expect($product->enableLoggingModelsEvents)->toBeTrue();
 });
 
 it('does not disable activity logging for existing products', function (): void {

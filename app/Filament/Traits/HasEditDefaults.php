@@ -134,7 +134,7 @@ trait HasEditDefaults
         $this->oldRoles = method_exists($this->record, 'getRoleNames') ? $this->record->getRoleNames() : [];
         $this->oldOptions = method_exists($this->record, 'options') ? $this->record->options()->pluck('name')->toArray() : [];
         $this->oldVariants = method_exists($this->record, 'variants') ? $this->record->variants()->with('options')->get()->pluck('label')->toArray() : [];
-        $this->oldItems = method_exists($this->record, 'items') ? $this->record->items()->pluck('product_name')->toArray() : [];
+        $this->oldItems = method_exists($this->record, 'orderItems') ? $this->record->orderItems()->pluck('product_name')->toArray() : [];
     }
 
     protected function afterSave(): void
@@ -203,7 +203,7 @@ trait HasEditDefaults
         $newRoles = method_exists($this->record, 'getRoleNames') ? $this->record->getRoleNames() : [];
         $newOptions = method_exists($this->record, 'options') ? $this->record->options()->pluck('name')->toArray() : [];
         $newVariants = method_exists($this->record, 'variants') ? $this->record->variants()->with('options')->get()->pluck('label')->toArray() : [];
-        $newItems = method_exists($this->record, 'items') ? $this->record->items()->pluck('product_name')->toArray() : [];
+        $newItems = method_exists($this->record, 'orderItems') ? $this->record->orderItems()->pluck('product_name')->toArray() : [];
 
         $tagsChanged = array_diff($this->oldTags, $newTags) || array_diff($newTags, $this->oldTags);
         $categoriesChanged = array_diff($this->oldCategories, $newCategories) || array_diff($newCategories, $this->oldCategories);

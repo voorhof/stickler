@@ -125,7 +125,7 @@ it('can create an order', function () {
             'total' => 131.00,
             'payment_method' => 'bank_transfer',
             'notes' => 'Customer requested gift wrapping.',
-            'items' => [],
+            'orderItems' => [],
         ])
         ->call('create')
         ->assertHasNoFormErrors()
@@ -150,7 +150,7 @@ it('can create an order with items', function () {
             'tax_amount' => 12.59,
             'shipping_amount' => 5.00,
             'total' => 77.57,
-            'items' => [
+            'orderItems' => [
                 [
                     'product_id' => $product->id,
                     'product_name' => $product->title,
@@ -166,9 +166,9 @@ it('can create an order with items', function () {
         ->assertNotified();
 
     $order = Order::latest()->first();
-    expect($order->items)->toHaveCount(1);
+    expect($order->orderItems)->toHaveCount(1);
 
-    $item = $order->items->first();
+    $item = $order->orderItems->first();
     expect($item->product_id)->toBe($product->id)
         ->and($item->product_name)->toBe($product->title)
         ->and($item->quantity)->toBe(2);
@@ -185,7 +185,7 @@ it('calculates order prices from items correctly', function () {
             'tax_amount' => 12.59,
             'shipping_amount' => 5.00,
             'total' => 77.57,
-            'items' => [
+            'orderItems' => [
                 [
                     'product_id' => $product->id,
                     'product_name' => $product->title,
@@ -219,7 +219,7 @@ it('rounds calculated price fields to two decimals', function () {
         ->fillForm([
             'status' => 'pending',
             'payment_status' => 'unpaid',
-            'items' => [
+            'orderItems' => [
                 [
                     'product_id' => $product->id,
                     'product_name' => $product->title,
@@ -244,7 +244,7 @@ it('rounds calculated price fields to two decimals', function () {
     expect($order->subtotal)->toBe(0.3)
         ->and($order->tax_amount)->toBe(0.06)
         ->and($order->total)->toBe(0.36)
-        ->and($order->items->first()->total_price)->toBe(0.3);
+        ->and($order->orderItems->first()->total_price)->toBe(0.3);
 });
 
 it('calculates order prices with multiple items', function () {
@@ -259,7 +259,7 @@ it('calculates order prices with multiple items', function () {
             'tax_amount' => 23.09,
             'shipping_amount' => 0,
             'total' => 133.06,
-            'items' => [
+            'orderItems' => [
                 [
                     'product_id' => $product1->id,
                     'product_name' => $product1->title,
@@ -283,7 +283,7 @@ it('calculates order prices with multiple items', function () {
         ->assertNotified();
 
     $order = Order::latest()->first();
-    expect($order->items)->toHaveCount(2)
+    expect($order->orderItems)->toHaveCount(2)
         ->and($order->subtotal)->toBe(109.97)
         ->and($order->tax_amount)->toBe(23.09)
         ->and($order->total)->toBe(133.06);
@@ -309,7 +309,7 @@ it('can create an order with product variant', function () {
             'tax_amount' => 6.30,
             'shipping_amount' => 5.00,
             'total' => 41.29,
-            'items' => [
+            'orderItems' => [
                 [
                     'product_id' => $product->id,
                     'product_name' => $product->title,
@@ -327,9 +327,9 @@ it('can create an order with product variant', function () {
         ->assertNotified();
 
     $order = Order::latest()->first();
-    expect($order->items)->toHaveCount(1);
+    expect($order->orderItems)->toHaveCount(1);
 
-    $item = $order->items->first();
+    $item = $order->orderItems->first();
     expect($item->product_id)->toBe($product->id)
         ->and($item->product_variant_id)->toBe($variant->id)
         ->and($item->product_variant_label)->toBe($variant->label);
@@ -344,7 +344,7 @@ it('validates order item required fields', function () {
             'tax_amount' => 21.00,
             'shipping_amount' => 10.00,
             'total' => 131.00,
-            'items' => [
+            'orderItems' => [
                 [
                     'product_id' => null,
                     'quantity' => null,
@@ -354,9 +354,9 @@ it('validates order item required fields', function () {
         ])
         ->call('create')
         ->assertHasFormErrors([
-            'items.0.product_id' => 'required',
-            'items.0.quantity' => 'required',
-            'items.0.unit_price' => 'required',
+            'orderItems.0.product_id' => 'required',
+            'orderItems.0.quantity' => 'required',
+            'orderItems.0.unit_price' => 'required',
         ])
         ->assertNotNotified();
 });
@@ -370,7 +370,7 @@ it('can create a guest order without a user', function () {
             'tax_amount' => 10.50,
             'shipping_amount' => 5.00,
             'total' => 65.50,
-            'items' => [],
+            'orderItems' => [],
         ])
         ->call('create')
         ->assertHasNoFormErrors()
@@ -402,7 +402,7 @@ it('can create an order with shipping and billing addresses', function () {
                 'postal_code' => '1012 PH',
                 'country' => 'Netherlands',
             ],
-            'items' => [],
+            'orderItems' => [],
         ])
         ->call('create')
         ->assertHasNoFormErrors()
@@ -467,9 +467,9 @@ it('can edit order items', function () {
 
     livewire(EditOrder::class, ['record' => $order->getRouteKey()])
         ->fillForm([
-            'items' => [
+            'orderItems' => [
                 [
-                    'id' => $order->items[0]->id,
+                    'id' => $order->orderItems[0]->id,
                     'product_id' => $product->id,
                     'product_name' => $product->title,
                     'quantity' => 5,
@@ -483,9 +483,9 @@ it('can edit order items', function () {
         ->assertNotified();
 
     $order->refresh();
-    expect($order->items)->toHaveCount(1);
+    expect($order->orderItems)->toHaveCount(1);
 
-    $item = $order->items->first();
+    $item = $order->orderItems->first();
     expect($item->product_id)->toBe($product->id)
         ->and($item->product_name)->toBe($product->title)
         ->and($item->quantity)->toBe(5);

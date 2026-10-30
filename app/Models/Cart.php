@@ -31,7 +31,7 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
  * @property DateTime $created_at
  * @property DateTime $updated_at
  * @property BelongsTo<User>|null $user
- * @property Collection<CartItem> $items
+ * @property Collection<CartItem> $cartItems
  * @property mixed $isExpired
  *
  * @method static create(mixed $validated)
@@ -98,7 +98,7 @@ class Cart extends Model
     protected function getItemsSumInCents(): float
     {
         if ($this->itemsSumCache === null) {
-            $this->itemsSumCache = (float) $this->items()->sum('total_price');
+            $this->itemsSumCache = (float) $this->cartItems()->sum('total_price');
         }
 
         return $this->itemsSumCache;
@@ -155,7 +155,7 @@ class Cart extends Model
      */
     public function totalQuantity(): int
     {
-        return $this->items->sum('quantity');
+        return $this->cartItems->sum('quantity');
     }
 
     /**
@@ -163,7 +163,7 @@ class Cart extends Model
      */
     public function isEmpty(): bool
     {
-        return $this->items->isEmpty();
+        return $this->cartItems->isEmpty();
     }
 
     /**
@@ -189,8 +189,8 @@ class Cart extends Model
      */
     public function merge(self $other): void
     {
-        foreach ($other->items as $item) {
-            $existing = $this->items
+        foreach ($other->cartItems as $item) {
+            $existing = $this->cartItems
                 ->where('product_id', $item->product_id)
                 ->where('product_variant_id', $item->product_variant_id)
                 ->first();
@@ -205,7 +205,7 @@ class Cart extends Model
             }
         }
 
-        $other->items()->delete();
+        $other->cartItems()->delete();
     }
 
     /*
@@ -241,7 +241,7 @@ class Cart extends Model
      *
      * @return HasMany<CartItem>
      */
-    public function items(): HasMany
+    public function cartItems(): HasMany
     {
         return $this->hasMany(CartItem::class);
     }
