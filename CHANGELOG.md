@@ -5,7 +5,33 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/voorhof/stickler/compare/v1.7.0...HEAD)
+## [Unreleased](https://github.com/voorhof/stickler/compare/v1.7.1...HEAD)
+
+## [v1.7.1](https://github.com/voorhof/stickler/compare/v1.7.0...v1.7.1) - 2026-10-30
+
+### What's Changed
+
+- System fixes and updates by @voorhof in https://github.com/voorhof/stickler/pull/26
+
+1. Added cooldown to dependabot.yml with default-days: 3
+2. Added Plumb check badge to README
+3. Changed the Cart nav-item to Order sub-item in Filament sidebar
+4. Added ConsoleTest for schedule check of console.php
+5. Added RedirectTest for checking redirects defined in redirect.php
+6. Fixed translation: Created BusinessHoursPlugin that overrides getNavigationGroup()
+7. Fixed calculated price fields in the Order form: now rounded to 2 decimals
+8. Created LocaleSelect for UserForm and EditProfile page
+9. Added CategoriesSection to content models resource forms in Filament
+10. Moved tags and categories to new seperate NavigationGroup 'Classifications'
+11. Added categories to default activity logging
+12. Fix double activitylog when creating items with observer trait DisablesActivityLogOnSecondSave
+13. Fix missing log of content field when creating new record
+14. Added Variants and Items to activity logging
+15. Refactored Order::items() to orderItems() and Cart::items() to cartItems()
+16. Pint style fixes
+17. Composer and NPM updates
+
+- **Full Changelog**: https://github.com/voorhof/stickler/compare/v1.7.0...v1.7.1
 
 ## [v1.7.0](https://github.com/voorhof/stickler/compare/v1.6.1...v1.7.0) - 2026-10-30
 
