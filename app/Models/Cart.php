@@ -46,6 +46,7 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
  * @method static count()
  * @method static latest()
  * @method static first()
+ * @method static whereNotNull(string $string)
  */
 #[Fillable([
     'cart_token',

@@ -40,6 +40,7 @@ class CartSeeder extends Seeder
 
     /**
      * Create carts with items for registered users.
+     * Each user gets at most one cart, distributed in a round-robin fashion.
      */
     protected function createCartsWithItems(int $count, $products, $users, array $states): void
     {
@@ -50,18 +51,19 @@ class CartSeeder extends Seeder
                 $factory = $factory->{$state}();
             }
 
-            $userId = $users->random()->id;
+            // Round-robin: assign each cart to a different user
+            $user = $users->get($i % $users->count());
 
             $cart = $factory->create([
-                'user_id' => $userId,
+                'user_id' => $user->id,
                 'is_guest' => false,
-                'created_by_user_id' => $userId,
-                'updated_by_user_id' => $userId,
+                'created_by_user_id' => $user->id,
+                'updated_by_user_id' => $user->id,
             ]);
 
             $itemCount = random_int(1, 4);
             for ($j = 0; $j < $itemCount; $j++) {
-                $cart->cartItems()->create($this->cartItemAttributes($userId));
+                $cart->cartItems()->create($this->cartItemAttributes($user->id));
             }
 
             $this->assignProductsToItems($cart->load('cartItems'), $products);
@@ -86,25 +88,34 @@ class CartSeeder extends Seeder
     }
 
     /**
-     * Create expired carts.
+     * Create expired carts for users that don't already have an active cart.
      */
     protected function createExpiredCartsWithItems(int $count, $products, $users): void
     {
+        // Find users that don't already have a cart to avoid unique constraint conflicts
+        $existingUserIds = Cart::whereNotNull('user_id')->pluck('user_id')->toArray();
+        $availableUsers = $users->reject(fn ($user) => in_array($user->id, $existingUserIds))->values();
+
         for ($i = 0; $i < $count; $i++) {
             $factory = Cart::factory()->expired();
 
-            $userId = $users->random()->id;
+            // Use available users if enough, otherwise create a new user
+            if ($availableUsers->count() > 0) {
+                $user = $availableUsers->get($i % $availableUsers->count());
+            } else {
+                $user = User::factory()->create();
+            }
 
             $cart = $factory->create([
-                'user_id' => $userId,
+                'user_id' => $user->id,
                 'is_guest' => false,
-                'created_by_user_id' => $userId,
-                'updated_by_user_id' => $userId,
+                'created_by_user_id' => $user->id,
+                'updated_by_user_id' => $user->id,
             ]);
 
             $itemCount = random_int(1, 3);
             for ($j = 0; $j < $itemCount; $j++) {
-                $cart->cartItems()->create($this->cartItemAttributes($userId));
+                $cart->cartItems()->create($this->cartItemAttributes($user->id));
             }
 
             $this->assignProductsToItems($cart->load('cartItems'), $products);

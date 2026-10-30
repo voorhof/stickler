@@ -24,9 +24,9 @@ return new class extends Migration
             $table->foreignIdFor(User::class, 'updated_by_user_id')->nullable()->constrained('users')->nullOnDelete();
 
             $table->index('cart_token');
-            $table->index('user_id');
             $table->index('is_guest');
             $table->index('expires_at');
+            $table->unique(['user_id', 'is_guest'], 'carts_user_id_is_guest_unique');
         });
     }
 
