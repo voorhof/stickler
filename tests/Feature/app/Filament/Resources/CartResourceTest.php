@@ -173,6 +173,42 @@ it('can edit cart expiration date', function () {
     expect($cart->expires_at->toDateString())->toBe($newExpiresAt->toDateString());
 });
 
+it('can edit cart customer data', function () {
+    $cart = Cart::factory()->create();
+
+    livewire(EditCart::class, ['record' => $cart->getRouteKey()])
+        ->fillForm([
+            'customer_data.name' => 'John Doe',
+            'customer_data.email' => 'john@example.com',
+            'customer_data.phone' => '+32470123456',
+            'customer_data.shipping_address.street' => 'Main St 1',
+            'customer_data.shipping_address.city' => 'Brussels',
+            'customer_data.shipping_address.postal_code' => '1000',
+            'customer_data.shipping_address.country' => 'Belgium',
+            'customer_data.billing_address.street' => 'Billing St 2',
+            'customer_data.billing_address.city' => 'Antwerp',
+            'customer_data.billing_address.postal_code' => '2000',
+            'customer_data.billing_address.country' => 'Belgium',
+            'customer_data.notes' => 'Please leave at the door',
+        ])
+        ->call('save')
+        ->assertHasNoFormErrors()
+        ->assertNotified();
+
+    $cart->refresh();
+    $customerData = $cart->customer_data;
+    expect($customerData['name'])->toBe('John Doe')
+        ->and($customerData['email'])->toBe('john@example.com')
+        ->and($customerData['phone'])->toBe('+32470123456')
+        ->and($customerData['shipping_address']['street'])->toBe('Main St 1')
+        ->and($customerData['shipping_address']['city'])->toBe('Brussels')
+        ->and($customerData['shipping_address']['postal_code'])->toBe('1000')
+        ->and($customerData['shipping_address']['country'])->toBe('Belgium')
+        ->and($customerData['billing_address']['street'])->toBe('Billing St 2')
+        ->and($customerData['billing_address']['city'])->toBe('Antwerp')
+        ->and($customerData['notes'])->toBe('Please leave at the door');
+});
+
 it('can bulk delete carts', function () {
     $carts = Cart::factory()->count(3)->create();
 

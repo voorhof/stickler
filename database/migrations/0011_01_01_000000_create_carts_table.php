@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignIdFor(User::class, 'user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->boolean('is_guest')->default(true);
             $table->timestamp('expires_at')->nullable();
+            $table->json('customer_data')->nullable();
             $table->timestamps();
             $table->foreignIdFor(User::class, 'created_by_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignIdFor(User::class, 'updated_by_user_id')->nullable()->constrained('users')->nullOnDelete();

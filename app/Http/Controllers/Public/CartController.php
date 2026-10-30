@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Public\StoreOrderRequest;
 use App\Models\CartItem;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Services\CartService;
@@ -106,11 +108,35 @@ class CartController extends Controller
     }
 
     /**
-     * Checkout — convert the cart to an order.
+     * Display the order confirmation page.
+     */
+    public function checkout(): RedirectResponse|View
+    {
+        Head::title(__('Checkout'))
+            ->description(__('Review your order and provide your details'));
+
+        $cart = $this->cartService->getOrCreateCart(Auth::user());
+
+        if ($cart->isEmpty()) {
+            return redirect()
+                ->route('cart.index')
+                ->with('error', __('Your cart is empty'));
+        }
+
+        $cart->load('cartItems.product.media');
+
+        return view('public.checkout.index', [
+            'cart' => $cart,
+            'user' => Auth::user(),
+        ]);
+    }
+
+    /**
+     * Create an order from the cart.
      *
      * @throws Throwable
      */
-    public function checkout(): RedirectResponse
+    public function storeOrder(StoreOrderRequest $request): RedirectResponse
     {
         $cart = $this->cartService->getOrCreateCart(Auth::user());
 
@@ -120,11 +146,60 @@ class CartController extends Controller
                 ->with('error', __('Your cart is empty'));
         }
 
-        /** @noinspection PhpUnusedLocalVariableInspection */
+        $validated = $request->validated();
+
+        // Build customer data from the form
+        $customerData = [
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+            'shipping_address' => [
+                'street' => $validated['shipping_street'],
+                'city' => $validated['shipping_city'],
+                'postal_code' => $validated['shipping_postal_code'],
+                'country' => $validated['shipping_country'],
+            ],
+            'billing_same_as_shipping' => $request->boolean('billing_same_as_shipping'),
+        ];
+
+        if ($request->boolean('billing_same_as_shipping')) {
+            $customerData['billing_address'] = $customerData['shipping_address'];
+        } else {
+            $customerData['billing_address'] = [
+                'street' => $validated['billing_street'],
+                'city' => $validated['billing_city'],
+                'postal_code' => $validated['billing_postal_code'],
+                'country' => $validated['billing_country'],
+            ];
+        }
+
+        if (! empty($validated['notes'])) {
+            $customerData['notes'] = $validated['notes'];
+        }
+
+        // Save customer data to the cart
+        $this->cartService->saveCustomerData($cart, $customerData);
+
+        // Convert cart to order (transfers customer data)
         $order = $this->cartService->convertToOrder($cart);
 
         return redirect()
-            ->route('products.index')
+            ->route('order.confirmed', ['order' => $order])
             ->with('success', __('Order created successfully'));
+    }
+
+    /**
+     * Display the thank-you page after order creation.
+     */
+    public function thankYou(Order $order): View
+    {
+        Head::title(__('Thank you for your order'))
+            ->description(__('Your order has been placed successfully'));
+
+        $order->load('orderItems');
+
+        return view('public.checkout.thankyou', [
+            'order' => $order,
+        ]);
     }
 }
