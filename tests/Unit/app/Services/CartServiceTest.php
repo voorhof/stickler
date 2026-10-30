@@ -277,3 +277,88 @@ test('it uses product price when variant has no price', function () {
 
     expect($item->unit_price)->toBe(1000);
 });
+
+test('it saves customer data to the cart', function () {
+    $cart = Cart::factory()->create(['customer_data' => null]);
+
+    $service = app(CartService::class);
+    $service->saveCustomerData($cart, [
+        'name' => 'John Doe',
+        'email' => 'john@example.com',
+        'phone' => '+32470123456',
+    ]);
+
+    $cart->refresh();
+    expect($cart->customer_data['name'])->toBe('John Doe')
+        ->and($cart->customer_data['email'])->toBe('john@example.com')
+        ->and($cart->customer_data['phone'])->toBe('+32470123456');
+});
+
+test('it merges customer data with existing customer data', function () {
+    $cart = Cart::factory()->create(['customer_data' => ['name' => 'Existing Name']]);
+
+    $service = app(CartService::class);
+    $service->saveCustomerData($cart, [
+        'email' => 'john@example.com',
+        'phone' => '+32470123456',
+    ]);
+
+    $cart->refresh();
+    expect($cart->customer_data['name'])->toBe('Existing Name')
+        ->and($cart->customer_data['email'])->toBe('john@example.com')
+        ->and($cart->customer_data['phone'])->toBe('+32470123456');
+});
+
+test('it transfers customer data from cart to order on conversion', function () {
+    $cart = Cart::factory()->create([
+        'customer_data' => [
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+            'shipping_address' => ['street' => 'Main St 1', 'city' => 'Brussels', 'postal_code' => '1000', 'country' => 'Belgium'],
+            'billing_address' => ['street' => 'Other St 2', 'city' => 'Antwerp', 'postal_code' => '2000', 'country' => 'Belgium'],
+            'notes' => 'Please leave at the door',
+        ],
+    ]);
+    $product = Product::factory()->create(['price' => 1000, 'stock_quantity' => 10]);
+
+    $service = app(CartService::class);
+    $service->addItem($cart, $product, null, 2);
+
+    $order = $service->convertToOrder($cart);
+
+    expect($order->shipping_address)->toBe(['street' => 'Main St 1', 'city' => 'Brussels', 'postal_code' => '1000', 'country' => 'Belgium'])
+        ->and($order->billing_address)->toBe(['street' => 'Other St 2', 'city' => 'Antwerp', 'postal_code' => '2000', 'country' => 'Belgium'])
+        ->and($order->notes)->toBe('Please leave at the door');
+});
+
+test('it handles missing customer data on conversion', function () {
+    $cart = Cart::factory()->create(['customer_data' => null]);
+    $product = Product::factory()->create(['price' => 1000, 'stock_quantity' => 10]);
+
+    $service = app(CartService::class);
+    $service->addItem($cart, $product);
+
+    $order = $service->convertToOrder($cart);
+
+    expect($order->shipping_address)->toBeNull()
+        ->and($order->billing_address)->toBeNull()
+        ->and($order->notes)->toBeNull();
+});
+
+test('it handles partial customer data on conversion', function () {
+    $cart = Cart::factory()->create([
+        'customer_data' => [
+            'shipping_address' => ['street' => 'Main St 1', 'city' => 'Brussels', 'postal_code' => '1000', 'country' => 'Belgium'],
+        ],
+    ]);
+    $product = Product::factory()->create(['price' => 1000, 'stock_quantity' => 10]);
+
+    $service = app(CartService::class);
+    $service->addItem($cart, $product);
+
+    $order = $service->convertToOrder($cart);
+
+    expect($order->shipping_address)->toBe(['street' => 'Main St 1', 'city' => 'Brussels', 'postal_code' => '1000', 'country' => 'Belgium'])
+        ->and($order->billing_address)->toBeNull()
+        ->and($order->notes)->toBeNull();
+});

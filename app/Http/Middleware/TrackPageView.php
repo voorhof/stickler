@@ -26,6 +26,8 @@ class TrackPageView
         'projects.*',
         'pages.*',
         'cart.index',
+        'checkout.index',
+        'order.confirmed',
     ];
 
     /**

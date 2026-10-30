@@ -182,3 +182,71 @@ test('expires at is cast to datetime', function () {
 
     expect($cart->expires_at)->toBeInstanceOf(DateTimeInterface::class);
 });
+
+test('customer data is cast to array', function () {
+    $cart = Cart::factory()->create([
+        'customer_data' => [
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+        ],
+    ]);
+
+    expect($cart->customer_data)->toBeArray()
+        ->and($cart->customer_data['name'])->toBe('John Doe');
+});
+
+test('customer data is null when not set', function () {
+    $cart = Cart::factory()->create(['customer_data' => null]);
+
+    expect($cart->customer_data)->toBeNull();
+});
+
+test('customer name accessor returns name from customer data', function () {
+    $cart = Cart::factory()->create(['customer_data' => ['name' => 'John Doe']]);
+
+    expect($cart->customerName())->toBe('John Doe');
+});
+
+test('customer name accessor returns null when not set', function () {
+    $cart = Cart::factory()->create(['customer_data' => null]);
+
+    expect($cart->customerName())->toBeNull();
+});
+
+test('customer email accessor returns email from customer data', function () {
+    $cart = Cart::factory()->create(['customer_data' => ['email' => 'john@example.com']]);
+
+    expect($cart->customerEmail())->toBe('john@example.com');
+});
+
+test('customer phone accessor returns phone from customer data', function () {
+    $cart = Cart::factory()->create(['customer_data' => ['phone' => '+32470123456']]);
+
+    expect($cart->customerPhone())->toBe('+32470123456');
+});
+
+test('customer shipping address accessor returns address from customer data', function () {
+    $address = ['street' => 'Main St 1', 'city' => 'Brussels', 'postal_code' => '1000', 'country' => 'Belgium'];
+    $cart = Cart::factory()->create(['customer_data' => ['shipping_address' => $address]]);
+
+    expect($cart->customerShippingAddress())->toBe($address);
+});
+
+test('customer billing address accessor returns address from customer data', function () {
+    $address = ['street' => 'Other St 2', 'city' => 'Antwerp', 'postal_code' => '2000', 'country' => 'Belgium'];
+    $cart = Cart::factory()->create(['customer_data' => ['billing_address' => $address]]);
+
+    expect($cart->customerBillingAddress())->toBe($address);
+});
+
+test('customer notes accessor returns notes from customer data', function () {
+    $cart = Cart::factory()->create(['customer_data' => ['notes' => 'Please leave at the door']]);
+
+    expect($cart->customerNotes())->toBe('Please leave at the door');
+});
+
+test('customer notes accessor returns null when not set', function () {
+    $cart = Cart::factory()->create(['customer_data' => ['name' => 'John Doe']]);
+
+    expect($cart->customerNotes())->toBeNull();
+});

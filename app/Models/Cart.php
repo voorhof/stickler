@@ -28,6 +28,7 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
  * @property int|null $user_id
  * @property bool $is_guest
  * @property DateTime|null $expires_at
+ * @property array|null $customer_data
  * @property DateTime $created_at
  * @property DateTime $updated_at
  * @property BelongsTo<User>|null $user
@@ -45,12 +46,14 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
  * @method static count()
  * @method static latest()
  * @method static first()
+ * @method static whereNotNull(string $string)
  */
 #[Fillable([
     'cart_token',
     'user_id',
     'is_guest',
     'expires_at',
+    'customer_data',
 ])]
 #[Hidden([])]
 #[ObservedBy(CartObserver::class)]
@@ -89,6 +92,7 @@ class Cart extends Model
         return [
             'is_guest' => 'boolean',
             'expires_at' => 'datetime',
+            'customer_data' => 'array',
         ];
     }
 
@@ -182,6 +186,64 @@ class Cart extends Model
     public function isExpiredMethod(): bool
     {
         return (bool) $this->isExpired;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Customer Data Accessors
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Get the customer's name from the customer data.
+     */
+    public function customerName(): ?string
+    {
+        return $this->customer_data['name'] ?? null;
+    }
+
+    /**
+     * Get the customer's email from the customer data.
+     */
+    public function customerEmail(): ?string
+    {
+        return $this->customer_data['email'] ?? null;
+    }
+
+    /**
+     * Get the customer's phone from the customer data.
+     */
+    public function customerPhone(): ?string
+    {
+        return $this->customer_data['phone'] ?? null;
+    }
+
+    /**
+     * Get the customer's shipping address from the customer data.
+     *
+     * @return array<string, string>|null
+     */
+    public function customerShippingAddress(): ?array
+    {
+        return $this->customer_data['shipping_address'] ?? null;
+    }
+
+    /**
+     * Get the customer's billing address from the customer data.
+     *
+     * @return array<string, string>|null
+     */
+    public function customerBillingAddress(): ?array
+    {
+        return $this->customer_data['billing_address'] ?? null;
+    }
+
+    /**
+     * Get the customer's notes from the customer data.
+     */
+    public function customerNotes(): ?string
+    {
+        return $this->customer_data['notes'] ?? null;
     }
 
     /**

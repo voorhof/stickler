@@ -173,6 +173,17 @@ class CartService
     }
 
     /**
+     * Save customer data to the cart's customer_data column.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function saveCustomerData(Cart $cart, array $data): void
+    {
+        $cart->customer_data = array_merge($cart->customer_data ?? [], $data);
+        $cart->save();
+    }
+
+    /**
      * Merge two carts, combining quantities for matching items.
      */
     public function merge(Cart $source, Cart $target): void
@@ -183,17 +194,36 @@ class CartService
     /**
      * Convert a cart to an order.
      *
+     * @param  array<string, mixed>  $data
+     *
      * @throws Throwable
      */
     public function convertToOrder(Cart $cart, array $data = []): Order
     {
         return DB::transaction(function () use ($cart, $data) {
-            $order = Order::create(array_merge([
+            // Transfer customer data from cart to order
+            $customerData = $cart->customer_data ?? [];
+
+            $orderData = [
                 'user_id' => $cart->user_id,
                 'subtotal' => $cart->cartItems->sum('total_price'),
                 'tax_amount' => 0,
                 'shipping_amount' => 0,
-            ], $data));
+            ];
+
+            if (isset($customerData['shipping_address'])) {
+                $orderData['shipping_address'] = $customerData['shipping_address'];
+            }
+
+            if (isset($customerData['billing_address'])) {
+                $orderData['billing_address'] = $customerData['billing_address'];
+            }
+
+            if (isset($customerData['notes'])) {
+                $orderData['notes'] = $customerData['notes'];
+            }
+
+            $order = Order::create(array_merge($orderData, $data));
 
             /** @var Collection<CartItem> $items */
             $items = $cart->cartItems;

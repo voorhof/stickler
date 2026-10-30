@@ -108,10 +108,7 @@
                     <a href="{{ route('products.index') }}" class="btn btn-secondary">
                         {{ __('Continue shopping') }}
                     </a>
-                    <form action="{{ route('cart.checkout') }}" method="POST" class="d-inline">
-                        <x-csrf-input />
-                        <button type="submit" class="btn btn-primary">{{ __('Proceed to checkout') }}</button>
-                    </form>
+                    <a href="{{ route('checkout.index') }}" class="btn btn-primary">{{ __('Proceed to checkout') }}</a>
                 </div>
             @endif
         </div>

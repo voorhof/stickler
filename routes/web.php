@@ -104,8 +104,17 @@ Route::post('/cart/items/{item}/update', [CartController::class, 'update'])
 Route::post('/cart/items/{item}/remove', [CartController::class, 'destroy'])
     ->name('cart.items.remove');
 
-Route::post('/cart/checkout', [CartController::class, 'checkout'])
-    ->name('cart.checkout');
+/**
+ * CartController Checkout routes
+ */
+Route::get('/checkout', [CartController::class, 'checkout'])
+    ->name('checkout.index');
+
+Route::post('/checkout', [CartController::class, 'storeOrder'])
+    ->name('checkout.store');
+
+Route::get('/order-confirmed/{order}', [CartController::class, 'thankYou'])
+    ->name('order.confirmed');
 
 /**
  * Test route
