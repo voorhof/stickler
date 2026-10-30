@@ -3,6 +3,7 @@
 /** @noinspection PhpUndefinedMethodInspection */
 
 use App\Filament\Pages\Auth\EditProfile;
+use App\Filament\Plugins\BusinessHoursPlugin;
 use App\Http\Middleware\SetLocaleFromUserPreference;
 use App\Models\Permission;
 use App\Models\Role;
@@ -28,7 +29,6 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use LaBoiteACode\FilamentBusinessHours\FilamentBusinessHoursPlugin;
 
 test('it extends PanelProvider', function () {
     $provider = new AdminPanelProvider(app());
@@ -113,7 +113,7 @@ test('it configures filament business hours plugin', function () {
     $panel = $provider->panel(new Panel);
 
     expect($panel->hasPlugin('filament-business-hours'))->toBeTrue()
-        ->and($panel->getPlugin('filament-business-hours'))->toBeInstanceOf(FilamentBusinessHoursPlugin::class);
+        ->and($panel->getPlugin('filament-business-hours'))->toBeInstanceOf(BusinessHoursPlugin::class);
 });
 
 test('it registers render hooks on boot', function () {
