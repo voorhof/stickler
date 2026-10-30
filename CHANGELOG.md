@@ -5,7 +5,18 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/voorhof/stickler/compare/v1.7.1...HEAD)
+## [Unreleased](https://github.com/voorhof/stickler/compare/v1.7.2...HEAD)
+
+## [v1.7.2](https://github.com/voorhof/stickler/compare/v1.7.1...v1.7.2) - 2026-10-30
+
+### What's Changed
+
+* Order confirmation by @voorhof in https://github.com/voorhof/stickler/pull/27
+
+1. Added extra flow to checkout with order confirmation for address fields and thank you page
+2. Updated CartSeeder to use round-robin distribution across users instead of random assignment
+
+**Full Changelog**: https://github.com/voorhof/stickler/compare/v1.7.1...v1.7.2
 
 ## [v1.7.1](https://github.com/voorhof/stickler/compare/v1.7.0...v1.7.1) - 2026-10-30
 
