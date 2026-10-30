@@ -5,7 +5,36 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/voorhof/stickler/compare/v1.6.1...HEAD)
+## [Unreleased](https://github.com/voorhof/stickler/compare/v1.7.0...HEAD)
+
+## [v1.7.0](https://github.com/voorhof/stickler/compare/v1.6.1...v1.7.0) - 2026-10-30
+
+### What's Changed
+
+* Shopping Cart e-commerce additions by @voorhof in https://github.com/voorhof/stickler/pull/25
+  
+* Update CHANGELOG
+  
+* Created Cart and CartItem models, migrations, factories, seeders, policies, observers, service and testfiles
+  
+* Created Cart Filament resource
+  
+* Created public CartController, routes, blade views, extras and testfiles
+  
+* Web routes fix: put PageController last
+  
+* Created PendingOrdersWidget
+  
+* Fixed $cartItemCount for auth users
+  
+* Changed blade @csrf to <x-csrf-input/> component
+  
+* Update README
+  
+* Pint fix
+  
+
+**Full Changelog**: https://github.com/voorhof/stickler/compare/v1.6.1...v1.7.0
 
 ## [v1.6.1](https://github.com/voorhof/stickler/compare/v1.5.3...v1.6.1) - 2026-10-29
 
