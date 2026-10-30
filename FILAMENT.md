@@ -255,6 +255,14 @@ The button label and modal heading use the `"Source code"` translation key in `l
 - Keep the `data-id` attribute on images intact, it links the image to its Spatie Media Library attachment.
 - Always render rich content with `$model->renderRichContent('content')` or `RichContentRenderer` (which sanitizes the HTML), never with `{!! $model->content !!}`.
 
+### Activity log and the second save
+
+Filament's RichEditor re-saves newly created records to attach media files. This second save fires an `updated` model event, which creates an unwanted duplicate activity log entry.
+
+To prevent this, the `DisablesActivityLogOnSecondSave` observer trait (`app/Observers/Traits/DisablesActivityLogOnSecondSave.php`) disables activity logging when `wasRecentlyCreated` is `true`. The trait is used by the observers for models with RichEditor fields: `PostObserver`, `PageObserver`, `ProjectObserver`, and `ProductObserver`.
+
+`wasRecentlyCreated` is not time-based; it is `true` only during the same HTTP request where the model was inserted. It resets to `false` at the start of each new request, so normal updates are unaffected.
+
 ### Tests
 
 - `tests/Unit/app/Filament/RichEditor/Plugins/SourceCodePluginTest.php`: HTML formatting, tool, action and modal width.

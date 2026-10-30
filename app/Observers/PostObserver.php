@@ -5,6 +5,7 @@
 namespace App\Observers;
 
 use App\Models\Post;
+use App\Observers\Traits\DisablesActivityLogOnSecondSave;
 use App\Observers\Traits\DispatchesSitemapGeneration;
 use App\Observers\Traits\FlushesResponseCache;
 use App\Observers\Traits\SyncsRichContentImageAltText;
@@ -13,6 +14,7 @@ use Exception;
 
 class PostObserver
 {
+    use DisablesActivityLogOnSecondSave;
     use DispatchesSitemapGeneration;
     use FlushesResponseCache;
     use SyncsRichContentImageAltText;
@@ -26,6 +28,7 @@ class PostObserver
      */
     public function saved(Post $post): void
     {
+        $this->disableActivityLogIfRecentlyCreated($post);
         $this->flushResponseCache();
         $this->dispatchSitemapGeneration();
         $this->syncImageAltToMediaName($post); // defaults to ['content']

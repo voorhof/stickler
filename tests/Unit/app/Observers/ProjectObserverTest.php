@@ -172,3 +172,46 @@ it('flushes response cache when a project is deleted', function (): void {
 
     defer()->invoke();
 });
+
+it('disables activity logging on second save for newly created projects', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $project = Project::create([
+        'title' => 'Activity Log Test Project',
+        'intro' => 'Testing activity log suppression.',
+    ]);
+
+    $observer = new ProjectObserver;
+
+    // Simulate a newly created project
+    $project->wasRecentlyCreated = true;
+
+    // The observer should call disableLogging on the model
+    $observer->saved($project);
+
+    // If disableLogging was called, enableLoggingModelsEvents should be false
+    expect($project->enableLoggingModelsEvents)->toBeFalse();
+});
+
+it('does not disable activity logging for existing projects', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $project = Project::create([
+        'title' => 'Existing Project',
+        'intro' => 'Testing existing project.',
+        'content' => '<p>Some content</p>',
+    ]);
+
+    $observer = new ProjectObserver;
+
+    // Simulate an existing project (not newly created)
+    $project->wasRecentlyCreated = false;
+    $project->enableLoggingModelsEvents = true;
+
+    $observer->saved($project);
+
+    // Logging should remain enabled
+    expect($project->enableLoggingModelsEvents)->toBeTrue();
+});

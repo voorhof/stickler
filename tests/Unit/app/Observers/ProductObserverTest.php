@@ -183,3 +183,50 @@ it('flushes response cache when a product is deleted', function (): void {
 
     defer()->invoke();
 });
+
+it('disables activity logging on second save for newly created products', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $product = Product::create([
+        'title' => 'Activity Log Test Product',
+        'intro' => 'Testing activity log suppression.',
+        'price' => 19.99,
+        'discount_price' => null,
+    ]);
+
+    $observer = new ProductObserver;
+
+    // Simulate a newly created product
+    $product->wasRecentlyCreated = true;
+
+    // The observer should call disableLogging on the model
+    $observer->saved($product);
+
+    // If disableLogging was called, enableLoggingModelsEvents should be false
+    expect($product->enableLoggingModelsEvents)->toBeFalse();
+});
+
+it('does not disable activity logging for existing products', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $product = Product::create([
+        'title' => 'Existing Product',
+        'intro' => 'Testing existing product.',
+        'content' => '<p>Some content</p>',
+        'price' => 19.99,
+        'discount_price' => null,
+    ]);
+
+    $observer = new ProductObserver;
+
+    // Simulate an existing product (not newly created)
+    $product->wasRecentlyCreated = false;
+    $product->enableLoggingModelsEvents = true;
+
+    $observer->saved($product);
+
+    // Logging should remain enabled
+    expect($product->enableLoggingModelsEvents)->toBeTrue();
+});

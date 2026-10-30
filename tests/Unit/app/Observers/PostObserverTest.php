@@ -173,3 +173,46 @@ it('flushes response cache when a post is deleted', function (): void {
 
     defer()->invoke();
 });
+
+it('disables activity logging on second save for newly created posts', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $post = Post::create([
+        'title' => 'Activity Log Test Post',
+        'intro' => 'Testing activity log suppression.',
+    ]);
+
+    $observer = new PostObserver;
+
+    // Simulate a newly created post
+    $post->wasRecentlyCreated = true;
+
+    // The observer should call disableLogging on the model
+    $observer->saved($post);
+
+    // If disableLogging was called, enableLoggingModelsEvents should be false
+    expect($post->enableLoggingModelsEvents)->toBeFalse();
+});
+
+it('does not disable activity logging for existing posts', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $post = Post::create([
+        'title' => 'Existing Post',
+        'intro' => 'Testing existing post.',
+        'content' => '<p>Some content</p>',
+    ]);
+
+    $observer = new PostObserver;
+
+    // Simulate an existing post (not newly created)
+    $post->wasRecentlyCreated = false;
+    $post->enableLoggingModelsEvents = true;
+
+    $observer->saved($post);
+
+    // Logging should remain enabled
+    expect($post->enableLoggingModelsEvents)->toBeTrue();
+});

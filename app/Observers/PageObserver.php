@@ -5,6 +5,7 @@
 namespace App\Observers;
 
 use App\Models\Page;
+use App\Observers\Traits\DisablesActivityLogOnSecondSave;
 use App\Observers\Traits\DispatchesSitemapGeneration;
 use App\Observers\Traits\FlushesResponseCache;
 use App\Observers\Traits\SyncsRichContentImageAltText;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 
 class PageObserver
 {
+    use DisablesActivityLogOnSecondSave;
     use DispatchesSitemapGeneration;
     use FlushesResponseCache;
     use SyncsRichContentImageAltText;
@@ -64,6 +66,7 @@ class PageObserver
      */
     public function saved(Page $page): void
     {
+        $this->disableActivityLogIfRecentlyCreated($page);
         $this->flushResponseCache();
         $this->dispatchSitemapGeneration();
         $this->syncImageAltToMediaName($page); // defaults to ['content']

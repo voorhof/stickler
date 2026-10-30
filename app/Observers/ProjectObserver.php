@@ -5,6 +5,7 @@
 namespace App\Observers;
 
 use App\Models\Project;
+use App\Observers\Traits\DisablesActivityLogOnSecondSave;
 use App\Observers\Traits\DispatchesSitemapGeneration;
 use App\Observers\Traits\FlushesResponseCache;
 use App\Observers\Traits\SyncsRichContentImageAltText;
@@ -13,6 +14,7 @@ use Exception;
 
 class ProjectObserver
 {
+    use DisablesActivityLogOnSecondSave;
     use DispatchesSitemapGeneration;
     use FlushesResponseCache;
     use SyncsRichContentImageAltText;
@@ -26,6 +28,7 @@ class ProjectObserver
      */
     public function saved(Project $project): void
     {
+        $this->disableActivityLogIfRecentlyCreated($project);
         $this->flushResponseCache();
         $this->dispatchSitemapGeneration();
         $this->syncImageAltToMediaName($project); // defaults to ['content']

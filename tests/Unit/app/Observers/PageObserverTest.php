@@ -295,3 +295,46 @@ it('flushes response cache when a page is deleted', function (): void {
 
     defer()->invoke();
 });
+
+it('disables activity logging on second save for newly created pages', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $page = Page::create([
+        'title' => 'Activity Log Test Page',
+        'intro' => 'Testing activity log suppression.',
+    ]);
+
+    $observer = new PageObserver;
+
+    // Simulate a newly created page
+    $page->wasRecentlyCreated = true;
+
+    // The observer should call disableLogging on the model
+    $observer->saved($page);
+
+    // If disableLogging was called, enableLoggingModelsEvents should be false
+    expect($page->enableLoggingModelsEvents)->toBeFalse();
+});
+
+it('does not disable activity logging for existing pages', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $page = Page::create([
+        'title' => 'Existing Page',
+        'intro' => 'Testing existing page.',
+        'content' => '<p>Some content</p>',
+    ]);
+
+    $observer = new PageObserver;
+
+    // Simulate an existing page (not newly created)
+    $page->wasRecentlyCreated = false;
+    $page->enableLoggingModelsEvents = true;
+
+    $observer->saved($page);
+
+    // Logging should remain enabled
+    expect($page->enableLoggingModelsEvents)->toBeTrue();
+});
