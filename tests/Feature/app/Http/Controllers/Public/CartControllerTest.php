@@ -2,6 +2,7 @@
 
 /** @noinspection PhpUnhandledExceptionInspection */
 
+use App\Enums\PaymentStatus;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Order;
@@ -164,6 +165,7 @@ describe('cart add', function () {
             'product_id' => $product->id,
             'stock_quantity' => 5,
             'price' => 3999,
+            'is_discounted' => false,
             'sku' => 'VARIANT-SKU',
         ]);
 
@@ -399,6 +401,22 @@ describe('order creation', function () {
             'total_price' => 5998,
         ]);
 
+        $paymentService = mock(App\Services\PaymentService::class)->shouldReceive('initiatePayment')
+            ->once()
+            ->andReturnUsing(function (Order $order) {
+                $order->update([
+                    'payment_provider' => 'mollie',
+                    'payment_provider_id' => 'tr_test123',
+                ]);
+
+                return [
+                    'payment_id' => 'tr_test123',
+                    'checkout_url' => 'https://mollie.com/checkout/test123',
+                ];
+            })
+            ->getMock();
+        app()->instance(App\Services\PaymentService::class, $paymentService);
+
         $response = $this->withCookie('cart_token', $cart->cart_token)
             ->post(route('checkout.store'), [
                 'name' => 'Jane Doe',
@@ -415,13 +433,14 @@ describe('order creation', function () {
         $order = Order::first();
         expect($order)->not->toBeNull();
 
-        $response->assertRedirect(route('order.confirmed', ['order' => $order]))
-            ->assertSessionHas('success', __('Order created successfully'));
+        $response->assertRedirect('https://mollie.com/checkout/test123');
 
         expect($order->orderItems)->toHaveCount(1)
-            ->and($order->shipping_address)->toBe(['street' => 'Main St 1', 'city' => 'Brussels', 'postal_code' => '1000', 'country' => 'Belgium'])
+            ->and($order->shipping_address)->toBe(['street' => 'Main St 1', 'city' => 'Brussels', 'postal_code' => '1000', 'country' => 'Belgium', 'email' => 'jane@example.com'])
             ->and($order->billing_address)->toBe(['street' => 'Main St 1', 'city' => 'Brussels', 'postal_code' => '1000', 'country' => 'Belgium'])
             ->and($order->notes)->toBe('Please leave at the door')
+            ->and($order->payment_provider)->toBe('mollie')
+            ->and($order->payment_provider_id)->toBe('tr_test123')
             ->and($cart->refresh()->cartItems)->toHaveCount(0);
 
     });
@@ -437,6 +456,15 @@ describe('order creation', function () {
             'unit_price' => 2999,
             'total_price' => 2999,
         ]);
+
+        $paymentService = mock(App\Services\PaymentService::class)->shouldReceive('initiatePayment')
+            ->once()
+            ->andReturn([
+                'payment_id' => 'tr_test456',
+                'checkout_url' => 'https://mollie.com/checkout/test456',
+            ])
+            ->getMock();
+        app()->instance(App\Services\PaymentService::class, $paymentService);
 
         $this->withCookie('cart_token', $cart->cart_token)
             ->post(route('checkout.store'), [
@@ -528,12 +556,51 @@ describe('order creation', function () {
         $response->assertRedirect(route('cart.index'))
             ->assertSessionHas('error', __('Your cart is empty'));
     });
+
+    test('it handles payment initiation failure gracefully by redirecting to thank you page with error message', function () {
+        $product = Product::factory()->create(['price' => 2999, 'stock_quantity' => 10]);
+        $cart = Cart::factory()->create();
+        CartItem::factory()->create([
+            'cart_id' => $cart->id,
+            'product_id' => $product->id,
+            'product_name' => $product->title,
+            'quantity' => 1,
+            'unit_price' => 2999,
+            'total_price' => 2999,
+        ]);
+
+        $paymentService = mock(App\Services\PaymentService::class)
+            ->shouldReceive('initiatePayment')
+            ->once()
+            ->andThrow(new Exception('Mollie API unavailable'))
+            ->getMock();
+        app()->instance(App\Services\PaymentService::class, $paymentService);
+
+        $response = $this->withCookie('cart_token', $cart->cart_token)
+            ->post(route('checkout.store'), [
+                'name' => 'Jane Doe',
+                'email' => 'jane@example.com',
+                'phone' => '+32470123456',
+                'shipping_street' => 'Main St 1',
+                'shipping_city' => 'Brussels',
+                'shipping_postal_code' => '1000',
+                'shipping_country' => 'Belgium',
+                'billing_same_as_shipping' => 1,
+            ]);
+
+        $order = Order::first();
+        expect($order)->not->toBeNull();
+
+        $response->assertRedirect(route('order.confirmed', $order))
+            ->assertSessionHas('error', __('Payment initialization failed. You can try paying again below.'));
+    });
 });
 
 describe('thank you page', function () {
-    test('it shows the thank you page with order details', function () {
+    test('it shows the thank you page with order details for authenticated users', function () {
+        $user = User::factory()->create();
         $product = Product::factory()->create(['price' => 2999]);
-        $order = Order::factory()->create(['subtotal' => 5998]);
+        $order = Order::factory()->create(['user_id' => $user->id, 'subtotal' => 5998, 'payment_status' => PaymentStatus::Unpaid]);
         App\Models\OrderItem::factory()->create([
             'order_id' => $order->id,
             'product_id' => $product->id,
@@ -543,22 +610,183 @@ describe('thank you page', function () {
             'total_price' => 5998,
         ]);
 
-        $response = $this->get(route('order.confirmed', $order));
+        $response = $this->actingAs($user)
+            ->get(route('order.confirmed', $order));
 
         $response->assertSuccessful()
             ->assertViewIs('public.checkout.thankyou')
-            ->assertSeeText('#'.$order->id)
-            ->assertSeeText($product->title);
+            ->assertSeeText($order->order_number)
+            ->assertSeeText($product->title)
+            ->assertSeeText(__('Pay now'));
+    });
+
+    test('it shows the thank you page for guests with the last order id in session', function () {
+        $product = Product::factory()->create(['price' => 2999]);
+        $order = Order::factory()->create(['user_id' => null, 'subtotal' => 5998]);
+        App\Models\OrderItem::factory()->create([
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'product_name' => $product->title,
+            'quantity' => 2,
+            'unit_price' => 2999,
+            'total_price' => 5998,
+        ]);
+
+        $response = $this->withSession(['last_guest_order_id' => $order->id])
+            ->get(route('order.confirmed', $order));
+
+        $response->assertSuccessful()
+            ->assertViewIs('public.checkout.thankyou')
+            ->assertSeeText($order->order_number);
+    });
+
+    test('it returns 403 when authenticated user views another users order', function () {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+        $order = Order::factory()->create(['user_id' => $user2->id]);
+
+        $response = $this->actingAs($user1)
+            ->get(route('order.confirmed', $order));
+
+        $response->assertForbidden();
+    });
+
+    test('it returns 403 when guest views an order without session data', function () {
+        $order = Order::factory()->create(['user_id' => null]);
+
+        $response = $this->get(route('order.confirmed', $order));
+
+        $response->assertForbidden();
+    });
+
+    test('it returns 403 when guest views a different order than the last one', function () {
+        $order1 = Order::factory()->create(['user_id' => null]);
+        $order2 = Order::factory()->create(['user_id' => null]);
+
+        $response = $this->withSession(['last_guest_order_id' => $order1->id])
+            ->get(route('order.confirmed', $order2));
+
+        $response->assertForbidden();
     });
 
     test('it sets head metadata on thank you page', function () {
-        $order = Order::factory()->create();
+        $user = User::factory()->create();
+        $order = Order::factory()->create(['user_id' => $user->id]);
 
-        $this->get(route('order.confirmed', $order));
+        $this->actingAs($user)
+            ->get(route('order.confirmed', $order));
 
         $html = Head::toHtml();
 
         expect($html)->toContain(e(__('Thank you for your order')));
+    });
+});
+
+describe('retry payment', function () {
+    test('authenticated user can retry payment for their own order', function () {
+        $user = User::factory()->create();
+        $order = Order::factory()->create([
+            'user_id' => $user->id,
+            'payment_status' => PaymentStatus::Unpaid,
+        ]);
+
+        $paymentService = mock(App\Services\PaymentService::class)
+            ->shouldReceive('initiatePayment')
+            ->once()
+            ->with(Mockery::on(fn ($arg) => $arg->is($order)))
+            ->andReturn([
+                'payment_id' => 'tr_retry123',
+                'checkout_url' => 'https://mollie.com/checkout/retry123',
+            ])
+            ->getMock();
+        app()->instance(App\Services\PaymentService::class, $paymentService);
+
+        $response = $this->actingAs($user)
+            ->post(route('checkout.pay', $order));
+
+        $response->assertRedirect('https://mollie.com/checkout/retry123');
+    });
+
+    test('guest user with session can retry payment', function () {
+        $order = Order::factory()->create([
+            'user_id' => null,
+            'payment_status' => PaymentStatus::Unpaid,
+        ]);
+
+        $paymentService = mock(App\Services\PaymentService::class)
+            ->shouldReceive('initiatePayment')
+            ->once()
+            ->andReturn([
+                'payment_id' => 'tr_retry456',
+                'checkout_url' => 'https://mollie.com/checkout/retry456',
+            ])
+            ->getMock();
+        app()->instance(App\Services\PaymentService::class, $paymentService);
+
+        $response = $this->withSession(['last_guest_order_id' => $order->id])
+            ->post(route('checkout.pay', $order));
+
+        $response->assertRedirect('https://mollie.com/checkout/retry456');
+    });
+
+    test('redirects with message if order is already paid', function () {
+        $user = User::factory()->create();
+        $order = Order::factory()->create([
+            'user_id' => $user->id,
+            'payment_status' => PaymentStatus::Paid,
+        ]);
+
+        $response = $this->actingAs($user)
+            ->post(route('checkout.pay', $order));
+
+        $response->assertRedirect(route('order.confirmed', $order))
+            ->assertSessionHas('success', __('Order is already paid'));
+    });
+
+    test('returns 403 when authenticated user retries another users order', function () {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+        $order = Order::factory()->create([
+            'user_id' => $user2->id,
+            'payment_status' => PaymentStatus::Unpaid,
+        ]);
+
+        $response = $this->actingAs($user1)
+            ->post(route('checkout.pay', $order));
+
+        $response->assertForbidden();
+    });
+
+    test('returns 403 when guest retries payment without session data', function () {
+        $order = Order::factory()->create([
+            'user_id' => null,
+            'payment_status' => PaymentStatus::Unpaid,
+        ]);
+
+        $response = $this->post(route('checkout.pay', $order));
+
+        $response->assertForbidden();
+    });
+
+    test('handles retry payment failure gracefully', function () {
+        $user = User::factory()->create();
+        $order = Order::factory()->create([
+            'user_id' => $user->id,
+            'payment_status' => PaymentStatus::Unpaid,
+        ]);
+
+        $paymentService = mock(App\Services\PaymentService::class)
+            ->shouldReceive('initiatePayment')
+            ->once()
+            ->andThrow(new Exception('Mollie API error'))
+            ->getMock();
+        app()->instance(App\Services\PaymentService::class, $paymentService);
+
+        $response = $this->actingAs($user)
+            ->post(route('checkout.pay', $order));
+
+        $response->assertRedirect(route('order.confirmed', $order))
+            ->assertSessionHas('error', __('Payment initialization failed. Please try again.'));
     });
 });
 

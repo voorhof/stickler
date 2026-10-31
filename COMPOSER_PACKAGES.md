@@ -160,6 +160,95 @@ public function index(): View
 }
 ```
 
+
+## Laravel Mollie
+[Documentation](https://docs.mollie.com/)  
+[GitHub](https://github.com/mollie/laravel-mollie)
+
+This package integrates the **Mollie** payment platform into the application for online payment processing (including iDEAL, Bancontact, Credit Card, Apple Pay, and other configured payment methods). It handles hosted checkout redirects, asynchronous payment webhook updates, and transactional payment confirmations.
+
+The package is required in `composer.json` (`"mollie/laravel-mollie": "^v5.0.0"`).
+
+### Architecture and Provider Abstraction
+
+Payment processing is architected around a flexible, provider-agnostic abstraction:
+
+- **`PaymentProvider`** (`app/Contracts/PaymentProvider.php`): Interface defining payment creation (`createPayment`), webhook handling (`handleWebhook`), signature verification (`verifySignature`), and checkout URL resolution (`getCheckoutUrl`).
+- **`MollieProvider`** (`app/Payments/MollieProvider.php`): Implementation of `PaymentProvider` utilizing Laravel Mollie v5 and the Mollie API PHP client. Payments are created via `CreatePaymentRequest` and retrieved via `GetPaymentRequest`, with currency amounts specified using `Money::fromMinorUnits('EUR', $amountInCents)`.
+- **`PaymentService`** (`app/Services/PaymentService.php`): Application service that resolves the configured provider from the service container, initiates payment creation during checkout, and orchestrates webhook processing.
+
+### Configuration
+
+**Config** file is located at `config/payment.php`:
+
+```php
+return [
+    'default' => env('PAYMENT_PROVIDER', 'mollie'),
+    'webhook_url' => env('PAYMENT_WEBHOOK_URL'),
+    'providers' => [
+        'mollie' => App\Payments\MollieProvider::class,
+    ],
+];
+```
+
+**Environment** variables in `.env.example`:
+
+```dotenv
+#
+# Payment and Mollie gateway
+#
+PAYMENT_PROVIDER=mollie
+MOLLIE_KEY=test_YourTestKeyHere
+# PAYMENT_WEBHOOK_URL=https://your-domain.ngrok.app/payment/webhook/mollie
+```
+
+- `PAYMENT_PROVIDER`: Specifies the active payment gateway driver (default: `mollie`).
+- `MOLLIE_KEY`: Your Mollie API key (`test_...` for development, `live_...` for production).
+- `PAYMENT_WEBHOOK_URL`: Optional custom webhook URL. In production, this falls back to the named route `route('payment.webhook.mollie')`. In local and testing environments without a configured webhook URL, `MollieProvider` automatically sets the webhook URL to `null` during payment creation to prevent unresolvable local domain validation errors.
+
+### Webhook Handling and Security
+
+- **Route**: `POST /payment/webhook/mollie` (`PaymentWebhookController@handleMollie`).
+- **CSRF Exemption**: Server-to-server POST webhooks from payment providers are excluded from CSRF protection in `bootstrap/app.php` using `$middleware->preventRequestForgery(except: ['payment/webhook/*'])`.
+- **Direct API Verification**: Rather than relying on untrusted payload attributes, `MollieProvider` extracts the payment identifier (`id=tr_...`), securely queries Mollie's API directly (`GetPaymentRequest`), and reads the verified payment status and associated `order_id` metadata.
+- **Webhook Idempotency**: `PaymentService` ensures that transactional notifications (such as `PaymentConfirmation` emails) are only dispatched upon the initial transition to `PaymentStatus::Paid`, ignoring duplicate webhook retries.
+
+### Email Notifications
+
+Upon successful payment confirmation via webhook, the application dispatches an asynchronous queued mailable:
+
+- **Mailable**: `App\Mail\PaymentConfirmation` (implements `ShouldQueue`).
+- **Templates**: `resources/views/mail/payment-confirmation.blade.php` and `resources/views/mail/payment-confirmation-text.blade.php`.
+
+### Testing and Mocking
+
+Payment provider interactions are tested using Mollie's official fake client in Pest:
+
+```php
+use Mollie\Api\Fake\MockResponse;
+use Mollie\Api\Http\Requests\CreatePaymentRequest;
+use Mollie\Laravel\Facades\Mollie;
+
+Mollie::fake([
+    CreatePaymentRequest::class => MockResponse::create([
+        'id' => 'tr_TestPaymentId',
+        'status' => 'open',
+        '_links' => [
+            'checkout' => [
+                'href' => 'https://www.mollie.com/checkout/select-issuer/tr_TestPaymentId',
+            ],
+        ],
+    ]),
+]);
+```
+
+Check the installed package version with:
+
+```bash
+composer show mollie/laravel-mollie
+```
+
+
 ## Spatie Sluggable
 [Documentation](https://spatie.be/docs/laravel-sluggable/v4/introduction)  
 [GitHub](https://github.com/spatie/laravel-sluggable)

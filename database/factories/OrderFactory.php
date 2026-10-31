@@ -45,8 +45,24 @@ class OrderFactory extends Factory
                 'country' => $this->faker->countryCode(),
             ],
             'payment_method' => null,
+            'payment_provider' => null,
+            'payment_provider_id' => null,
             'notes' => null,
         ];
+    }
+
+    /**
+     * Indicate the order is paid via Mollie.
+     */
+    public function paidWithMollie(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'payment_status' => PaymentStatus::Paid,
+            'status' => OrderStatus::Confirmed,
+            'payment_method' => 'ideal',
+            'payment_provider' => 'mollie',
+            'payment_provider_id' => 'tr_'.$this->faker->uuid(),
+        ]);
     }
 
     /**
@@ -107,6 +123,8 @@ class OrderFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'payment_status' => PaymentStatus::Paid,
             'payment_method' => $this->faker->randomElement(['credit_card', 'paypal', 'bank_transfer']),
+            'payment_provider' => null,
+            'payment_provider_id' => null,
         ]);
     }
 

@@ -32,6 +32,7 @@
         "laravel/telescope": "^5.26",
         "laravel/tinker": "^3.0",
         "league/flysystem-aws-s3-v3": "^3.35",
+        "mollie/laravel-mollie": "^v5.0.0",
         "opcodesio/log-viewer": "^3.24",
         "php-ffmpeg/php-ffmpeg": "^1.4",
         "spatie/eloquent-sortable": "^5.0",

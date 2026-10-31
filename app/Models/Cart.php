@@ -124,7 +124,7 @@ class Cart extends Model
     protected function total(): Attribute
     {
         return Attribute::make(
-            get: fn () => (int) ($this->getItemsSumInCents() / 100),
+            get: fn () => $this->getItemsSumInCents() / 100,
         );
     }
 

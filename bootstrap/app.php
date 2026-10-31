@@ -37,6 +37,11 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Exclude payment webhook endpoints from CSRF verification
+        $middleware->preventRequestForgery(except: [
+            'payment/webhook/*',
+        ]);
+
         // Cookieless page view tracking: prepended so it still runs when CacheResponse serves a cached response
         $middleware->web(prepend: [
             TrackPageView::class,

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Payment\PaymentWebhookController;
 use App\Http\Controllers\Public\BrandbookController;
 use App\Http\Controllers\Public\CartController;
 use App\Http\Controllers\Public\ContactController;
@@ -113,17 +114,24 @@ Route::get('/checkout', [CartController::class, 'checkout'])
 Route::post('/checkout', [CartController::class, 'storeOrder'])
     ->name('checkout.store');
 
+Route::post('/checkout/pay/{order}', [CartController::class, 'retryPayment'])
+    ->name('checkout.pay');
+
 Route::get('/order-confirmed/{order}', [CartController::class, 'thankYou'])
     ->name('order.confirmed');
+
+/**
+ * Payment webhook routes (no authentication, public endpoints)
+ */
+Route::post('/payment/webhook/mollie', [PaymentWebhookController::class, 'handleMollie'])
+    ->name('payment.webhook.mollie');
 
 /**
  * Test route
  */
 if (app()->environment('local')) {
     Route::get('/test', function () {
-        return view('test', [
-            'headTitle' => 'TEST',
-        ]);
+        return view('test');
     });
 }
 

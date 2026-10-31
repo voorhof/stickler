@@ -75,7 +75,7 @@ test('cart total returns sum of item total prices', function () {
     CartItem::factory()->create(['cart_id' => $cart->id, 'unit_price' => 10.00, 'quantity' => 2, 'total_price' => 20.00]);
     CartItem::factory()->create(['cart_id' => $cart->id, 'unit_price' => 5.00, 'quantity' => 1, 'total_price' => 5.00]);
 
-    expect($cart->total)->toBe(25);
+    expect($cart->total)->toBe(25.0);
 });
 
 test('cart total quantity returns sum of item quantities', function () {

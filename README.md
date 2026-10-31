@@ -17,7 +17,7 @@ Out of the box, Stickler includes:
 - **A Filament 5 admin panel** with user management, navigation, notifications, soft-delete workflows, reusable form schemas and table definitions, resizable columns, and business-hours management. See the [Filament implementation guide](FILAMENT.md) for details.
 - **Content management building blocks** for posts and other content, including slugs, tags, sorting, localized content, rich text editing, and a custom rich-editor source-code tool.
 - **User authentication** with registration, login, password reset, email verification, and a protected account dashboard. Guest carts are automatically merged into the authenticated cart on login or registration. See the [User Authentication section](#user-authentication) for details.
-- **E-commerce building blocks** with products and product variants (option types, options, SKU, stock and price per variant), categories, orders with order and payment status, and a public cart with a navbar badge, stock validation, and an expiry cleanup. See the [Store Management section](FILAMENT.md#store-management) of the Filament guide for the admin side.
+- **E-commerce building blocks** with products and product variants (option types, options, SKU, stock and price per variant), categories, orders with order and payment status, a public cart with a navbar badge, stock validation and expiry cleanup, and a complete hosted checkout flow powered by Mollie payments. See the [Store Management section](FILAMENT.md#store-management) of the Filament guide and the [Payment and Checkout section](#payment-and-checkout).
 - **Media management** powered by Spatie Media Library, including uploads, image conversions, responsive media support, and integration with Filament.
 - **User access and administration** with roles and permissions, panel access checks, admin configuration through `.env`, and optional two-factor authentication support.
 - **Website essentials** such as HTML head management, sitemap generation, robots.txt support, opening hours, cookie consent, and a Bootstrap-based public frontend.
@@ -160,6 +160,31 @@ All authentication views are located in `resources/views/auth/` and use the `<x-
 - `verify-email.blade.php` — Email verification prompt with resend link.
 - `confirm-password.blade.php` — Password confirmation form.
 
+## Payment and Checkout
+
+Stickler includes a complete checkout and payment lifecycle integrating a database-backed cart, customer address collection, hosted payment gateway redirects, asynchronous webhook synchronization, and customer email notifications.
+
+### Checkout Flow
+
+1. **Cart Review (`GET /cart`)**: Customers review items, adjust quantities with real-time stock validation, or remove products. Product discounts and variant pricing rules are automatically applied.
+2. **Order Confirmation (`GET /checkout`)**: Customers provide contact info (name, email, phone), shipping address, and optional billing address (with a "same as shipping" toggle) and order notes. For logged-in users, details are pre-filled automatically from their user profile.
+3. **Order Placement (`POST /checkout`)**: Validates the form via `StoreOrderRequest`, creates an `Order` and associated `OrderItem` snapshots in a database transaction, clears the active cart, and delegates payment creation to `PaymentService`.
+4. **Hosted Payment Redirect**: The customer is redirected to Mollie's secure checkout page (supporting iDEAL, Bancontact, Credit Card, Apple Pay, and other configured payment methods).
+5. **Webhook Processing (`POST /payment/webhook/mollie`)**: Mollie asynchronously notifies the application of payment status updates. The application securely verifies payment status directly via the Mollie API, updates the order to `paid` and `confirmed`, and dispatches the queued `PaymentConfirmation` email.
+6. **Order Confirmation & Thank-You (`GET /order-confirmed/{order}`)**: Displays order details, items breakdown, pricing, and live payment status. Protected by authorization checks: authenticated users can only view their own orders, and guest visitors can only view orders placed during their current session.
+7. **Payment Recovery**: If a payment is cancelled or fails at the gateway, the customer is directed back to their order page with an alert and an immediate "Pay now" retry button.
+
+### Architecture and Configuration
+
+- **Abstraction**: `App\Contracts\PaymentProvider` and `App\Services\PaymentService` allow swapping or adding additional payment gateways (e.g., Stripe, PayPal) without modifying controller or checkout logic.
+- **Provider Implementation**: `App\Payments\MollieProvider` integrates with `mollie/laravel-mollie` (v5) and handles payment creation, webhooks, and status mapping.
+- **Configuration**: Defined in `config/payment.php` and configured through `.env`:
+  - `PAYMENT_PROVIDER=mollie`: Active gateway provider.
+  - `MOLLIE_KEY=test_...`: Mollie API key.
+  - `PAYMENT_WEBHOOK_URL`: Optional custom webhook override for testing with local tunnels (e.g. Ngrok, Expose, Herd Share).
+- **Security**: The webhook endpoint `payment/webhook/*` is excluded from CSRF verification in `bootstrap/app.php` to accept provider callbacks. Webhooks query Mollie's API directly for verified payment status to prevent tampering.
+- **Queueing**: Payment confirmation emails use `App\Mail\PaymentConfirmation` and implement `ShouldQueue` so email delivery does not block webhook response execution.
+
 ## Filament CMS
 
 A separate documentation file is available for the Filament CMS implementation:  
@@ -173,6 +198,7 @@ A separate documentation file is available for the Composer package dependencies
 Highlighted packages:
 
 - **Laravel Boost** - AI skills for the Junie assistant and other agents
+- **Laravel Mollie** - Payment gateway integration for hosted checkouts and webhooks
 - **Laravel Telescope** - Debugging assistant for requests, queries, and jobs
 - **Laravel Head** - Manages HTML head meta tags
 - **Spatie Sluggable** - Generates unique slugs for models

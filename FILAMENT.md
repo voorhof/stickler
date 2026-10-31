@@ -290,6 +290,7 @@ The store resources manage the product catalogue, categories, orders and carts. 
 
 - `OrderResource` (`app/Filament/Resources/Orders`) manages orders. Its table uses the `HasOrderTableDefaults` trait.
 - `OrderStatus` and `PaymentStatus` (`app/Enums`) implement Filament's `HasLabel`, so the labels in the table, filters and forms are translated through `lang/en.json` and `lang/nl.json`.
+- Orders store customer and delivery details, order items, pricing breakdown, notes, and payment metadata including `payment_provider` (e.g. `'mollie'`), `payment_provider_id` (gateway transaction reference), and `payment_method`. Payment status updates are automated via payment provider webhooks while remaining editable by administrators.
 
 ### Carts
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Public;
 
+use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Public\StoreOrderRequest;
 use App\Models\CartItem;
@@ -9,6 +10,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Services\CartService;
+use App\Services\PaymentService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -24,6 +26,7 @@ class CartController extends Controller
      */
     public function __construct(
         protected CartService $cartService,
+        protected PaymentService $paymentService,
     ) {}
 
     /**
@@ -183,18 +186,76 @@ class CartController extends Controller
         // Convert cart to order (transfers customer data)
         $order = $this->cartService->convertToOrder($cart);
 
-        return redirect()
-            ->route('order.confirmed', ['order' => $order])
-            ->with('success', __('Order created successfully'));
+        // Store the last guest order ID in the session for thank-you page access
+        if ($cart->is_guest) {
+            request()->session()->put('last_guest_order_id', $order->id);
+        }
+
+        try {
+            // Initiate payment and redirect to Mollie checkout
+            $payment = $this->paymentService->initiatePayment($order);
+
+            return redirect($payment['checkout_url']);
+        } catch (Throwable $e) {
+            report($e);
+
+            return redirect()
+                ->route('order.confirmed', $order)
+                ->with('error', __('Payment initialization failed. You can try paying again below.'));
+        }
+    }
+
+    /**
+     * Retry payment for an unpaid order.
+     */
+    public function retryPayment(Request $request, Order $order): RedirectResponse
+    {
+        // Authenticated users can only pay for their own orders
+        if (Auth::check()) {
+            abort_unless($order->user_id === Auth::id(), 403);
+        }
+
+        // Guest users can only pay for the last order they placed (stored in session)
+        if (! Auth::check()) {
+            abort_unless($request->session()->get('last_guest_order_id') === $order->id, 403);
+        }
+
+        if ($order->payment_status === PaymentStatus::Paid) {
+            return redirect()
+                ->route('order.confirmed', $order)
+                ->with('success', __('Order is already paid'));
+        }
+
+        try {
+            $payment = $this->paymentService->initiatePayment($order);
+
+            return redirect($payment['checkout_url']);
+        } catch (Throwable $e) {
+            report($e);
+
+            return redirect()
+                ->route('order.confirmed', $order)
+                ->with('error', __('Payment initialization failed. Please try again.'));
+        }
     }
 
     /**
      * Display the thank-you page after order creation.
      */
-    public function thankYou(Order $order): View
+    public function thankYou(Request $request, Order $order): View
     {
         Head::title(__('Thank you for your order'))
             ->description(__('Your order has been placed successfully'));
+
+        // Authenticated users can only view their own orders
+        if (Auth::check()) {
+            abort_unless($order->user_id === Auth::id(), 403);
+        }
+
+        // Guest users can only view the last order they placed (stored in session)
+        if (! Auth::check()) {
+            abort_unless($request->session()->get('last_guest_order_id') === $order->id, 403);
+        }
 
         $order->load('orderItems');
 

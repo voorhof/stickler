@@ -204,15 +204,24 @@ class CartService
             // Transfer customer data from cart to order
             $customerData = $cart->customer_data ?? [];
 
+            $subtotal = $cart->cartItems->sum('total_price');
+
             $orderData = [
                 'user_id' => $cart->user_id,
-                'subtotal' => $cart->cartItems->sum('total_price'),
+                'subtotal' => $subtotal,
                 'tax_amount' => 0,
                 'shipping_amount' => 0,
+                'total' => $subtotal,
             ];
 
             if (isset($customerData['shipping_address'])) {
-                $orderData['shipping_address'] = $customerData['shipping_address'];
+                $shippingAddress = $customerData['shipping_address'];
+
+                if (isset($customerData['email'])) {
+                    $shippingAddress['email'] = $customerData['email'];
+                }
+
+                $orderData['shipping_address'] = $shippingAddress;
             }
 
             if (isset($customerData['billing_address'])) {
@@ -293,11 +302,22 @@ class CartService
 
     /**
      * Resolve the unit price for a product, optionally using a variant's price.
+     * Uses discount price when the product or variant is discounted.
      */
     protected function resolveUnitPrice(Product $product, ?ProductVariant $variant = null): float
     {
-        if ($variant && $variant->price !== null) {
-            return (float) $variant->price;
+        if ($variant) {
+            if ($variant->is_discounted && $variant->discount_price !== null) {
+                return (float) $variant->discount_price;
+            }
+
+            if ($variant->price !== null) {
+                return (float) $variant->price;
+            }
+        }
+
+        if ($product->is_discounted && $product->discount_price !== null) {
+            return (float) $product->discount_price;
         }
 
         return $product->price;
