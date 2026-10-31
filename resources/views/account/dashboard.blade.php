@@ -6,7 +6,7 @@
             </h1>
 
             <div class="mt-4">
-                 <form method="POST" action="{{ route('logout') }}">
+                <form method="POST" action="{{ route('logout') }}">
                     <x-csrf-input />
                     <x-form.button variant="outline-secondary" :value="__('Log out')" />
                 </form>
