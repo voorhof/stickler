@@ -140,6 +140,16 @@
                     </li>
                 </ul>
             </div>
+
+            {{-- Logout --}}
+            @auth
+                <form method="POST" action="{{ route('logout') }}">
+                    <x-csrf-input />
+                    <button type="submit"
+                            class="nav-link link-body-emphasis text-uppercase"
+                    >{{ __('Log out') }}</button>
+                </form>
+            @endauth
         </nav>
 
         <div class="c-offcanvas__footer">
