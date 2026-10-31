@@ -112,6 +112,18 @@
                         <p class="c-welcome-card-desc">{{ __('Discover our products') }}</p>
                     </a>
 
+                    <a href="{{ route('cart.index') }}" class="c-welcome-card">
+                        <div class="fs-3"><x-icons.cart /></div>
+                        <h2 class="c-welcome-card-title">{{ __('Cart') }}</h2>
+                        <p class="c-welcome-card-desc">{{ __('Cart Items') }}</p>
+                    </a>
+
+                    <a href="{{ route('account.dashboard') }}" class="c-welcome-card">
+                        <div class="fs-3"><x-icons.person-circle /></div>
+                        <h2 class="c-welcome-card-title">{{ __('Account') }}</h2>
+                        <p class="c-welcome-card-desc">{{ __('Dashboard') }}</p>
+                    </a>
+
                     <a href="{{ route('contact.index') }}" class="c-welcome-card">
                         <div class="fs-3"><x-icons.envelope /></div>
                         <h2 class="c-welcome-card-title">{{ __('Contact') }}</h2>

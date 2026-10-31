@@ -28,6 +28,11 @@ class TrackPageView
         'cart.index',
         'checkout.index',
         'order.confirmed',
+        'register',
+        'login',
+        'password.*',
+        'verification.*',
+        'account.*',
     ];
 
     /**

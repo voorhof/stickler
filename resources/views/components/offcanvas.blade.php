@@ -66,6 +66,22 @@
             <a
                 @class([
                     'nav-link link-body-emphasis text-uppercase',
+                    'active' => request()->routeIs('cart.index'),
+                ])
+                href="{{ route('cart.index') }}"
+            >{{ __('Cart') }}</a>
+
+            <a
+                @class([
+                    'nav-link link-body-emphasis text-uppercase',
+                    'active' => request()->routeIs('account.*'),
+                ])
+                href="{{ route('account.dashboard') }}"
+            >{{ __('Account') }}</a>
+
+            <a
+                @class([
+                    'nav-link link-body-emphasis text-uppercase',
                     'active' => request()->routeIs('contact.index'),
                 ])
                 href="{{ route('contact.index') }}"

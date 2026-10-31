@@ -20,6 +20,8 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('locale', 10)->default('nl_BE');
             $table->string('password');
+            $table->boolean('password_needs_update')->default(false);
+            $table->boolean('terms_accepted')->default(false);
             $table->rememberToken();
             $table->unsignedInteger('order_column')->nullable()->index();
             $table->timestamps();

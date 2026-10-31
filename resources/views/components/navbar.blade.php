@@ -5,9 +5,13 @@
         </a>
 
         <div class="d-flex align-items-center">
+            {{-- Cart --}}
             <a
                 href="{{ route('cart.index') }}"
-                class="nav-link position-relative me-4"
+                @class([
+                    'nav-link position-relative me-4',
+                    'active' => request()->routeIs('cart.index'),
+                ])
                 aria-label="{{ __('View cart') }}"
             >
                 <span class="fs-4">
@@ -23,6 +27,21 @@
                 @endif
             </a>
 
+            {{-- User dashboard --}}
+            <a
+                href="{{ route('account.dashboard') }}"
+                @class([
+                    'nav-link position-relative me-4',
+                    'active' => request()->routeIs('account.dashboard'),
+                ])
+                aria-label="{{ __('Dashboard') }}"
+            >
+                <span class="fs-4">
+                    <x-icons.person-circle />
+                </span>
+            </a>
+
+            {{-- Offcanvas toggler --}}
             <button
                 class="navbar-toggler"
                 type="button"

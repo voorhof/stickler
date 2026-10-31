@@ -33,6 +33,8 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'locale' => fake()->randomElement(['en_US', 'en_GB', 'nl_BE', 'nl_NL']),
             'password' => static::$password ??= Hash::make('password'),
+            'password_needs_update' => false,
+            'terms_accepted' => true,
             'remember_token' => Str::random(10),
             'created_by_user_id' => 1,
             'updated_by_user_id' => 1,

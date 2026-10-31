@@ -45,6 +45,8 @@ use Spatie\Sluggable\Attributes\Sluggable;
  * @property DateTime|null $email_verified_at
  * @property string $locale
  * @property string $password
+ * @property bool $password_needs_update
+ * @property bool $terms_accepted
  * @property string $remember_token
  * @property int $order_column
  * @property DateTime $created_at
@@ -66,6 +68,8 @@ use Spatie\Sluggable\Attributes\Sluggable;
     'email',
     'locale',
     'password',
+    'password_needs_update',
+    'terms_accepted',
     'order_column',
 ])]
 #[Hidden([
@@ -115,6 +119,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, HasName, M
      */
     protected $attributes = [
         'locale' => 'nl_BE',
+        'password_needs_update' => false,
+        'terms_accepted' => false,
         'order_column' => 1,
     ];
 
@@ -135,6 +141,8 @@ class User extends Authenticatable implements FilamentUser, HasMedia, HasName, M
             'email_verified_at' => 'datetime',
             'locale' => 'string',
             'password' => 'hashed',
+            'password_needs_update' => 'boolean',
+            'terms_accepted' => 'boolean',
         ];
     }
 
