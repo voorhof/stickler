@@ -16,6 +16,7 @@ Out of the box, Stickler includes:
 - **A complete Laravel foundation** with environment-based configuration, database migrations, seed data, queues, scheduled tasks, and a structure that is ready to customize.
 - **A Filament 5 admin panel** with user management, navigation, notifications, soft-delete workflows, reusable form schemas and table definitions, resizable columns, and business-hours management. See the [Filament implementation guide](FILAMENT.md) for details.
 - **Content management building blocks** for posts and other content, including slugs, tags, sorting, localized content, rich text editing, and a custom rich-editor source-code tool.
+- **User authentication** with registration, login, password reset, email verification, and a protected account dashboard. Guest carts are automatically merged into the authenticated cart on login or registration. See the [User Authentication section](#user-authentication) for details.
 - **E-commerce building blocks** with products and product variants (option types, options, SKU, stock and price per variant), categories, orders with order and payment status, and a public cart with a navbar badge, stock validation, and an expiry cleanup. See the [Store Management section](FILAMENT.md#store-management) of the Filament guide for the admin side.
 - **Media management** powered by Spatie Media Library, including uploads, image conversions, responsive media support, and integration with Filament.
 - **User access and administration** with roles and permissions, panel access checks, admin configuration through `.env`, and optional two-factor authentication support.
@@ -106,6 +107,58 @@ Make sure you have all this covered:
 - PhpStorm settings (or other editor)
 - update art in public folder (and references to the logo's inside blade views)
 - re-generate llms.txt to fit your project
+
+## User Authentication
+
+Public user authentication allows customers to create an account, log in, manage their profile, and access a protected account dashboard. The authentication flow integrates with the cart system so guest carts are preserved when a user logs in or registers.
+
+### Registration and login
+
+- `RegisteredUserController` (`app/Http/Controllers/Auth`) handles user registration. The registration form includes a terms-of-service checkbox and is protected by a honeypot and rate limiting (3 attempts per minute).
+- `AuthenticatedSessionController` handles login and logout. After a successful login, the session is regenerated for security.
+- Routes are defined in `routes/auth.php` under the `guest` middleware group, so authenticated users are redirected away from these pages.
+- The registration route uses the Dutch URL `/registreer` and the login route uses `/login`.
+
+### Password management
+
+- `PasswordResetLinkController` sends password reset emails. Non-existent emails are handled gracefully to prevent user enumeration.
+- `NewPasswordController` processes the password reset link and stores the new password.
+- `PasswordController` allows authenticated users to update their password from the account dashboard.
+- `ConfirmablePasswordController` requires password confirmation before sensitive actions.
+
+### Email verification
+
+- `EmailVerificationNotificationController` resends the email verification link.
+- `EmailVerificationPromptController` shows the verification prompt page.
+- `VerifyEmailController` verifies the email using a signed, throttled verification link.
+- The `verified` middleware is applied to the account dashboard route, so unverified users are redirected to the verification prompt.
+
+### Account dashboard
+
+- `AccountController` (`app/Http/Controllers/Account`) provides the protected account dashboard at `/account/dashboard`.
+- The dashboard requires both the `auth` and `verified` middleware, ensuring only verified users can access it.
+- The view is located at `resources/views/account/dashboard.blade.php`.
+
+### Guest cart merge on login
+
+When a guest user adds items to their cart and then logs in or registers, the `MergeGuestCart` middleware automatically merges the guest cart into the authenticated user's cart.
+
+- `MergeGuestCart` (`app/Http/Middleware`) is applied only to the `POST /login` and `POST /registreer` routes, not globally, to avoid unnecessary overhead on every request.
+- The middleware runs after the response is generated (`$next($request)`), so the user is already authenticated before the merge.
+- If the user has a `cart_token` cookie pointing to a non-empty guest cart, the guest cart items are merged into the user's authenticated cart using `CartService::merge()`.
+- After the merge, the `cart_token` cookie is updated to point to the user's authenticated cart, so subsequent requests use the correct cart.
+- If the guest cart is empty, not a guest cart, or the user has no `cart_token` cookie, the middleware returns immediately without any database queries.
+
+### Authentication views
+
+All authentication views are located in `resources/views/auth/` and use the `<x-layouts.app>` layout with Bootstrap styling:
+
+- `register.blade.php` — Registration form with name, email, password, terms checkbox, and login link.
+- `login.blade.php` — Login form with email, password, remember me, forgot password link, and registration link.
+- `forgot-password.blade.php` — Password reset request form.
+- `reset-password.blade.php` — New password form (shown after clicking the reset link).
+- `verify-email.blade.php` — Email verification prompt with resend link.
+- `confirm-password.blade.php` — Password confirmation form.
 
 ## Filament CMS
 
