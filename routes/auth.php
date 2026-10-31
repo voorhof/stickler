@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Middleware\MergeGuestCart;
 use Illuminate\Support\Facades\Route;
 use Spatie\Honeypot\ProtectAgainstSpam;
 use Spatie\HttpLogger\Middlewares\HttpLogger;
@@ -18,12 +19,14 @@ Route::middleware('guest')->group(function () {
         ->name('register')
         ->middleware([HttpLogger::class, ProtectAgainstSpam::class, 'throttle:3,1']);
 
-    Route::post('registreer', [RegisteredUserController::class, 'store']);
+    Route::post('registreer', [RegisteredUserController::class, 'store'])
+        ->middleware([MergeGuestCart::class]);
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 
-    Route::post('login', [AuthenticatedSessionController::class, 'store']);
+    Route::post('login', [AuthenticatedSessionController::class, 'store'])
+        ->middleware([MergeGuestCart::class]);
 
     Route::get('wachtwoord-vergeten', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
