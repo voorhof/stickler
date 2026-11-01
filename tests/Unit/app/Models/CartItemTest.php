@@ -143,3 +143,16 @@ test('cart item supports soft deletes', function () {
     expect(CartItem::withTrashed()->find($item->id))->not->toBeNull()
         ->and(CartItem::find($item->id))->toBeNull();
 });
+
+test('tax rate is cast to integer', function () {
+    $item = CartItem::factory()->create(['tax_rate' => 21]);
+
+    expect($item->tax_rate)->toBeInt()
+        ->and($item->tax_rate)->toBe(21);
+});
+
+test('tax rate can be null', function () {
+    $item = CartItem::factory()->create(['tax_rate' => null]);
+
+    expect($item->tax_rate)->toBeNull();
+});

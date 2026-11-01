@@ -3,7 +3,7 @@
 
 {{ __('Your payment for order') }} **{{ $order->order_number }}** {{ __('has been confirmed.') }}
 
-{{ __('Order total') }}: **{{ number_format($order->total, 2) }} €**
+{{ __('Order total') }}: **{{ number_format($order->total, 2) }} €** {{ __('(incl. VAT)') }}
 
 <table>
     <thead>

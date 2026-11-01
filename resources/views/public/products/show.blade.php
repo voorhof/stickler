@@ -375,6 +375,10 @@
                         <span class="c-product-show-price"> {{ number_format($product->price, 2) }} € </span>
                     @endif
 
+                    <p class="text-muted small mb-0">
+                        {{ __('incl. :rate% VAT', ['rate' => $product->getTaxRate()]) }}
+                    </p>
+
                     @if ($product->stock_quantity > 0)
                         <span class="c-product-show-stock c-product-show-stock--in-stock">
                             <span class="c-product-show-stock-dot"></span>

@@ -25,6 +25,7 @@ use Illuminate\Support\HigherOrderCollectionProxy;
  * @property float|null $price
  * @property float|null $discount_price
  * @property bool $is_discounted
+ * @property int|null $tax_rate
  * @property int $stock_quantity
  * @property Product $product
  * @property Collection<ProductVariantOption> $options
@@ -40,6 +41,7 @@ use Illuminate\Support\HigherOrderCollectionProxy;
     'price',
     'discount_price',
     'is_discounted',
+    'tax_rate',
     'stock_quantity',
 ])]
 #[Hidden([])]
@@ -91,6 +93,47 @@ class ProductVariant extends Model
             get: fn ($value) => $value !== null ? $value / 100 : null,
             set: fn ($value) => $value !== null ? (int) round($value * 100) : null,
         );
+    }
+
+    /**
+     * Get the tax rate for this variant, falling back to the product or global default.
+     */
+    public function getTaxRate(): int
+    {
+        if ($this->tax_rate !== null) {
+            return (int) $this->tax_rate;
+        }
+
+        if ($this->product_id && $this->relationLoaded('product')) {
+            return $this->product->getTaxRate();
+        }
+
+        return (int) config('tax.default_rate', 21);
+    }
+
+    /**
+     * Get the net price (excluding VAT) in euros.
+     */
+    public function priceNet(): float
+    {
+        $rate = $this->getTaxRate();
+        $grossCents = $this->getAttributes()['price'];
+
+        if ($grossCents === null) {
+            return 0.0;
+        }
+
+        return ($grossCents / (1 + $rate / 100)) / 100;
+    }
+
+    /**
+     * Get the tax amount (VAT) in euros.
+     */
+    public function taxAmount(): float
+    {
+        $gross = $this->price ?? 0.0;
+
+        return $gross - $this->priceNet();
     }
 
     /*

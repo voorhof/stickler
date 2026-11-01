@@ -23,6 +23,7 @@ return new class extends Migration
             $table->integer('price');
             $table->integer('discount_price')->nullable();
             $table->boolean('is_discounted')->default(false);
+            $table->tinyInteger('tax_rate')->nullable();
             $table->integer('stock_quantity')->default(0);
             $table->string('website_title')->nullable();
             $table->string('website_url')->nullable();

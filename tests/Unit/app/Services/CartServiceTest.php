@@ -130,14 +130,18 @@ test('it merges two carts', function () {
 
 test('it converts cart to order', function () {
     $cart = Cart::factory()->create();
-    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'tax_rate' => null, 'stock_quantity' => 10]);
 
     $service = app(CartService::class);
     $service->addItem($cart, $product, null, 2);
 
     $order = $service->convertToOrder($cart);
 
-    expect($order->subtotal)->toBe(2000)
+    // subtotal is now net (excl. VAT), tax_amount is VAT, total is gross
+    // 2000 / 1.21 = 1652.8925... (calculated at cents level for precision)
+    expect($order->total)->toBe(2000)
+        ->and($order->subtotal)->toBe(1652.89)
+        ->and($order->tax_amount)->toBe(347.11)
         ->and(OrderItem::where('order_id', $order->id)->count())->toBe(1)
         ->and($cart->fresh()->cartItems)->toBeEmpty();
 });

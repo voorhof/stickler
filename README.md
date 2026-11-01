@@ -185,6 +185,18 @@ Stickler includes a complete checkout and payment lifecycle integrating a databa
 - **Security**: The webhook endpoint `payment/webhook/*` is excluded from CSRF verification in `bootstrap/app.php` to accept provider callbacks. Webhooks query Mollie's API directly for verified payment status to prevent tampering.
 - **Queueing**: Payment confirmation emails use `App\Mail\PaymentConfirmation` and implement `ShouldQueue` so email delivery does not block webhook response execution.
 
+### Inclusive VAT Pricing
+
+All product prices in the CMS are **VAT-inclusive** — the price entered by the webshop manager is exactly what the customer pays. The system calculates the net subtotal and tax amount automatically at order creation.
+
+- **Global tax rate**: Configurable via `TAX_RATE` in `.env` (default `21` for Belgium).
+- **Per-product override**: Each product and variant has a `tax_rate` column (nullable). When `null`, the global rate applies. Variants inherit from their product when their own `tax_rate` is `null`.
+- **Order tax calculation**: At order creation, `CartService::convertToOrder()` calculates per-item net price and tax amount, storing `subtotal` (net), `tax_amount`, and `total` (gross) on the `Order` model. The Filament admin panel's OrderForm derives the tax amount from the gross subtotal using the same configured tax rate.
+- **Tax rate snapshot**: The tax rate at the time of adding to cart is stored on `CartItem`, ensuring historical accuracy if a product's tax rate changes later.
+- **CMS price input**: Price fields in the Filament product form are labeled "Price (incl. VAT)" with helper text. A tax rate select (0%, 6%, 12%, 21%) allows per-product overrides.
+- **Public price display**: Product pages show a VAT notice (e.g., "incl. 21% VAT"). The thank-you page displays the order breakdown with "(excl. VAT)" next to the net subtotal and "(incl. VAT)" next to the total.
+- **Email templates**: Payment confirmation emails include "(incl. VAT)" next to the order total.
+
 ## Filament CMS
 
 A separate documentation file is available for the Filament CMS implementation:  

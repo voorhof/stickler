@@ -32,6 +32,7 @@ class ProductFactory extends Factory
             'price' => $price,
             'discount_price' => $price > 1 ? $this->faker->randomFloat(2, 0.99, $price - 0.01) : null,
             'is_discounted' => $this->faker->boolean(25),
+            'tax_rate' => $this->faker->randomElement([null, 6, 12, 21]),
             'stock_quantity' => $this->faker->randomNumber(2, true),
             'website_title' => $this->faker->sentence(),
             'website_url' => $this->faker->url(),

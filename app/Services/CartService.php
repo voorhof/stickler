@@ -115,6 +115,7 @@ class CartService
         }
 
         $unitPrice = $this->resolveUnitPrice($product, $variant);
+        $taxRate = $this->resolveTaxRate($product, $variant);
 
         return CartItem::forceCreate([
             'cart_id' => $cart->id,
@@ -126,6 +127,7 @@ class CartService
             'quantity' => $quantity,
             'unit_price' => $unitPrice,
             'total_price' => $unitPrice * $quantity,
+            'tax_rate' => $taxRate,
         ]);
     }
 
@@ -204,14 +206,30 @@ class CartService
             // Transfer customer data from cart to order
             $customerData = $cart->customer_data ?? [];
 
-            $subtotal = $cart->cartItems->sum('total_price');
+            $totalGross = 0;
+            $totalNet = 0;
+            $totalTax = 0;
+
+            /** @var Collection<CartItem> $items */
+            $items = $cart->cartItems;
+            foreach ($items as $cartItem) {
+                $attrs = $cartItem->getAttributes();
+                $itemTotalCents = (int) $attrs['total_price'];
+                $taxRate = $cartItem->tax_rate ?? (int) config('tax.default_rate', 21);
+                $itemNetCents = (int) round($itemTotalCents / (1 + $taxRate / 100));
+                $itemTaxCents = $itemTotalCents - $itemNetCents;
+
+                $totalGross += $itemTotalCents;
+                $totalNet += $itemNetCents;
+                $totalTax += $itemTaxCents;
+            }
 
             $orderData = [
                 'user_id' => $cart->user_id,
-                'subtotal' => $subtotal,
-                'tax_amount' => 0,
+                'subtotal' => $totalNet / 100,
+                'tax_amount' => $totalTax / 100,
                 'shipping_amount' => 0,
-                'total' => $subtotal,
+                'total' => $totalGross / 100,
             ];
 
             if (isset($customerData['shipping_address'])) {
@@ -234,9 +252,8 @@ class CartService
 
             $order = Order::create(array_merge($orderData, $data));
 
-            /** @var Collection<CartItem> $items */
-            $items = $cart->cartItems;
             foreach ($items as $cartItem) {
+                $attrs = $cartItem->getAttributes();
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $cartItem->product_id,
@@ -245,8 +262,8 @@ class CartService
                     'product_variant_label' => $cartItem->product_variant_label,
                     'sku' => $cartItem->sku,
                     'quantity' => $cartItem->quantity,
-                    'unit_price' => $cartItem->unit_price,
-                    'total_price' => $cartItem->total_price,
+                    'unit_price' => $attrs['unit_price'] / 100,
+                    'total_price' => $attrs['total_price'] / 100,
                 ]);
             }
 
@@ -321,5 +338,21 @@ class CartService
         }
 
         return $product->price;
+    }
+
+    /**
+     * Resolve the tax rate for a product or variant.
+     */
+    protected function resolveTaxRate(Product $product, ?ProductVariant $variant = null): ?int
+    {
+        if ($variant && $variant->tax_rate !== null) {
+            return (int) $variant->tax_rate;
+        }
+
+        if ($product->tax_rate !== null) {
+            return (int) $product->tax_rate;
+        }
+
+        return null;
     }
 }

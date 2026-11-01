@@ -20,6 +20,7 @@ return new class extends Migration
             $table->integer('price')->nullable();
             $table->integer('discount_price')->nullable();
             $table->boolean('is_discounted')->default(false);
+            $table->tinyInteger('tax_rate')->nullable();
             $table->integer('stock_quantity')->default(0);
             $table->timestamps();
             $table->foreignIdFor(User::class, 'created_by_user_id')->nullable()->constrained('users')->nullOnDelete();

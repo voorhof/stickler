@@ -53,9 +53,9 @@
                             <thead>
                                 <tr>
                                     <th>{{ __('Product') }}</th>
-                                    <th>{{ __('Quantity') }}</th>
-                                    <th>{{ __('Unit price') }}</th>
-                                    <th>{{ __('Total price') }}</th>
+                                    <th class="text-center">{{ __('Quantity') }}</th>
+                                    <th class="text-end">{{ __('Unit price') }}</th>
+                                    <th class="text-end">{{ __('Total price') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -72,32 +72,48 @@
                                                 /><small class="text-muted">{{ __('SKU') }}: {{ $item->sku }}</small>
                                             @endif
                                         </td>
-                                        <td>{{ $item->quantity }}</td>
-                                        <td>{{ number_format($item->unit_price, 2) }} €</td>
-                                        <td>{{ number_format($item->total_price, 2) }} €</td>
+                                        <td class="text-center">{{ $item->quantity }}</td>
+                                        <td class="text-end">{{ number_format($item->unit_price, 2) }} €</td>
+                                        <td class="text-end">{{ number_format($item->total_price, 2) }} €</td>
                                     </tr>
                                 @endforeach
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <td colspan="3" class="text-end"><strong>{{ __('Subtotal') }}:</strong></td>
-                                    <td><strong>{{ number_format($order->subtotal, 2) }} €</strong></td>
+                                    <td colspan="3" class="text-end">
+                                        <strong>{{ __('Subtotal (incl. VAT)') }}:</strong>
+                                    </td>
+                                    <td class="text-end">
+                                        <strong>{{ number_format($order->subtotal, 2) }} €</strong>
+                                    </td>
                                 </tr>
-                                @if ($order->shipping_amount > 0)
-                                    <tr>
-                                        <td colspan="3" class="text-end"><strong>{{ __('Shipping') }}:</strong></td>
-                                        <td><strong>{{ number_format($order->shipping_amount, 2) }} €</strong></td>
-                                    </tr>
-                                @endif
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>{{ __('Shipping') }}:</strong></td>
+                                    <td class="text-end">
+                                        <strong>
+                                            @if ($order->shipping_amount > 0)
+                                                {{ number_format($order->shipping_amount, 2) }} €
+                                            @else
+                                                0 €
+                                            @endif
+                                        </strong>
+                                    </td>
+                                </tr>
                                 @if ($order->tax_amount > 0)
                                     <tr>
-                                        <td colspan="3" class="text-end"><strong>{{ __('Tax') }}:</strong></td>
-                                        <td><strong>{{ number_format($order->tax_amount, 2) }} €</strong></td>
+                                        <td colspan="3" class="text-end"><strong>{{ __('VAT') }}:</strong></td>
+                                        <td class="text-end">
+                                            <strong>{{ number_format($order->tax_amount, 2) }} €</strong>
+                                        </td>
                                     </tr>
                                 @endif
                                 <tr class="table-active">
-                                    <td colspan="3" class="text-end"><strong>{{ __('Total') }}:</strong></td>
-                                    <td><strong>{{ number_format($order->total, 2) }} €</strong></td>
+                                    <td colspan="3" class="text-end">
+                                        <strong>{{ __('Total (incl. VAT)') }}:</strong>
+                                    </td>
+                                    <td class="text-end">
+                                        <strong>{{ number_format($order->total, 2) }} €</strong>
+                                    </td>
                                 </tr>
                             </tfoot>
                         </table>

@@ -248,6 +248,88 @@ Check the installed package version with:
 composer show mollie/laravel-mollie
 ```
 
+## Inclusive VAT Pricing
+
+Stickler uses **VAT-inclusive pricing** throughout the application. Webshop managers enter prices as the customer pays them (including VAT), and the system calculates the net subtotal and tax amount automatically at order creation. This approach ensures legal compliance in Belgium/Dutch markets where consumer law mandates displaying VAT-inclusive prices.
+
+### Configuration
+
+**Config** file is located at `config/tax.php`:
+
+```php
+return [
+    'default_rate' => (float) env('TAX_RATE', 21),
+];
+```
+
+**Environment** variable in `.env.example`:
+
+```dotenv
+TAX_RATE=21
+```
+
+- `TAX_RATE`: Global default VAT rate in percentage (default `21` for Belgium). Used when a product or variant does not have a specific `tax_rate` set.
+
+### Database Schema
+
+Three tables have a `tax_rate` column (tinyInteger, nullable):
+
+- **`products`**: Per-product tax rate override. When `null`, the global default rate applies.
+- **`product_variants`**: Per-variant tax rate override. When `null`, inherits from the parent product, then falls back to the global default.
+- **`cart_items`**: Tax rate snapshot at the time the item was added to cart. Ensures historical accuracy if a product's tax rate changes later.
+
+### Model Methods
+
+Both `Product` and `ProductVariant` models provide these methods:
+
+- **`getTaxRate()`**: Returns the effective tax rate, following the inheritance chain (variant → product → global default).
+- **`priceNet()`**: Returns the net price (excluding VAT) as a float in euros. Calculated as `$price / (1 + $taxRate / 100)`.
+- **`taxAmount()`**: Returns the VAT amount as a float in euros. Calculated as `$price - $priceNet()`.
+
+Example:
+
+```php
+// €121.00 gross at 21% VAT
+$product->price;        // 121.00 (euros, accessor)
+$product->priceNet();   // 100.00
+$product->taxAmount();  // 21.00
+$product->getTaxRate(); // 21
+```
+
+### Cart Service Tax Calculation
+
+When an item is added to the cart, `CartService::addItem()` resolves and stores the tax rate on the `CartItem` snapshot.
+
+When `CartService::convertToOrder()` creates an order, it calculates:
+
+1. **Per-item net price**: `$unitPrice / (1 + $taxRate / 100)`
+2. **Per-item tax amount**: `$unitPrice - $netPrice`
+3. **Order totals**: Sums net prices into `subtotal` (net), sums tax into `tax_amount`, and keeps `total` (gross) as the cart items' sum.
+
+This means a cart can contain items with different tax rates (e.g., a book at 6% and a regular product at 21%), and the order will reflect the correct breakdown.
+
+### Filament CMS Integration
+
+- **Price fields**: Labeled "Price (incl. VAT)" with helper text "The price includes 21% VAT" (or the configured rate).
+- **Tax rate select**: A select input with common Belgian VAT rates (0%, 6%, 12%, 21%) is available on both the product info section and variant forms.
+- **Discount prices**: Also VAT-inclusive; the discount price is the final customer-facing price.
+
+### Public Views
+
+- **Product pages**: Display a VAT notice below the price (e.g., "The price includes 21% VAT").
+- **Thank-you page**: Shows the order breakdown with "(excl. VAT)" next to the net subtotal, the VAT amount, and "(incl. VAT)" next to the total.
+- **Email templates**: Payment confirmation emails include "(incl. VAT)" next to the order total.
+
+### Order Model
+
+The `Order` model stores three price fields (all in cents in the database, converted to euros via accessors):
+
+- **`subtotal`**: Subtotal of order items. When created via `CartService::convertToOrder()` (customer checkout), this is the **net** subtotal (excluding VAT). When created manually via the Filament admin panel, this is the **gross** subtotal (including VAT), matching the item prices entered.
+- **`tax_amount`**: Total VAT amount. Derived from the gross subtotal using the configured tax rate.
+- **`total`**: Gross total (including VAT). Equals `subtotal + shipping_amount` for Filament-created orders, or `subtotal + tax_amount + shipping_amount` for checkout-created orders.
+
+The `tax_amount` field ensures the VAT portion is always visible for accounting purposes, regardless of how the order was created.
+
 
 ## Spatie Sluggable
 [Documentation](https://spatie.be/docs/laravel-sluggable/v4/introduction)  
