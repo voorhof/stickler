@@ -32,7 +32,7 @@
                 href="{{ route('account.dashboard') }}"
                 @class([
                     'nav-link position-relative me-4',
-                    'active' => request()->routeIs('account.dashboard'),
+                    'active' => request()->routeIs('account.*'),
                 ])
                 aria-label="{{ __('Dashboard') }}"
             >

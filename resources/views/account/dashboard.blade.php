@@ -5,6 +5,10 @@
                 @lang('Dashboard')
             </h1>
 
+            <div class="mt-4 mb-4">
+                <a href="{{ route('account.orders.index') }}" class="btn btn-primary"> {{ __('My orders') }} </a>
+            </div>
+
             <div class="mt-4">
                 <form method="POST" action="{{ route('logout') }}">
                     <x-csrf-input />
