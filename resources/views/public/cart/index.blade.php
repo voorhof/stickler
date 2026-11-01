@@ -104,11 +104,32 @@
                     </table>
                 </div>
 
+                <div class="mb-4">
+                    @guest
+                        <p class="text-muted text-end">
+                            {{ __('Already have an account?') }}
+                            <a href="{{ route('login') }}">{{ __('Log in') }}</a>
+                            {{ __('or') }}
+                            <a href="{{ route('register') }}">{{ __('create an account to track your order') }}</a>.
+                        </p>
+                    @endguest
+                    @auth
+                        <p class="text-muted">{{ __('Logged in as') }} <strong>{{ auth()->user()->name }}</strong>.</p>
+                    @endauth
+                </div>
+
                 <div class="d-flex justify-content-between mt-4">
                     <a href="{{ route('products.index') }}" class="btn btn-secondary">
                         {{ __('Continue shopping') }}
                     </a>
-                    <a href="{{ route('checkout.index') }}" class="btn btn-primary">{{ __('Proceed to checkout') }}</a>
+                    @guest
+                        <a href="{{ route('checkout.index') }}" class="btn btn-primary">{{ __('Proceed as guest') }}</a>
+                    @else
+                        <a
+                            href="{{ route('checkout.index') }}"
+                            class="btn btn-primary"
+                        >{{ __('Proceed to checkout') }}</a>
+                    @endguest
                 </div>
             @endif
         </div>

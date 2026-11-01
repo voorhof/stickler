@@ -13,6 +13,17 @@
                 </div>
             @endif
 
+            @guest
+                <div class="mb-4">
+                    <p class="text-muted">
+                        {{ __('Already have an account?') }}
+                        <a href="{{ route('login') }}">{{ __('Log in') }}</a>
+                        {{ __('or') }}
+                        <a href="{{ route('register') }}">{{ __('create an account to track your order') }}</a>.
+                    </p>
+                </div>
+            @endguest
+
             <div class="row">
                 {{-- Cart Summary --}}
                 <div class="col-lg-5 mb-lg-0 mb-5">

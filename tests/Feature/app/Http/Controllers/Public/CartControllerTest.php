@@ -790,6 +790,98 @@ describe('retry payment', function () {
     });
 });
 
+describe('guest login/register option', function () {
+    test('guest cart page shows login and register links', function () {
+        $product = Product::factory()->create(['stock_quantity' => 10]);
+        $cart = Cart::factory()->guest()->create();
+        CartItem::factory()->create([
+            'cart_id' => $cart->id,
+            'product_id' => $product->id,
+            'product_name' => $product->title,
+            'quantity' => 1,
+            'unit_price' => $product->price,
+            'total_price' => $product->price,
+        ]);
+
+        $response = $this->withCookie('cart_token', $cart->cart_token)
+            ->get(route('cart.index'));
+
+        $response->assertSuccessful()
+            ->assertSee(__('Already have an account?'))
+            ->assertSee(__('Log in'))
+            ->assertSee(__('create an account to track your order'))
+            ->assertSee(__('Proceed as guest'))
+            ->assertSee(route('login'))
+            ->assertSee(route('register'));
+    });
+
+    test('authenticated cart page shows user info', function () {
+        $user = User::factory()->create();
+        $product = Product::factory()->create(['stock_quantity' => 10]);
+        $cart = Cart::factory()->create(['user_id' => $user->id, 'is_guest' => false]);
+        CartItem::factory()->create([
+            'cart_id' => $cart->id,
+            'product_id' => $product->id,
+            'product_name' => $product->title,
+            'quantity' => 1,
+            'unit_price' => $product->price,
+            'total_price' => $product->price,
+        ]);
+
+        $response = $this->actingAs($user)
+            ->get(route('cart.index'));
+
+        $response->assertSuccessful()
+            ->assertSee(__('Logged in as'))
+            ->assertSee($user->name)
+            ->assertSee(__('Proceed to checkout'));
+    });
+
+    test('guest checkout page shows login and register links', function () {
+        $product = Product::factory()->create(['stock_quantity' => 10]);
+        $cart = Cart::factory()->guest()->create();
+        CartItem::factory()->create([
+            'cart_id' => $cart->id,
+            'product_id' => $product->id,
+            'product_name' => $product->title,
+            'quantity' => 1,
+            'unit_price' => $product->price,
+            'total_price' => $product->price,
+        ]);
+
+        $response = $this->withCookie('cart_token', $cart->cart_token)
+            ->get(route('checkout.index'));
+
+        $response->assertSuccessful()
+            ->assertSee(__('Already have an account?'))
+            ->assertSee(__('Log in'))
+            ->assertSee(__('create an account to track your order'))
+            ->assertSee(route('login'))
+            ->assertSee(route('register'));
+    });
+
+    test('authenticated checkout page does not show login option', function () {
+        $user = User::factory()->create();
+        $product = Product::factory()->create(['stock_quantity' => 10]);
+        $cart = Cart::factory()->create(['user_id' => $user->id, 'is_guest' => false]);
+        CartItem::factory()->create([
+            'cart_id' => $cart->id,
+            'product_id' => $product->id,
+            'product_name' => $product->title,
+            'quantity' => 1,
+            'unit_price' => $product->price,
+            'total_price' => $product->price,
+        ]);
+
+        $response = $this->actingAs($user)
+            ->get(route('checkout.index'));
+
+        $response->assertSuccessful()
+            ->assertDontSee(__('Already have an account?'))
+            ->assertDontSee(__('Proceed as guest'));
+    });
+});
+
 describe('guest cart persistence', function () {
     test('guest cart persists across requests via cookie', function () {
         $product = Product::factory()->create(['stock_quantity' => 10]);
