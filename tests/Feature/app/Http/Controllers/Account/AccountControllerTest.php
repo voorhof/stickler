@@ -2,6 +2,7 @@
 
 use App\Models\Order;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 describe('account dashboard', function () {
     test('unauthenticated users are redirected to login', function () {
@@ -134,5 +135,116 @@ describe('order history', function () {
 
         $response->assertSee(__('My orders'))
             ->assertSee(route('account.orders.index'));
+    });
+
+    test('dashboard shows user profile details', function () {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get(route('account.dashboard'));
+
+        $response->assertSee($user->name)
+            ->assertSee($user->email)
+            ->assertSee(__('Edit profile'))
+            ->assertSee(route('account.profile'));
+    });
+});
+
+describe('profile edit', function () {
+    test('unauthenticated users are redirected to login', function () {
+        $response = $this->get(route('account.profile'));
+
+        $response->assertRedirect(route('login'));
+    });
+
+    test('user can view the profile edit page', function () {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get(route('account.profile'));
+
+        $response->assertSuccessful()
+            ->assertViewIs('account.profile.edit')
+            ->assertSee(__('Edit profile'))
+            ->assertSee($user->name)
+            ->assertSee($user->email);
+    });
+
+    test('user can update name and email', function () {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->post(route('account.profile.update'), [
+            'name' => 'New Name',
+            'email' => 'new@example.com',
+        ]);
+
+        $response->assertRedirect(route('account.profile'))
+            ->assertSessionHas('status', 'profile-updated');
+
+        $user->refresh();
+        expect($user->name)->toBe('New Name')
+            ->and($user->email)->toBe('new@example.com');
+    });
+
+    test('user can update password with current password confirmation', function () {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->post(route('account.profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'current_password' => 'password',
+            'password' => 'newpassword',
+            'password_confirmation' => 'newpassword',
+        ]);
+
+        $response->assertRedirect(route('account.profile'));
+
+        $user->refresh();
+        expect(Hash::check('newpassword', $user->password))->toBeTrue();
+    });
+
+    test('user cannot update password without current password', function () {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->post(route('account.profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'password' => 'newpassword',
+            'password_confirmation' => 'newpassword',
+        ]);
+
+        $response->assertSessionHasErrors(['current_password']);
+    });
+
+    test('user cannot use duplicate email', function () {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+
+        $response = $this->actingAs($user)->post(route('account.profile.update'), [
+            'name' => $user->name,
+            'email' => $otherUser->email,
+        ]);
+
+        $response->assertSessionHasErrors(['email']);
+    });
+
+    test('profile update shows success message', function () {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->post(route('account.profile.update'), [
+            'name' => 'Updated Name',
+            'email' => 'updated@example.com',
+        ]);
+
+        $response = $this->actingAs($user)->get(route('account.profile'));
+
+        $response->assertSee(__('Your profile has been updated successfully.'));
+    });
+
+    test('profile page shows back to dashboard link', function () {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get(route('account.profile'));
+
+        $response->assertSee(__('Back to dashboard'))
+            ->assertSee(route('account.dashboard'));
     });
 });
