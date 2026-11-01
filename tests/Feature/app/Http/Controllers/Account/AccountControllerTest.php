@@ -1,6 +1,9 @@
 <?php
 
+use App\Models\Cart;
+use App\Models\CartItem;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
@@ -130,6 +133,7 @@ describe('order history', function () {
 
     test('dashboard shows link to orders', function () {
         $user = User::factory()->create();
+        Order::factory()->create(['user_id' => $user->id]);
 
         $response = $this->actingAs($user)->get(route('account.dashboard'));
 
@@ -146,6 +150,65 @@ describe('order history', function () {
             ->assertSee($user->email)
             ->assertSee(__('Edit profile'))
             ->assertSee(route('account.profile'));
+    });
+
+    test('dashboard shows latest 2 orders', function () {
+        $user = User::factory()->create();
+        $orders = Order::factory()->count(3)->create(['user_id' => $user->id]);
+
+        $response = $this->actingAs($user)->get(route('account.dashboard'));
+
+        $response->assertSuccessful()
+            ->assertViewHas('latestOrders', function ($ordersView) use ($orders) {
+                $expectedIds = $orders->sortByDesc('created_at')->take(2)->pluck('id')->sort()->toArray();
+                $actualIds = $ordersView->pluck('id')->sort()->toArray();
+
+                return $ordersView->count() === 2
+                    && $actualIds === $expectedIds;
+            });
+    });
+
+    test('dashboard shows start shopping when no orders', function () {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get(route('account.dashboard'));
+
+        $response->assertSuccessful()
+            ->assertSee(__('You have not placed any orders yet.'))
+            ->assertSee(__('Start shopping to place your first order.'))
+            ->assertSee(__('Start shopping'))
+            ->assertSee(route('products.index'));
+    });
+
+    test('dashboard shows view cart when cart has items and no orders', function () {
+        $user = User::factory()->create();
+        $product = Product::factory()->create(['stock_quantity' => 10]);
+        $cart = Cart::factory()->create(['user_id' => $user->id, 'is_guest' => false]);
+        CartItem::factory()->create([
+            'cart_id' => $cart->id,
+            'product_id' => $product->id,
+            'product_name' => $product->title,
+            'quantity' => 1,
+            'unit_price' => $product->price,
+            'total_price' => $product->price,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('account.dashboard'));
+
+        $response->assertSuccessful()
+            ->assertSee(__('View cart'))
+            ->assertSee(route('cart.index'));
+    });
+
+    test('dashboard shows order details without links', function () {
+        $user = User::factory()->create();
+        $order = Order::factory()->create(['user_id' => $user->id]);
+
+        $response = $this->actingAs($user)->get(route('account.dashboard'));
+
+        $response->assertSuccessful()
+            ->assertSee($order->order_number)
+            ->assertSee($order->status->getLabel());
     });
 });
 

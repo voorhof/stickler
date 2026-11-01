@@ -39,7 +39,7 @@
                                 <span class="opacity-50">*</span>
                             </label>
                             @error('name')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -60,7 +60,7 @@
                                 <span class="opacity-50">*</span>
                             </label>
                             @error('email')
-                            <div class="invalid-feedback">{{ $message }}</div>
+                                <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -82,7 +82,7 @@
                             <label for="currentPasswordInput"> {{ __('Current password') }} </label>
                             <small class="form-text text-muted">{{ __('Required when changing your password.') }}</small>
                             @error('current_password')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -97,7 +97,7 @@
                             />
                             <label for="passwordInput"> {{ __('New password') }} </label>
                             @error('password')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>
 

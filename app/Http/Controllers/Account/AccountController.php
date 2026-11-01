@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Account;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Account\UpdateProfileRequest;
+use App\Models\Cart;
 use App\Models\Order;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -20,7 +21,19 @@ class AccountController extends Controller
     {
         Head::title('Dashboard');
 
-        return view('account.dashboard');
+        $user = Auth::user();
+
+        $latestOrders = Order::where('user_id', $user->id)
+            ->latest()
+            ->take(2)
+            ->get();
+
+        $cart = Cart::where('user_id', $user->id)
+            ->where('is_guest', false)
+            ->first();
+        $hasCartItems = $cart && $cart->totalQuantity() > 0;
+
+        return view('account.dashboard', compact('latestOrders', 'hasCartItems'));
     }
 
     /**
