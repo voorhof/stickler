@@ -898,3 +898,72 @@ describe('guest cart persistence', function () {
         expect($cart->cartItems)->toHaveCount(1);
     });
 });
+
+describe('rate limiting', function () {
+    test('cart add endpoint is rate limited', function () {
+        $product = Product::factory()->create(['stock_quantity' => 100]);
+
+        // Make 10 requests (within the limit)
+        for ($i = 0; $i < 10; $i++) {
+            $response = $this->post(route('cart.add', $product));
+            $response->assertRedirect();
+        }
+
+        // The 11th request should be rate limited
+        $response = $this->post(route('cart.add', $product));
+        $response->assertStatus(429);
+    });
+
+    test('checkout store endpoint is rate limited', function () {
+        $user = User::factory()->create();
+
+        $validData = [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'phone' => '+32470123456',
+            'shipping_street' => 'Test Street 1',
+            'shipping_city' => 'Brussels',
+            'shipping_postal_code' => '1000',
+            'shipping_country' => 'Belgium',
+            'billing_same_as_shipping' => 'on',
+        ];
+
+        // Make 10 requests (within the limit) — they may fail for other reasons (empty cart)
+        // but should not be rate limited until the 11th
+        for ($i = 0; $i < 10; $i++) {
+            $this->actingAs($user)
+                ->post(route('checkout.store'), $validData);
+        }
+
+        // The 11th request should be rate limited
+        $response = $this
+            ->actingAs($user)
+            ->post(route('checkout.store'), $validData);
+        $response->assertStatus(429);
+    });
+
+    test('cart update endpoint is rate limited', function () {
+        $product = Product::factory()->create(['stock_quantity' => 100]);
+        $cart = Cart::factory()->guest()->create();
+        $item = CartItem::factory()->create([
+            'cart_id' => $cart->id,
+            'product_id' => $product->id,
+            'product_name' => $product->title,
+            'quantity' => 1,
+            'unit_price' => $product->price,
+            'total_price' => $product->price,
+        ]);
+
+        // Make 10 requests (within the limit)
+        for ($i = 0; $i < 10; $i++) {
+            $this
+                ->withCookie('cart_token', $cart->cart_token)
+                ->post(route('cart.items.update', $item), ['quantity' => 1]);
+        }
+
+        // The 11th request should be rate limited
+        $response = $this->withCookie('cart_token', $cart->cart_token)
+            ->post(route('cart.items.update', $item), ['quantity' => 1]);
+        $response->assertStatus(429);
+    });
+});

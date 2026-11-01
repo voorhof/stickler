@@ -80,7 +80,7 @@ Route::middleware('cache.headers:public;max_age=60;s_maxage=300;stale_while_reva
 });
 
 /**
- * ContactController POST route
+ * ContactController POST route (rate limited to prevent abuse)
  */
 Route::post('/contact', [ContactController::class, 'store'])
     ->name('contact.store')
@@ -94,28 +94,30 @@ Route::get('/cart', [CartController::class, 'index'])
     ->name('cart.index');
 
 /**
- * CartController POST routes
+ * CartController POST routes (group rate limited to prevent abuse)
  */
-Route::post('/cart/add/{product}/{productVariant?}', [CartController::class, 'store'])
-    ->name('cart.add');
+Route::middleware(['throttle:10,1'])->group(function () {
+    Route::post('/cart/add/{product}/{productVariant?}', [CartController::class, 'store'])
+        ->name('cart.add');
 
-Route::post('/cart/items/{item}/update', [CartController::class, 'update'])
-    ->name('cart.items.update');
+    Route::post('/cart/items/{item}/update', [CartController::class, 'update'])
+        ->name('cart.items.update');
 
-Route::post('/cart/items/{item}/remove', [CartController::class, 'destroy'])
-    ->name('cart.items.remove');
+    Route::post('/cart/items/{item}/remove', [CartController::class, 'destroy'])
+        ->name('cart.items.remove');
+
+    Route::post('/checkout', [CartController::class, 'storeOrder'])
+        ->name('checkout.store');
+
+    Route::post('/checkout/pay/{order}', [CartController::class, 'retryPayment'])
+        ->name('checkout.pay');
+});
 
 /**
- * CartController Checkout routes
+ * CartController Checkout GET route
  */
 Route::get('/checkout', [CartController::class, 'checkout'])
     ->name('checkout.index');
-
-Route::post('/checkout', [CartController::class, 'storeOrder'])
-    ->name('checkout.store');
-
-Route::post('/checkout/pay/{order}', [CartController::class, 'retryPayment'])
-    ->name('checkout.pay');
 
 Route::get('/order-confirmed/{order}', [CartController::class, 'thankYou'])
     ->name('order.confirmed');

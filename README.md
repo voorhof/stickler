@@ -184,6 +184,7 @@ Stickler includes a complete checkout and payment lifecycle integrating a databa
   - `PAYMENT_WEBHOOK_URL`: Optional custom webhook override for testing with local tunnels (e.g. Ngrok, Expose, Herd Share).
 - **Security**: The webhook endpoint `payment/webhook/*` is excluded from CSRF verification in `bootstrap/app.php` to accept provider callbacks. Webhooks query Mollie's API directly for verified payment status to prevent tampering.
 - **Queueing**: Payment confirmation emails use `App\Mail\PaymentConfirmation` and implement `ShouldQueue` so email delivery does not block webhook response execution.
+- **Rate limiting**: All cart POST endpoints (`cart.add`, `cart.items.update`, `cart.items.remove`, `checkout.store`, `checkout.pay`) are protected by `throttle:10,1` middleware (10 requests per minute per IP) to prevent abuse and stock manipulation attempts.
 
 ### Inclusive VAT Pricing
 
