@@ -37,7 +37,7 @@ class ProductVariantsSection
                                 ->minValue(0)
                                 ->default(0),
                             TextInput::make('price')
-                                ->label(__('Price'))
+                                ->label(__('Price (incl. VAT)'))
                                 ->numeric()
                                 ->minValue(0)
                                 ->maxValue(fn (Get $get): ?float => $get('../../price'))
@@ -56,6 +56,16 @@ class ProductVariantsSection
                                 ->label(__('Is discounted'))
                                 ->live()
                                 ->columnSpanFull(),
+                            Select::make('tax_rate')
+                                ->label(__('Tax rate'))
+                                ->options([
+                                    0 => '0%',
+                                    6 => '6%',
+                                    12 => '12%',
+                                    21 => '21%',
+                                ])
+                                ->native(false)
+                                ->placeholder(__('Inherit from product')),
                             Select::make('options')
                                 ->label(__('Variant Options'))
                                 ->multiple()

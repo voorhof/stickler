@@ -31,6 +31,9 @@ return new class extends Migration
             $table->json('billing_address')->nullable();
 
             $table->string('payment_method')->nullable();
+            $table->string('payment_provider')->nullable();
+            $table->string('payment_provider_id')->nullable();
+
             $table->text('notes')->nullable();
 
             $table->timestamps();

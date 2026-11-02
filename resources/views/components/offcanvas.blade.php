@@ -66,6 +66,22 @@
             <a
                 @class([
                     'nav-link link-body-emphasis text-uppercase',
+                    'active' => request()->routeIs('cart.index'),
+                ])
+                href="{{ route('cart.index') }}"
+            >{{ __('Cart') }}</a>
+
+            <a
+                @class([
+                    'nav-link link-body-emphasis text-uppercase',
+                    'active' => request()->routeIs('account.*'),
+                ])
+                href="{{ route('account.dashboard') }}"
+            >{{ __('Account') }}</a>
+
+            <a
+                @class([
+                    'nav-link link-body-emphasis text-uppercase',
                     'active' => request()->routeIs('contact.index'),
                 ])
                 href="{{ route('contact.index') }}"
@@ -124,6 +140,16 @@
                     </li>
                 </ul>
             </div>
+
+            {{-- Logout --}}
+            @auth
+                <form method="POST" action="{{ route('logout') }}">
+                    <x-csrf-input />
+                    <button type="submit" class="nav-link link-body-emphasis text-uppercase">
+                        {{ __('Log out') }}
+                    </button>
+                </form>
+            @endauth
         </nav>
 
         <div class="c-offcanvas__footer">

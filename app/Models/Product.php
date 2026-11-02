@@ -50,6 +50,7 @@ use Spatie\Tags\HasTags;
  * @property float $price
  * @property float|null $discount_price
  * @property bool $is_discounted
+ * @property int|null $tax_rate
  * @property int $stock_quantity
  * @property string|null $website_title
  * @property string|null $website_url
@@ -84,6 +85,7 @@ use Spatie\Tags\HasTags;
     'price',
     'discount_price',
     'is_discounted',
+    'tax_rate',
     'stock_quantity',
     'website_title',
     'website_url',
@@ -191,6 +193,39 @@ class Product extends Model implements HasMedia, HasRichContent, Sortable
             get: fn ($value) => $value !== null ? $value / 100 : null,
             set: fn ($value) => $value !== null ? (int) round($value * 100) : null,
         );
+    }
+
+    /**
+     * Get the tax rate for this product, falling back to the global default.
+     */
+    public function getTaxRate(): int
+    {
+        return $this->tax_rate ?? (int) config('tax.default_rate', 21);
+    }
+
+    /**
+     * Get the net price (excluding VAT) in euros.
+     */
+    public function priceNet(): float
+    {
+        $rate = $this->getTaxRate();
+        $grossCents = $this->getAttributes()['price'];
+
+        if ($grossCents === null) {
+            return 0.0;
+        }
+
+        return ($grossCents / (1 + $rate / 100)) / 100;
+    }
+
+    /**
+     * Get the tax amount (VAT) in euros.
+     */
+    public function taxAmount(): float
+    {
+        $gross = $this->price ?? 0.0;
+
+        return $gross - $this->priceNet();
     }
 
     /*

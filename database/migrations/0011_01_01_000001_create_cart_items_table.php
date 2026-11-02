@@ -29,6 +29,7 @@ return new class extends Migration
             $table->integer('quantity');
             $table->integer('unit_price');
             $table->integer('total_price')->nullable();
+            $table->tinyInteger('tax_rate')->nullable();
 
             $table->timestamps();
             $table->softDeletes();

@@ -34,6 +34,7 @@ class CartItemFactory extends Factory
             'quantity' => $quantity,
             'unit_price' => $unitPrice,
             'total_price' => $unitPrice * $quantity,
+            'tax_rate' => $this->faker->randomElement([null, 6, 12, 21]),
         ];
     }
 

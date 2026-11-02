@@ -16,7 +16,7 @@ beforeEach(function () {
 
 test('it adds an item to a cart', function () {
     $cart = Cart::factory()->create();
-    $product = Product::factory()->create(['price' => 1999, 'stock_quantity' => 10]);
+    $product = Product::factory()->create(['price' => 1999, 'is_discounted' => false, 'stock_quantity' => 10]);
 
     $service = app(CartService::class);
     $item = $service->addItem($cart, $product, null, 2);
@@ -29,7 +29,7 @@ test('it adds an item to a cart', function () {
 
 test('it keeps cents when adding a product with decimal price', function () {
     $cart = Cart::factory()->create();
-    $product = Product::factory()->create(['price' => 4388.84, 'stock_quantity' => 10]);
+    $product = Product::factory()->create(['price' => 4388.84, 'is_discounted' => false, 'stock_quantity' => 10]);
 
     $service = app(CartService::class);
     $item = $service->addItem($cart, $product, null, 2);
@@ -40,7 +40,7 @@ test('it keeps cents when adding a product with decimal price', function () {
 
 test('it updates existing item quantity when adding the same product', function () {
     $cart = Cart::factory()->create();
-    $product = Product::factory()->create(['price' => 1000, 'stock_quantity' => 10]);
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
 
     $service = app(CartService::class);
     $service->addItem($cart, $product, null, 2);
@@ -52,7 +52,7 @@ test('it updates existing item quantity when adding the same product', function 
 
 test('it validates stock when adding item', function () {
     $cart = Cart::factory()->create();
-    $product = Product::factory()->create(['price' => 1000, 'stock_quantity' => 2]);
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 2]);
 
     $service = app(CartService::class);
 
@@ -62,7 +62,7 @@ test('it validates stock when adding item', function () {
 
 test('it updates item quantity', function () {
     $cart = Cart::factory()->create();
-    $product = Product::factory()->create(['price' => 1000, 'stock_quantity' => 10]);
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
 
     $service = app(CartService::class);
     $item = $service->addItem($cart, $product, null, 2);
@@ -75,7 +75,7 @@ test('it updates item quantity', function () {
 
 test('it removes item when quantity is zero or less', function () {
     $cart = Cart::factory()->create();
-    $product = Product::factory()->create(['price' => 1000, 'stock_quantity' => 10]);
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
 
     $service = app(CartService::class);
     $item = $service->addItem($cart, $product, null, 2);
@@ -88,7 +88,7 @@ test('it removes item when quantity is zero or less', function () {
 
 test('it removes an item from a cart', function () {
     $cart = Cart::factory()->create();
-    $product = Product::factory()->create(['price' => 1000, 'stock_quantity' => 10]);
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
 
     $service = app(CartService::class);
     $item = $service->addItem($cart, $product);
@@ -100,8 +100,8 @@ test('it removes an item from a cart', function () {
 
 test('it clears all items from a cart', function () {
     $cart = Cart::factory()->create();
-    $product1 = Product::factory()->create(['price' => 1000, 'stock_quantity' => 10]);
-    $product2 = Product::factory()->create(['price' => 2000, 'stock_quantity' => 10]);
+    $product1 = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+    $product2 = Product::factory()->create(['price' => 2000, 'is_discounted' => false, 'stock_quantity' => 10]);
 
     $service = app(CartService::class);
     $service->addItem($cart, $product1);
@@ -116,7 +116,7 @@ test('it merges two carts', function () {
     $cart1 = Cart::factory()->create();
     $cart2 = Cart::factory()->create();
 
-    $product = Product::factory()->create(['price' => 1000, 'stock_quantity' => 20]);
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 20]);
 
     $service = app(CartService::class);
     $service->addItem($cart1, $product, null, 2);
@@ -130,14 +130,18 @@ test('it merges two carts', function () {
 
 test('it converts cart to order', function () {
     $cart = Cart::factory()->create();
-    $product = Product::factory()->create(['price' => 1000, 'stock_quantity' => 10]);
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'tax_rate' => null, 'stock_quantity' => 10]);
 
     $service = app(CartService::class);
     $service->addItem($cart, $product, null, 2);
 
     $order = $service->convertToOrder($cart);
 
-    expect($order->subtotal)->toBe(2000)
+    // subtotal is now net (excl. VAT), tax_amount is VAT, total is gross
+    // 2000 / 1.21 = 1652.8925... (calculated at cents level for precision)
+    expect($order->total)->toBe(2000)
+        ->and($order->subtotal)->toBe(1652.89)
+        ->and($order->tax_amount)->toBe(347.11)
         ->and(OrderItem::where('order_id', $order->id)->count())->toBe(1)
         ->and($cart->fresh()->cartItems)->toBeEmpty();
 });
@@ -173,8 +177,8 @@ test('it gets cart by token', function () {
 
 test('it adds item with variant', function () {
     $cart = Cart::factory()->create();
-    $product = Product::factory()->create(['price' => 1000, 'stock_quantity' => 10]);
-    $variant = ProductVariant::factory()->create(['product_id' => $product->id, 'price' => 1500, 'stock_quantity' => 5]);
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+    $variant = ProductVariant::factory()->create(['product_id' => $product->id, 'price' => 1500, 'is_discounted' => false, 'stock_quantity' => 5]);
 
     $service = app(CartService::class);
     $item = $service->addItem($cart, $product, $variant);
@@ -185,8 +189,8 @@ test('it adds item with variant', function () {
 
 test('it validates variant stock when adding item', function () {
     $cart = Cart::factory()->create();
-    $product = Product::factory()->create(['price' => 1000, 'stock_quantity' => 100]);
-    $variant = ProductVariant::factory()->create(['product_id' => $product->id, 'price' => 1500, 'stock_quantity' => 2]);
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 100]);
+    $variant = ProductVariant::factory()->create(['product_id' => $product->id, 'price' => 1500, 'is_discounted' => false, 'stock_quantity' => 2]);
 
     $service = app(CartService::class);
 
@@ -196,7 +200,7 @@ test('it validates variant stock when adding item', function () {
 
 test('it considers reserved quantity when validating stock', function () {
     $cart = Cart::factory()->create();
-    $product = Product::factory()->create(['price' => 1000, 'stock_quantity' => 5]);
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 5]);
 
     $service = app(CartService::class);
     $service->addItem($cart, $product, null, 3);
@@ -252,7 +256,7 @@ test('it gets or creates an existing user cart', function () {
 
 test('it converts cart to order with custom data', function () {
     $cart = Cart::factory()->create();
-    $product = Product::factory()->create(['price' => 1000, 'stock_quantity' => 10]);
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
 
     $service = app(CartService::class);
     $service->addItem($cart, $product, null, 2);
@@ -269,8 +273,8 @@ test('it converts cart to order with custom data', function () {
 
 test('it uses product price when variant has no price', function () {
     $cart = Cart::factory()->create();
-    $product = Product::factory()->create(['price' => 1000, 'stock_quantity' => 10]);
-    $variant = ProductVariant::factory()->create(['product_id' => $product->id, 'price' => null, 'stock_quantity' => 5]);
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+    $variant = ProductVariant::factory()->create(['product_id' => $product->id, 'price' => null, 'is_discounted' => false, 'stock_quantity' => 5]);
 
     $service = app(CartService::class);
     $item = $service->addItem($cart, $product, $variant);
@@ -319,21 +323,21 @@ test('it transfers customer data from cart to order on conversion', function () 
             'notes' => 'Please leave at the door',
         ],
     ]);
-    $product = Product::factory()->create(['price' => 1000, 'stock_quantity' => 10]);
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
 
     $service = app(CartService::class);
     $service->addItem($cart, $product, null, 2);
 
     $order = $service->convertToOrder($cart);
 
-    expect($order->shipping_address)->toBe(['street' => 'Main St 1', 'city' => 'Brussels', 'postal_code' => '1000', 'country' => 'Belgium'])
+    expect($order->shipping_address)->toBe(['street' => 'Main St 1', 'city' => 'Brussels', 'postal_code' => '1000', 'country' => 'Belgium', 'email' => 'john@example.com'])
         ->and($order->billing_address)->toBe(['street' => 'Other St 2', 'city' => 'Antwerp', 'postal_code' => '2000', 'country' => 'Belgium'])
         ->and($order->notes)->toBe('Please leave at the door');
 });
 
 test('it handles missing customer data on conversion', function () {
     $cart = Cart::factory()->create(['customer_data' => null]);
-    $product = Product::factory()->create(['price' => 1000, 'stock_quantity' => 10]);
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
 
     $service = app(CartService::class);
     $service->addItem($cart, $product);
@@ -351,7 +355,7 @@ test('it handles partial customer data on conversion', function () {
             'shipping_address' => ['street' => 'Main St 1', 'city' => 'Brussels', 'postal_code' => '1000', 'country' => 'Belgium'],
         ],
     ]);
-    $product = Product::factory()->create(['price' => 1000, 'stock_quantity' => 10]);
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
 
     $service = app(CartService::class);
     $service->addItem($cart, $product);
@@ -361,4 +365,96 @@ test('it handles partial customer data on conversion', function () {
     expect($order->shipping_address)->toBe(['street' => 'Main St 1', 'city' => 'Brussels', 'postal_code' => '1000', 'country' => 'Belgium'])
         ->and($order->billing_address)->toBeNull()
         ->and($order->notes)->toBeNull();
+});
+
+test('it uses discount price when product is discounted', function () {
+    $cart = Cart::factory()->create();
+    $product = Product::factory()->create([
+        'price' => 1000,
+        'discount_price' => 750,
+        'is_discounted' => true,
+        'stock_quantity' => 10,
+    ]);
+
+    $service = app(CartService::class);
+    $item = $service->addItem($cart, $product, null, 2);
+
+    expect($item->unit_price)->toBe(750)
+        ->and($item->total_price)->toBe(1500);
+});
+
+test('it uses original price when product is not discounted', function () {
+    $cart = Cart::factory()->create();
+    $product = Product::factory()->create([
+        'price' => 1000,
+        'discount_price' => 750,
+        'is_discounted' => false,
+        'stock_quantity' => 10,
+    ]);
+
+    $service = app(CartService::class);
+    $item = $service->addItem($cart, $product);
+
+    expect($item->unit_price)->toBe(1000);
+});
+
+test('it uses discount price when variant is discounted', function () {
+    $cart = Cart::factory()->create();
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+    $variant = ProductVariant::factory()->create([
+        'product_id' => $product->id,
+        'price' => 1200,
+        'discount_price' => 900,
+        'is_discounted' => true,
+        'stock_quantity' => 5,
+    ]);
+
+    $service = app(CartService::class);
+    $item = $service->addItem($cart, $product, $variant);
+
+    expect($item->unit_price)->toBe(900);
+});
+
+test('it uses variant price when variant is not discounted but product is', function () {
+    $cart = Cart::factory()->create();
+    $product = Product::factory()->create([
+        'price' => 1000,
+        'discount_price' => 750,
+        'is_discounted' => true,
+        'stock_quantity' => 10,
+    ]);
+    $variant = ProductVariant::factory()->create([
+        'product_id' => $product->id,
+        'price' => 1200,
+        'discount_price' => null,
+        'is_discounted' => false,
+        'stock_quantity' => 5,
+    ]);
+
+    $service = app(CartService::class);
+    $item = $service->addItem($cart, $product, $variant);
+
+    expect($item->unit_price)->toBe(1200);
+});
+
+test('it uses product discount price when variant has no price and product is discounted', function () {
+    $cart = Cart::factory()->create();
+    $product = Product::factory()->create([
+        'price' => 1000,
+        'discount_price' => 750,
+        'is_discounted' => true,
+        'stock_quantity' => 10,
+    ]);
+    $variant = ProductVariant::factory()->create([
+        'product_id' => $product->id,
+        'price' => null,
+        'discount_price' => null,
+        'is_discounted' => false,
+        'stock_quantity' => 5,
+    ]);
+
+    $service = app(CartService::class);
+    $item = $service->addItem($cart, $product, $variant);
+
+    expect($item->unit_price)->toBe(750);
 });

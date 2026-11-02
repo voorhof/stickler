@@ -269,6 +269,7 @@ it('can add a cart item with a product variant', function () {
     $variant = ProductVariant::factory()->create([
         'product_id' => $product->id,
         'price' => 2999,
+        'is_discounted' => false,
         'sku' => 'VARIANT-SKU',
     ]);
     $option = ProductVariantOption::factory()->create();

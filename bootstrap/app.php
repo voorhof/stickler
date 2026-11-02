@@ -18,6 +18,17 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function () {
+            // Authentication routes
+            Route::middleware(['web'])
+                ->prefix('account')
+                ->group(base_path('routes/auth.php'));
+
+            // User account routes
+            Route::middleware(['web', 'auth', 'verified'])
+                ->prefix('account')
+                ->name('account.')
+                ->group(base_path('routes/account.php'));
+
             // Admin Filament routes
             Route::middleware(['web', 'auth', 'verified', 'can:access admin'])
                 ->prefix('admin')
@@ -26,6 +37,11 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Exclude payment webhook endpoints from CSRF verification
+        $middleware->preventRequestForgery(except: [
+            'payment/webhook/*',
+        ]);
+
         // Cookieless page view tracking: prepended so it still runs when CacheResponse serves a cached response
         $middleware->web(prepend: [
             TrackPageView::class,

@@ -202,6 +202,7 @@ class OrderForm
                                 Grid::make()->schema([
                                     TextInput::make('subtotal')
                                         ->label(__('Subtotal'))
+                                        ->helperText(__('incl. VAT'))
                                         ->numeric()
                                         ->prefix('€')
                                         ->required()
@@ -226,6 +227,7 @@ class OrderForm
                                         }),
                                     TextInput::make('total')
                                         ->label(__('Total'))
+                                        ->helperText(__('incl. VAT'))
                                         ->numeric()
                                         ->prefix('€')
                                         ->required()
@@ -295,17 +297,19 @@ class OrderForm
     /**
      * Recalculate the order prices based on order items.
      *
-     * Subtotal = sum of all item total prices
-     * Tax = 21% of subtotal
-     * Total = subtotal + tax + shipping
+     * Item prices are gross (incl. VAT).
+     * Subtotal = sum of all item total prices (gross)
+     * Tax = derived VAT from subtotal
+     * Total = subtotal + shipping
      */
     protected static function recalculatePrices(Get $get, Set $set): void
     {
         $items = $get('orderItems') ?? [];
         $subtotal = collect($items)->sum(fn (array $item) => ($item['unit_price'] ?? 0) * ($item['quantity'] ?? 0));
-        $tax = round($subtotal * 0.21, 2);
+        $taxRate = config('tax.default_rate', 21);
+        $tax = round($subtotal - ($subtotal / (1 + $taxRate / 100)), 2);
         $shipping = $get('shipping_amount') ?? 0;
-        $total = $subtotal + $tax + $shipping;
+        $total = $subtotal + $shipping;
 
         $set('subtotal', round($subtotal, 2));
         $set('tax_amount', round($tax, 2));
@@ -322,9 +326,10 @@ class OrderForm
     {
         $items = $get('../../orderItems') ?? [];
         $subtotal = collect($items)->sum(fn (array $item) => ($item['unit_price'] ?? 0) * ($item['quantity'] ?? 0));
-        $tax = round($subtotal * 0.21, 2);
+        $taxRate = config('tax.default_rate', 21);
+        $tax = round($subtotal - ($subtotal / (1 + $taxRate / 100)), 2);
         $shipping = $get('../../shipping_amount') ?? 0;
-        $total = $subtotal + $tax + $shipping;
+        $total = $subtotal + $shipping;
 
         $set('../../subtotal', round($subtotal, 2));
         $set('../../tax_amount', round($tax, 2));

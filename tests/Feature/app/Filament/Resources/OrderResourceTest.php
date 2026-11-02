@@ -53,6 +53,11 @@ it('can list orders', function () {
         ->assertCountTableRecords(3);
 });
 
+it('has export action on list orders page', function () {
+    livewire(ListOrders::class)
+        ->assertActionExists('export');
+});
+
 it('can search orders by order number', function () {
     $order = Order::factory()->create();
     $otherOrder = Order::factory()->create();
@@ -182,9 +187,9 @@ it('calculates order prices from items correctly', function () {
             'status' => 'pending',
             'payment_status' => 'unpaid',
             'subtotal' => 59.98,
-            'tax_amount' => 12.59,
+            'tax_amount' => 10.41,
             'shipping_amount' => 5.00,
-            'total' => 77.57,
+            'total' => 64.98,
             'orderItems' => [
                 [
                     'product_id' => $product->id,
@@ -202,14 +207,14 @@ it('calculates order prices from items correctly', function () {
 
     $order = Order::latest()->first();
 
-    // Subtotal = sum of (unit_price * quantity) for all items = 29.99 * 2 = 59.98 EUR
+    // Subtotal = sum of (unit_price * quantity) for all items = 29.99 * 2 = 59.98 EUR (gross, incl. VAT)
     expect($order->subtotal)->toBe(59.98)
-        ->and($order->tax_amount)->toBe(12.60)
-        ->and($order->total)->toBe(77.58);
+        ->and($order->tax_amount)->toBe(10.41)
+        ->and($order->total)->toBe(64.98);
 
-    // Tax = 21% of subtotal = 59.98 * 0.21 = 12.5958, rounded to 12.60 EUR
+    // Tax = derived VAT from gross subtotal = 59.98 - (59.98 / 1.21) = 10.41 EUR
 
-    // Total = subtotal + tax + shipping = 59.98 + 12.60 + 5.00 = 77.58 EUR
+    // Total = subtotal + shipping = 59.98 + 5.00 = 64.98 EUR
 });
 
 it('rounds calculated price fields to two decimals', function () {
@@ -231,8 +236,8 @@ it('rounds calculated price fields to two decimals', function () {
         ])
         ->assertSchemaStateSet([
             'subtotal' => 0.3,
-            'tax_amount' => 0.06,
-            'total' => 0.36,
+            'tax_amount' => 0.05,
+            'total' => 0.3,
         ])
         ->call('create')
         ->assertHasNoFormErrors()
@@ -241,9 +246,12 @@ it('rounds calculated price fields to two decimals', function () {
     $order = Order::latest()->first();
 
     // 0.1 * 3 = 0.30000000000000004 in floating point, so the calculated values must be rounded to 2 decimals
+    // Subtotal = 0.30 EUR (gross, incl. VAT)
+    // Tax = 0.30 - (0.30 / 1.21) = 0.05 EUR
+    // Total = 0.30 + 0 = 0.30 EUR
     expect($order->subtotal)->toBe(0.3)
-        ->and($order->tax_amount)->toBe(0.06)
-        ->and($order->total)->toBe(0.36)
+        ->and($order->tax_amount)->toBe(0.05)
+        ->and($order->total)->toBe(0.3)
         ->and($order->orderItems->first()->total_price)->toBe(0.3);
 });
 
@@ -256,9 +264,9 @@ it('calculates order prices with multiple items', function () {
             'status' => 'pending',
             'payment_status' => 'unpaid',
             'subtotal' => 109.97,
-            'tax_amount' => 23.09,
+            'tax_amount' => 19.09,
             'shipping_amount' => 0,
-            'total' => 133.06,
+            'total' => 109.97,
             'orderItems' => [
                 [
                     'product_id' => $product1->id,
@@ -285,14 +293,14 @@ it('calculates order prices with multiple items', function () {
     $order = Order::latest()->first();
     expect($order->orderItems)->toHaveCount(2)
         ->and($order->subtotal)->toBe(109.97)
-        ->and($order->tax_amount)->toBe(23.09)
-        ->and($order->total)->toBe(133.06);
+        ->and($order->tax_amount)->toBe(19.09)
+        ->and($order->total)->toBe(109.97);
 
-    // Subtotal = 29.99 * 1 + 26.66 * 3 = 29.99 + 79.98 = 109.97 EUR
+    // Subtotal = 29.99 * 1 + 26.66 * 3 = 29.99 + 79.98 = 109.97 EUR (gross, incl. VAT)
 
-    // Tax = 21% of 109.97 = 23.0937, rounded to 23.09 EUR
+    // Tax = derived VAT from gross subtotal = 109.97 - (109.97 / 1.21) = 19.09 EUR
 
-    // Total = 109.97 + 23.09 + 0 = 133.06 EUR
+    // Total = subtotal + shipping = 109.97 + 0 = 109.97 EUR
 });
 
 it('can create an order with product variant', function () {

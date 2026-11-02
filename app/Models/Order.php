@@ -38,11 +38,14 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
  * @property array|null $shipping_address
  * @property array|null $billing_address
  * @property string|null $payment_method
+ * @property string|null $payment_provider
+ * @property string|null $payment_provider_id
  * @property string|null $notes
  * @property DateTime $created_at
  * @property DateTime $updated_at
  * @property BelongsTo<User>|null $user
  * @property Collection<OrderItem> $orderItems
+ * @property mixed $was_already_paid
  *
  * @method static create(mixed $validated)
  * @method static forceCreate(array $array)
@@ -50,6 +53,7 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
  * @method static latest()
  * @method static count()
  * @method static first()
+ * @method static find(mixed $orderId)
  */
 #[Fillable([
     'order_number',
@@ -63,6 +67,8 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
     'shipping_address',
     'billing_address',
     'payment_method',
+    'payment_provider',
+    'payment_provider_id',
     'notes',
 ])]
 #[Hidden([])]

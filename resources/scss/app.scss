@@ -44,6 +44,10 @@
     .navbar-brand {
         width: 86px;
     }
+
+    .nav-link.active {
+        color: var(--st-primary);
+    }
 }
 
 // Offcanvas navigation
@@ -72,6 +76,10 @@
     }
     .active .color-scheme-theme-icon {
         display: block;
+    }
+
+    .nav-link.active {
+        color: var(--st-primary);
     }
 }
 

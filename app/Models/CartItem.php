@@ -31,6 +31,7 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
  * @property int $quantity
  * @property int $unit_price
  * @property int $total_price
+ * @property int|null $tax_rate
  * @property DateTime $created_at
  * @property DateTime $updated_at
  * @property Cart $cart
@@ -53,6 +54,7 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
     'quantity',
     'unit_price',
     'total_price',
+    'tax_rate',
 ])]
 #[Hidden([])]
 #[ObservedBy(CartItemObserver::class)]
@@ -88,6 +90,7 @@ class CartItem extends Model
             'quantity' => 'integer',
             'unit_price' => 'integer',
             'total_price' => 'integer',
+            'tax_rate' => 'integer',
         ];
     }
 

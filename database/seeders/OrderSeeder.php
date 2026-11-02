@@ -43,6 +43,9 @@ class OrderSeeder extends Seeder
         // Delivered orders (3)
         $this->createOrdersWithItems(3, $products, $users, ['delivered', 'paid']);
 
+        // Mollie paid orders (2)
+        $this->createOrdersWithItems(2, $products, $users, ['delivered', 'paidWithMollie']);
+
         // Cancelled orders (1)
         $this->createOrdersWithItems(1, $products, $users, ['cancelled']);
 

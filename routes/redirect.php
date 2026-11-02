@@ -11,3 +11,7 @@ use Illuminate\Support\Facades\Route;
 // Public routes
 Route::redirect('/home', '/');
 Route::redirect('/welcome', '/');
+
+// User account routes
+Route::redirect('/account', '/account/dashboard');
+Route::redirect('/dashboard', '/account/dashboard');

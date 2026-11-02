@@ -99,6 +99,7 @@ it('can create a product with all product info fields', function () {
             'discount_price' => 119.99,
             'is_discounted' => true,
             'stock_quantity' => 25,
+            'tax_rate' => 6,
         ])
         ->call('create')
         ->assertHasNoFormErrors()
@@ -110,11 +111,13 @@ it('can create a product with all product info fields', function () {
         'sku' => 'PRD-NEW-001',
         'is_discounted' => true,
         'stock_quantity' => 25,
+        'tax_rate' => 6,
     ]);
 
     $product = Product::where('slug', 'new-product')->first();
     expect($product->price)->toBe(149.99)
-        ->and($product->discount_price)->toBe(119.99);
+        ->and($product->discount_price)->toBe(119.99)
+        ->and($product->tax_rate)->toBe(6);
 });
 
 it('can create a product without optional product info fields', function () {
@@ -139,7 +142,8 @@ it('can create a product without optional product info fields', function () {
         ->and($product->price)->toBe(29.99)
         ->and($product->discount_price)->toBeNull()
         ->and($product->is_discounted)->toBeFalse()
-        ->and($product->stock_quantity)->toBe(0);
+        ->and($product->stock_quantity)->toBe(0)
+        ->and($product->tax_rate)->toBeNull();
 });
 
 it('validates required fields when editing a product', function () {

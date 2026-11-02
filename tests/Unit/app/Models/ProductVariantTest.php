@@ -244,3 +244,129 @@ test('product variant model has policy attribute configured', function () {
     expect($attributes)->toHaveCount(1)
         ->and($attributes[0]->getArguments()[0])->toBe(ProductVariantPolicy::class);
 });
+
+test('tax rate is nullable', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->create();
+    $variant = ProductVariant::factory()->create([
+        'product_id' => $product->id,
+        'tax_rate' => null,
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
+
+    expect($variant->tax_rate)->toBeNull();
+});
+
+test('tax rate can be set to a specific value', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->create();
+    $variant = ProductVariant::factory()->create([
+        'product_id' => $product->id,
+        'tax_rate' => 6,
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
+
+    expect($variant->tax_rate)->toBe(6);
+});
+
+test('getTaxRate returns variant tax rate when set', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->create();
+    $variant = ProductVariant::factory()->create([
+        'product_id' => $product->id,
+        'tax_rate' => 6,
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
+
+    expect($variant->getTaxRate())->toBe(6);
+});
+
+test('getTaxRate falls back to product tax rate when variant tax rate is null', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->create(['tax_rate' => 6]);
+    $variant = ProductVariant::factory()->create([
+        'product_id' => $product->id,
+        'tax_rate' => null,
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
+    $variant->setRelation('product', $product);
+
+    expect($variant->getTaxRate())->toBe(6);
+});
+
+test('getTaxRate falls back to global default when both variant and product tax rate are null', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->create(['tax_rate' => null]);
+    $variant = ProductVariant::factory()->create([
+        'product_id' => $product->id,
+        'tax_rate' => null,
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
+    $variant->setRelation('product', $product);
+
+    expect($variant->getTaxRate())->toBe(21);
+});
+
+test('priceNet returns net price excluding VAT', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->create();
+    // €121.00 gross at 21% VAT = €100.00 net
+    $variant = ProductVariant::factory()->create([
+        'product_id' => $product->id,
+        'price' => 121.00,
+        'tax_rate' => 21,
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
+
+    expect($variant->priceNet())->toBe(100.0);
+});
+
+test('priceNet returns net price with reduced VAT rate', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->create();
+    // €106.00 gross at 6% VAT = €100.00 net
+    $variant = ProductVariant::factory()->create([
+        'product_id' => $product->id,
+        'price' => 106.00,
+        'tax_rate' => 6,
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
+
+    expect($variant->priceNet())->toBe(100.0);
+});
+
+test('taxAmount returns VAT amount', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->create();
+    // €121.00 gross at 21% VAT = €21.00 tax
+    $variant = ProductVariant::factory()->create([
+        'product_id' => $product->id,
+        'price' => 121.00,
+        'tax_rate' => 21,
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
+
+    expect($variant->taxAmount())->toBe(21.0);
+});
+
+test('taxAmount returns zero when VAT rate is zero', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->create();
+    $variant = ProductVariant::factory()->create([
+        'product_id' => $product->id,
+        'price' => 50.00,
+        'tax_rate' => 0,
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
+
+    expect($variant->taxAmount())->toBe(0.0);
+});

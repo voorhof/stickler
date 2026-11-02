@@ -454,3 +454,69 @@ test('it has many product variants', function () {
     expect($product->variants)->toHaveCount(3)
         ->and($product->variants->pluck('id')->toArray())->toBe($variants->pluck('id')->toArray());
 });
+
+test('tax rate is nullable', function () {
+    User::factory()->create();
+    $product = Product::factory()->create(['tax_rate' => null]);
+
+    expect($product->tax_rate)->toBeNull();
+});
+
+test('tax rate can be set to a specific value', function () {
+    User::factory()->create();
+    $product = Product::factory()->create(['tax_rate' => 6]);
+
+    expect($product->tax_rate)->toBe(6);
+});
+
+test('getTaxRate returns product tax rate when set', function () {
+    User::factory()->create();
+    $product = Product::factory()->create(['tax_rate' => 6]);
+
+    expect($product->getTaxRate())->toBe(6);
+});
+
+test('getTaxRate falls back to global default when tax rate is null', function () {
+    User::factory()->create();
+    $product = Product::factory()->create(['tax_rate' => null]);
+
+    expect($product->getTaxRate())->toBe(21);
+});
+
+test('priceNet returns net price excluding VAT', function () {
+    User::factory()->create();
+    // €121.00 gross at 21% VAT = €100.00 net
+    $product = Product::factory()->create(['price' => 121.00, 'tax_rate' => 21]);
+
+    expect($product->priceNet())->toBe(100.0);
+});
+
+test('priceNet returns net price with reduced VAT rate', function () {
+    User::factory()->create();
+    // €106.00 gross at 6% VAT = €100.00 net
+    $product = Product::factory()->create(['price' => 106.00, 'tax_rate' => 6]);
+
+    expect($product->priceNet())->toBe(100.0);
+});
+
+test('priceNet returns net price with zero VAT rate', function () {
+    User::factory()->create();
+    $product = Product::factory()->create(['price' => 50.00, 'tax_rate' => 0]);
+
+    expect($product->priceNet())->toBe(50.0);
+});
+
+test('taxAmount returns VAT amount', function () {
+    User::factory()->create();
+    // €121.00 gross at 21% VAT = €21.00 tax
+    $product = Product::factory()->create(['price' => 121.00, 'tax_rate' => 21]);
+
+    expect($product->taxAmount())->toBe(21.0);
+});
+
+test('taxAmount returns zero when VAT rate is zero', function () {
+    User::factory()->create();
+    $product = Product::factory()->create(['price' => 50.00, 'tax_rate' => 0]);
+
+    expect($product->taxAmount())->toBe(0.0);
+});

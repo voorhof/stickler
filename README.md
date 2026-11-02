@@ -2,10 +2,10 @@
 
 A Laravel application starter kit.
 
-[![🚀 Test Laravel Application](https://github.com/voorhof/stickler/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/voorhof/stickler/actions/workflows/tests.yml)
-[![Plumb score](https://plumbphp.dev/badges/voorhof/stickler/composite.svg)](https://plumbphp.dev/voorhof/stickler)
+[![🚀 Stickler tests](https://github.com/voorhof/stickler/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/voorhof/stickler/actions/workflows/tests.yml)
+[![Plumb](https://plumbphp.dev/badges/voorhof/stickler/composite.svg)](https://plumbphp.dev/voorhof/stickler)
 [![Packagist](https://img.shields.io/packagist/v/voorhof/stickler.svg)](https://packagist.org/packages/voorhof/stickler)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 ## About Stickler
 
@@ -16,7 +16,8 @@ Out of the box, Stickler includes:
 - **A complete Laravel foundation** with environment-based configuration, database migrations, seed data, queues, scheduled tasks, and a structure that is ready to customize.
 - **A Filament 5 admin panel** with user management, navigation, notifications, soft-delete workflows, reusable form schemas and table definitions, resizable columns, and business-hours management. See the [Filament implementation guide](FILAMENT.md) for details.
 - **Content management building blocks** for posts and other content, including slugs, tags, sorting, localized content, rich text editing, and a custom rich-editor source-code tool.
-- **E-commerce building blocks** with products and product variants (option types, options, SKU, stock and price per variant), categories, orders with order and payment status, and a public cart with a navbar badge, stock validation, and an expiry cleanup. See the [Store Management section](FILAMENT.md#store-management) of the Filament guide for the admin side.
+- **User authentication** with registration, login, password reset, email verification, and a protected account dashboard. Guest carts are automatically merged into the authenticated cart on login or registration. See the [User Authentication section](#user-authentication) for details.
+- **E-commerce building blocks** with products and product variants (option types, options, SKU, stock and price per variant), categories, orders with order and payment status, a public cart with a navbar badge, stock validation and expiry cleanup, and a complete hosted checkout flow powered by Mollie payments. See the [Store Management section](FILAMENT.md#store-management) of the Filament guide and the [Payment and Checkout section](#payment-and-checkout).
 - **Media management** powered by Spatie Media Library, including uploads, image conversions, responsive media support, and integration with Filament.
 - **User access and administration** with roles and permissions, panel access checks, admin configuration through `.env`, and optional two-factor authentication support.
 - **Website essentials** such as HTML head management, sitemap generation, robots.txt support, opening hours, cookie consent, and a Bootstrap-based public frontend.
@@ -107,6 +108,96 @@ Make sure you have all this covered:
 - update art in public folder (and references to the logo's inside blade views)
 - re-generate llms.txt to fit your project
 
+## User Authentication
+
+Public user authentication allows customers to create an account, log in, manage their profile, and access a protected account dashboard. The authentication flow integrates with the cart system so guest carts are preserved when a user logs in or registers.
+
+### Registration and login
+
+- `RegisteredUserController` (`app/Http/Controllers/Auth`) handles user registration. The registration form includes a terms-of-service checkbox and is protected by a honeypot and rate limiting (3 attempts per minute).
+- `AuthenticatedSessionController` handles login and logout. After a successful login, the session is regenerated for security.
+- Routes are defined in `routes/auth.php` under the `guest` middleware group, so authenticated users are redirected away from these pages.
+- The registration route uses the Dutch URL `/registreer` and the login route uses `/login`.
+
+### Password management
+
+- `PasswordResetLinkController` sends password reset emails. Non-existent emails are handled gracefully to prevent user enumeration.
+- `NewPasswordController` processes the password reset link and stores the new password.
+- `PasswordController` allows authenticated users to update their password from the account dashboard.
+- `ConfirmablePasswordController` requires password confirmation before sensitive actions.
+
+### Email verification
+
+- `EmailVerificationNotificationController` resends the email verification link.
+- `EmailVerificationPromptController` shows the verification prompt page.
+- `VerifyEmailController` verifies the email using a signed, throttled verification link.
+- The `verified` middleware is applied to the account dashboard route, so unverified users are redirected to the verification prompt.
+
+### Account dashboard
+
+- `AccountController` (`app/Http/Controllers/Account`) provides the protected account dashboard at `/account/dashboard`.
+- The dashboard requires both the `auth` and `verified` middleware, ensuring only verified users can access it.
+- The view is located at `resources/views/account/dashboard.blade.php`.
+
+### Guest cart merge on login
+
+When a guest user adds items to their cart and then logs in or registers, the `MergeGuestCart` middleware automatically merges the guest cart into the authenticated user's cart.
+
+- `MergeGuestCart` (`app/Http/Middleware`) is applied only to the `POST /login` and `POST /registreer` routes, not globally, to avoid unnecessary overhead on every request.
+- The middleware runs after the response is generated (`$next($request)`), so the user is already authenticated before the merge.
+- If the user has a `cart_token` cookie pointing to a non-empty guest cart, the guest cart items are merged into the user's authenticated cart using `CartService::merge()`.
+- After the merge, the `cart_token` cookie is updated to point to the user's authenticated cart, so subsequent requests use the correct cart.
+- If the guest cart is empty, not a guest cart, or the user has no `cart_token` cookie, the middleware returns immediately without any database queries.
+
+### Authentication views
+
+All authentication views are located in `resources/views/auth/` and use the `<x-layouts.app>` layout with Bootstrap styling:
+
+- `register.blade.php` — Registration form with name, email, password, terms checkbox, and login link.
+- `login.blade.php` — Login form with email, password, remember me, forgot password link, and registration link.
+- `forgot-password.blade.php` — Password reset request form.
+- `reset-password.blade.php` — New password form (shown after clicking the reset link).
+- `verify-email.blade.php` — Email verification prompt with resend link.
+- `confirm-password.blade.php` — Password confirmation form.
+
+## Payment and Checkout
+
+Stickler includes a complete checkout and payment lifecycle integrating a database-backed cart, customer address collection, hosted payment gateway redirects, asynchronous webhook synchronization, and customer email notifications.
+
+### Checkout Flow
+
+1. **Cart Review (`GET /cart`)**: Customers review items, adjust quantities with real-time stock validation, or remove products. Product discounts and variant pricing rules are automatically applied.
+2. **Order Confirmation (`GET /checkout`)**: Customers provide contact info (name, email, phone), shipping address, and optional billing address (with a "same as shipping" toggle) and order notes. For logged-in users, details are pre-filled automatically from their user profile.
+3. **Order Placement (`POST /checkout`)**: Validates the form via `StoreOrderRequest`, creates an `Order` and associated `OrderItem` snapshots in a database transaction, clears the active cart, and delegates payment creation to `PaymentService`.
+4. **Hosted Payment Redirect**: The customer is redirected to Mollie's secure checkout page (supporting iDEAL, Bancontact, Credit Card, Apple Pay, and other configured payment methods).
+5. **Webhook Processing (`POST /payment/webhook/mollie`)**: Mollie asynchronously notifies the application of payment status updates. The application securely verifies payment status directly via the Mollie API, updates the order to `paid` and `confirmed`, and dispatches the queued `PaymentConfirmation` email.
+6. **Order Confirmation & Thank-You (`GET /order-confirmed/{order}`)**: Displays order details, items breakdown, pricing, and live payment status. Protected by authorization checks: authenticated users can only view their own orders, and guest visitors can only view orders placed during their current session.
+7. **Payment Recovery**: If a payment is cancelled or fails at the gateway, the customer is directed back to their order page with an alert and an immediate "Pay now" retry button.
+
+### Architecture and Configuration
+
+- **Abstraction**: `App\Contracts\PaymentProvider` and `App\Services\PaymentService` allow swapping or adding additional payment gateways (e.g., Stripe, PayPal) without modifying controller or checkout logic.
+- **Provider Implementation**: `App\Payments\MollieProvider` integrates with `mollie/laravel-mollie` (v5) and handles payment creation, webhooks, and status mapping.
+- **Configuration**: Defined in `config/payment.php` and configured through `.env`:
+  - `PAYMENT_PROVIDER=mollie`: Active gateway provider.
+  - `MOLLIE_KEY=test_...`: Mollie API key.
+  - `PAYMENT_WEBHOOK_URL`: Optional custom webhook override for testing with local tunnels (e.g. Ngrok, Expose, Herd Share).
+- **Security**: The webhook endpoint `payment/webhook/*` is excluded from CSRF verification in `bootstrap/app.php` to accept provider callbacks. Webhooks query Mollie's API directly for verified payment status to prevent tampering.
+- **Queueing**: Payment confirmation emails use `App\Mail\PaymentConfirmation` and implement `ShouldQueue` so email delivery does not block webhook response execution.
+- **Rate limiting**: All cart POST endpoints (`cart.add`, `cart.items.update`, `cart.items.remove`, `checkout.store`, `checkout.pay`) are protected by `throttle:10,1` middleware (10 requests per minute per IP) to prevent abuse and stock manipulation attempts.
+
+### Inclusive VAT Pricing
+
+All product prices in the CMS are **VAT-inclusive** — the price entered by the webshop manager is exactly what the customer pays. The system calculates the net subtotal and tax amount automatically at order creation.
+
+- **Global tax rate**: Configurable via `TAX_RATE` in `.env` (default `21` for Belgium).
+- **Per-product override**: Each product and variant has a `tax_rate` column (nullable). When `null`, the global rate applies. Variants inherit from their product when their own `tax_rate` is `null`.
+- **Order tax calculation**: At order creation, `CartService::convertToOrder()` calculates per-item net price and tax amount, storing `subtotal` (net), `tax_amount`, and `total` (gross) on the `Order` model. The Filament admin panel's OrderForm derives the tax amount from the gross subtotal using the same configured tax rate.
+- **Tax rate snapshot**: The tax rate at the time of adding to cart is stored on `CartItem`, ensuring historical accuracy if a product's tax rate changes later.
+- **CMS price input**: Price fields in the Filament product form are labeled "Price (incl. VAT)" with helper text. A tax rate select (0%, 6%, 12%, 21%) allows per-product overrides.
+- **Public price display**: Product pages show a VAT notice (e.g., "incl. 21% VAT"). The thank-you page displays the order breakdown with "(excl. VAT)" next to the net subtotal and "(incl. VAT)" next to the total.
+- **Email templates**: Payment confirmation emails include "(incl. VAT)" next to the order total.
+
 ## Filament CMS
 
 A separate documentation file is available for the Filament CMS implementation:  
@@ -120,6 +211,7 @@ A separate documentation file is available for the Composer package dependencies
 Highlighted packages:
 
 - **Laravel Boost** - AI skills for the Junie assistant and other agents
+- **Laravel Mollie** - Payment gateway integration for hosted checkouts and webhooks
 - **Laravel Telescope** - Debugging assistant for requests, queries, and jobs
 - **Laravel Head** - Manages HTML head meta tags
 - **Spatie Sluggable** - Generates unique slugs for models
