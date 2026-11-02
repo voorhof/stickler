@@ -2,13 +2,16 @@
 
 namespace App\Filament\Resources\Orders\Pages;
 
+use App\Filament\Exports\OrderExporter;
 use App\Filament\Resources\Orders\OrderResource;
 use App\Filament\Traits\CanResetTable;
 use App\Filament\Traits\HasCreateAction;
 use App\Filament\Traits\HasOrderTableDefaults;
 use Asmit\ResizedColumn\HasResizableColumn;
 use Filament\Actions\CreateAction;
+use Filament\Actions\ExportAction;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Support\Icons\Heroicon;
 
 class ListOrders extends ListRecords
 {
@@ -23,6 +26,11 @@ class ListOrders extends ListRecords
     {
         return [
             CreateAction::make()
+                ->size('sm'),
+            ExportAction::make()
+                ->exporter(OrderExporter::class)
+                ->label(__('filament-actions::export.modal.actions.export.label'))
+                ->icon(Heroicon::OutlinedArrowDownTray)
                 ->size('sm'),
         ];
     }

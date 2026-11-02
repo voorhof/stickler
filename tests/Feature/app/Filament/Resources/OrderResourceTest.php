@@ -53,6 +53,11 @@ it('can list orders', function () {
         ->assertCountTableRecords(3);
 });
 
+it('has export action on list orders page', function () {
+    livewire(ListOrders::class)
+        ->assertActionExists('export');
+});
+
 it('can search orders by order number', function () {
     $order = Order::factory()->create();
     $otherOrder = Order::factory()->create();
