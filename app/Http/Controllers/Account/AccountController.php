@@ -53,9 +53,21 @@ class AccountController extends Controller
     {
         $user = $request->user();
 
+        $newEmail = $request->string('email')->value();
+        $emailChanged = $user->email !== $newEmail;
+
         $user->name = $request->string('name')->value();
-        $user->email = $request->string('email')->value();
+        $user->email = $newEmail;
+
+        if ($emailChanged) {
+            $user->email_verified_at = null;
+        }
+
         $user->save();
+
+        if ($emailChanged) {
+            $user->sendEmailVerificationNotification();
+        }
 
         if ($request->filled('password')) {
             $user->password = Hash::make($request->string('password')->value());

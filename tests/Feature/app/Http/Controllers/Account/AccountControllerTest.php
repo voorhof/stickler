@@ -1,5 +1,7 @@
 <?php
 
+/** @noinspection PhpUnhandledExceptionInspection */
+
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Order;
@@ -247,6 +249,50 @@ describe('profile edit', function () {
             ->and($user->email)->toBe('new@example.com');
     });
 
+    test('changing email resets verification status', function () {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->post(route('account.profile.update'), [
+            'name' => $user->name,
+            'email' => 'newemail@example.com',
+        ]);
+
+        $user->refresh();
+        expect($user->email)->toBe('newemail@example.com')
+            ->and($user->email_verified_at)->toBeNull();
+    });
+
+    test('changing email sends verification notification', function () {
+        $user = User::factory()->create();
+
+        Illuminate\Support\Facades\Notification::fake();
+
+        $this->actingAs($user)->post(route('account.profile.update'), [
+            'name' => $user->name,
+            'email' => 'newemail@example.com',
+        ]);
+
+        $user->refresh();
+        Illuminate\Support\Facades\Notification::assertSentTo(
+            $user,
+            Illuminate\Auth\Notifications\VerifyEmail::class,
+        );
+    });
+
+    test('updating name without changing email keeps verification status', function () {
+        $user = User::factory()->create();
+        $originalVerifiedAt = $user->email_verified_at;
+
+        $this->actingAs($user)->post(route('account.profile.update'), [
+            'name' => 'New Name',
+            'email' => $user->email,
+        ]);
+
+        $user->refresh();
+        expect($user->name)->toBe('New Name')
+            ->and($user->email_verified_at)->toEqual($originalVerifiedAt);
+    });
+
     test('user can update password with current password confirmation', function () {
         $user = User::factory()->create();
 
@@ -294,7 +340,7 @@ describe('profile edit', function () {
 
         $this->actingAs($user)->post(route('account.profile.update'), [
             'name' => 'Updated Name',
-            'email' => 'updated@example.com',
+            'email' => $user->email,
         ]);
 
         $response = $this->actingAs($user)->get(route('account.profile'));
