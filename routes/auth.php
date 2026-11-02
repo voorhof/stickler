@@ -17,10 +17,10 @@ use Spatie\HttpLogger\Middlewares\HttpLogger;
 Route::middleware('guest')->group(function () {
     Route::get('registreer', [RegisteredUserController::class, 'create'])
         ->name('register')
-        ->middleware([HttpLogger::class, ProtectAgainstSpam::class, 'throttle:3,1']);
+        ->middleware([HttpLogger::class]);
 
     Route::post('registreer', [RegisteredUserController::class, 'store'])
-        ->middleware([MergeGuestCart::class]);
+        ->middleware([MergeGuestCart::class, ProtectAgainstSpam::class, 'throttle:3,1']);
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
