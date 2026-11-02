@@ -5,7 +5,33 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/voorhof/stickler/compare/v1.7.2...HEAD)
+## [Unreleased](https://github.com/voorhof/stickler/compare/v1.8.0...HEAD)
+
+## [v1.8.0](https://github.com/voorhof/stickler/compare/v1.7.2...v1.8.0) - 2026-11-02
+
+### What's Changed
+
+* User authentication and payments with Mollie integration by @voorhof in https://github.com/voorhof/stickler/pull/28
+
+1. Created user Auth controllers, routes, views and tests
+2. Created MergeGuestCart middleware for login to merge guest cart with authenticated user cart
+3. Added Logout buttons to nav and dashboard
+4. Added Payment integration with Mollie
+5. Added Tax calculations and refactored order processing
+6. Added Order overview to user account
+7. Added Profile edit details page to user account
+8. Added login/register option for guest users on cart and checkout page
+9. Added API rate limiting to cart and checkout operation POST routes
+10. Show latest orders on the user dashboard
+11. Added export to Orders resource in Filament
+12. Updated README
+13. Composer & NPM updates
+14. Typo fix
+15. Fix CartItem and OrderItem observer tests with quantity update different from possible faker values
+16. Nullify email_verified_at on email change
+17. Added ProtectAgainstSpam to register route
+
+**Full Changelog**: https://github.com/voorhof/stickler/compare/v1.7.2...v1.8.0
 
 ## [v1.7.2](https://github.com/voorhof/stickler/compare/v1.7.1...v1.7.2) - 2026-10-30
 
