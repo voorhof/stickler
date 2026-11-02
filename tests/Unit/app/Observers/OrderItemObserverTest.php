@@ -30,7 +30,7 @@ it('tracks creator and updater on order item create and update', function (): vo
 
     actingAs($updater);
 
-    $orderItem->update(['quantity' => 5]);
+    $orderItem->update(['quantity' => 99]);
 
     expect($orderItem->fresh()->created_by_user_id)->toBe($creator->id)
         ->and($orderItem->fresh()->updated_by_user_id)->toBe($updater->id);

@@ -20,7 +20,7 @@ it('tracks creator and updater on cart item create and update', function (): voi
 
     actingAs($updater);
 
-    $item->update(['quantity' => 5]);
+    $item->update(['quantity' => 99]);
 
     expect($item->fresh()->created_by_user_id)->toBe($creator->id)
         ->and($item->fresh()->updated_by_user_id)->toBe($updater->id);
