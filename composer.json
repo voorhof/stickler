@@ -29,7 +29,7 @@
         "laboiteacode/filament-business-hours": "^1.0",
         "laravel/framework": "^13.39",
         "laravel/head": "^0.2.2",
-        "laravel/telescope": "^5.26",
+        "laravel/telescope": "^5.27",
         "laravel/tinker": "^3.0",
         "league/flysystem-aws-s3-v3": "^3.35",
         "mollie/laravel-mollie": "^v5.0.0",
