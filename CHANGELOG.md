@@ -5,7 +5,23 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/voorhof/stickler/compare/v1.8.0...HEAD)
+## [Unreleased](https://github.com/voorhof/stickler/compare/v1.8.1...HEAD)
+
+## [v1.8.1](https://github.com/voorhof/stickler/compare/v1.8.0...v1.8.1) - 2026-11-03
+
+### What's Changed
+
+* v1.8.1 - fixes/updates by @voorhof in https://github.com/voorhof/stickler/pull/29
+
+1. Created RegisterRequest for storing in RegisteredUserController
+2. Added delete account functionality to user profile
+3. Moved variant to sub ProductResource in sidenav
+4. Added confirmation modal before logout
+5. Added 'print order' button to order details page
+6. Refactored form input fields to components
+7. Composer updates
+
+**Full Changelog**: https://github.com/voorhof/stickler/compare/v1.8.0...v1.8.1
 
 ## [v1.8.0](https://github.com/voorhof/stickler/compare/v1.7.2...v1.8.0) - 2026-11-02
 
