@@ -187,10 +187,7 @@
                                         class="{{ $errors->has('shipping_postal_code') ? 'is-invalid' : '' }}"
                                         :describedBy="$errors->has('shipping_postal_code') ? 'shipping_postal_code_error' : null"
                                     />
-                                    <x-form.input-label
-                                        for="shippingPostalCodeInput"
-                                        :value="__('Postal code').' *'"
-                                    />
+                                    <x-form.input-label for="shippingPostalCodeInput" :value="__('Postal code').' *'" />
                                     <x-form.input-error
                                         id="shipping_postal_code_error"
                                         :message="$errors->first('shipping_postal_code')"
