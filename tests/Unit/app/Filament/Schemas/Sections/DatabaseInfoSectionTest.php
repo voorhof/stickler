@@ -41,3 +41,30 @@ it('renders on models that do not have every optional database attribute', funct
     livewire(EditMessage::class, ['record' => $message->slug])
         ->assertSuccessful();
 });
+
+it('renders without error when the creator user is hard-deleted', function () {
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+    Filament::bootCurrentPanel();
+
+    $adminUser = User::factory()->create();
+
+    $permissions = collect([
+        'access admin',
+        'view messages',
+        'update messages',
+    ])->map(fn (string $name): Permission => Permission::create(['name' => $name]));
+
+    $adminRole = Role::factory()->create(['name' => 'Admin']);
+    $adminRole->givePermissionTo($permissions);
+    $adminUser->assignRole($adminRole);
+
+    $this->actingAs($adminUser);
+
+    $creator = User::factory()->create();
+    $message = Message::factory()->create(['created_by_user_id' => $creator->id]);
+
+    $creator->forceDelete();
+
+    livewire(EditMessage::class, ['record' => $message->slug])
+        ->assertSuccessful();
+});

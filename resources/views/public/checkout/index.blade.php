@@ -70,66 +70,59 @@
                         {{-- Customer Info --}}
                         <h2 class="mb-3">{{ __('Customer Information') }}</h2>
 
+                        {{-- Name --}}
                         <div class="form-floating mb-3">
-                            <input
-                                type="text"
-                                @class(['form-control', 'is-invalid' => $errors->has('name')])
+                            <x-form.input-text
                                 id="nameInput"
                                 name="name"
-                                value="{{ old('name', $user?->name ?? $cart->customerName()) }}"
+                                :value="old('name', $user?->name ?? $cart->customerName())"
                                 placeholder="{{ __('Name') }}"
-                                autocomplete="name"
                                 required
                                 maxlength="255"
+                                autocomplete="name"
+                                class="{{ $errors->has('name') ? 'is-invalid' : '' }}"
+                                :describedBy="$errors->has('name') ? 'name_error' : null"
                             />
-                            <label for="nameInput">
-                                {{ __('Name') }}
-                                <span class="opacity-50">*</span>
-                            </label>
-                            @error('name')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <x-form.input-label for="nameInput" :value="__('Name').' *'" />
+                            <x-form.input-error id="name_error" :message="$errors->first('name')" />
                         </div>
 
                         <div class="row">
                             <div class="col-md-6">
+                                {{-- Email Address --}}
                                 <div class="form-floating mb-3">
-                                    <input
+                                    <x-form.input-text
                                         type="email"
-                                        @class(['form-control', 'is-invalid' => $errors->has('email')])
                                         id="emailInput"
                                         name="email"
-                                        value="{{ old('email', $user?->email ?? $cart->customerEmail()) }}"
+                                        :value="old('email', $user?->email ?? $cart->customerEmail())"
                                         placeholder="{{ __('Email address') }}"
-                                        autocomplete="email"
                                         required
                                         maxlength="255"
+                                        autocomplete="email"
+                                        class="{{ $errors->has('email') ? 'is-invalid' : '' }}"
+                                        :describedBy="$errors->has('email') ? 'email_error' : null"
                                     />
-                                    <label for="emailInput">
-                                        {{ __('Email address') }}
-                                        <span class="opacity-50">*</span>
-                                    </label>
-                                    @error('email')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    <x-form.input-label for="emailInput" :value="__('Email address').' *'" />
+                                    <x-form.input-error id="email_error" :message="$errors->first('email')" />
                                 </div>
                             </div>
+
                             <div class="col-md-6">
+                                {{-- Phone --}}
                                 <div class="form-floating mb-3">
-                                    <input
-                                        type="text"
-                                        @class(['form-control', 'is-invalid' => $errors->has('phone')])
+                                    <x-form.input-text
                                         id="phoneInput"
                                         name="phone"
-                                        value="{{ old('phone', $user?->phone ?? $cart->customerPhone()) }}"
+                                        :value="old('phone', $user?->phone ?? $cart->customerPhone())"
                                         placeholder="{{ __('Phone') }}"
+                                        maxlength="28"
                                         autocomplete="tel"
-                                        maxlength="255"
+                                        class="{{ $errors->has('phone') ? 'is-invalid' : '' }}"
+                                        :describedBy="$errors->has('phone') ? 'phone_error' : null"
                                     />
-                                    <label for="phoneInput"> {{ __('Phone') }} </label>
-                                    @error('phone')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    <x-form.input-label for="phoneInput" :value="__('Phone')" />
+                                    <x-form.input-error id="phone_error" :message="$errors->first('phone')" />
                                 </div>
                             </div>
                         </div>
@@ -137,92 +130,90 @@
                         {{-- Shipping Address --}}
                         <h2 class="mb-3">{{ __('Shipping Address') }}</h2>
 
+                        {{-- Shipping Street --}}
                         <div class="form-floating mb-3">
-                            <input
-                                type="text"
-                                @class(['form-control', 'is-invalid' => $errors->has('shipping_street')])
+                            <x-form.input-text
                                 id="shippingStreetInput"
                                 name="shipping_street"
-                                value="{{ old('shipping_street', optional($cart->customerShippingAddress())['street'] ?? '') }}"
+                                :value="old('shipping_street', optional($cart->customerShippingAddress())['street'] ?? '')"
                                 placeholder="{{ __('Street') }}"
-                                autocomplete="shipping street-address"
                                 required
                                 maxlength="255"
+                                autocomplete="shipping street-address"
+                                class="{{ $errors->has('shipping_street') ? 'is-invalid' : '' }}"
+                                :describedBy="$errors->has('shipping_street') ? 'shipping_street_error' : null"
                             />
-                            <label for="shippingStreetInput">
-                                {{ __('Street') }}
-                                <span class="opacity-50">*</span>
-                            </label>
-                            @error('shipping_street')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <x-form.input-label for="shippingStreetInput" :value="__('Street').' *'" />
+                            <x-form.input-error
+                                id="shipping_street_error"
+                                :message="$errors->first('shipping_street')"
+                            />
                         </div>
 
                         <div class="row">
                             <div class="col-md-6">
+                                {{-- Shipping City --}}
                                 <div class="form-floating mb-3">
-                                    <input
-                                        type="text"
-                                        @class(['form-control', 'is-invalid' => $errors->has('shipping_city')])
+                                    <x-form.input-text
                                         id="shippingCityInput"
                                         name="shipping_city"
-                                        value="{{ old('shipping_city', optional($cart->customerShippingAddress())['city'] ?? '') }}"
+                                        :value="old('shipping_city', optional($cart->customerShippingAddress())['city'] ?? '')"
                                         placeholder="{{ __('City') }}"
-                                        autocomplete="shipping address-level2"
                                         required
                                         maxlength="255"
+                                        autocomplete="shipping address-level2"
+                                        class="{{ $errors->has('shipping_city') ? 'is-invalid' : '' }}"
+                                        :describedBy="$errors->has('shipping_city') ? 'shipping_city_error' : null"
                                     />
-                                    <label for="shippingCityInput">
-                                        {{ __('City') }}
-                                        <span class="opacity-50">*</span>
-                                    </label>
-                                    @error('shipping_city')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    <x-form.input-label for="shippingCityInput" :value="__('City').' *'" />
+                                    <x-form.input-error
+                                        id="shipping_city_error"
+                                        :message="$errors->first('shipping_city')"
+                                    />
                                 </div>
                             </div>
+
                             <div class="col-md-3">
+                                {{-- Shipping Postal Code--}}
                                 <div class="form-floating mb-3">
-                                    <input
-                                        type="text"
-                                        @class(['form-control', 'is-invalid' => $errors->has('shipping_postal_code')])
+                                    <x-form.input-text
                                         id="shippingPostalCodeInput"
                                         name="shipping_postal_code"
-                                        value="{{ old('shipping_postal_code', optional($cart->customerShippingAddress())['postal_code'] ?? '') }}"
+                                        :value="old('shipping_postal_code', optional($cart->customerShippingAddress())['postal_code'] ?? '')"
                                         placeholder="{{ __('Postal code') }}"
-                                        autocomplete="shipping postal-code"
                                         required
                                         maxlength="255"
+                                        autocomplete="shipping postal-code"
+                                        class="{{ $errors->has('shipping_postal_code') ? 'is-invalid' : '' }}"
+                                        :describedBy="$errors->has('shipping_postal_code') ? 'shipping_postal_code_error' : null"
                                     />
-                                    <label for="shippingPostalCodeInput">
-                                        {{ __('Postal code') }}
-                                        <span class="opacity-50">*</span>
-                                    </label>
-                                    @error('shipping_postal_code')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    <x-form.input-label for="shippingPostalCodeInput" :value="__('Postal code').' *'" />
+                                    <x-form.input-error
+                                        id="shipping_postal_code_error"
+                                        :message="$errors->first('shipping_postal_code')"
+                                    />
                                 </div>
                             </div>
+
                             <div class="col-md-3">
+                                {{-- Shipping Country --}}
                                 <div class="form-floating mb-3">
-                                    <input
-                                        type="text"
-                                        @class(['form-control', 'is-invalid' => $errors->has('shipping_country')])
+                                    <x-form.input-text
                                         id="shippingCountryInput"
                                         name="shipping_country"
-                                        value="{{ old('shipping_country', optional($cart->customerShippingAddress())['country'] ?? '') }}"
+                                        :value="old('shipping_country', optional($cart->customerShippingAddress())['country'] ?? '')"
                                         placeholder="{{ __('Country') }}"
-                                        autocomplete="shipping country-name"
                                         required
                                         maxlength="255"
+                                        autocomplete="shipping country-name"
+                                        class="{{ $errors->has('shipping_country') ? 'is-invalid' : '' }}"
+                                        :describedBy="$errors->has('shipping_country') ? 'shipping_country_error' : null"
                                     />
-                                    <label for="shippingCountryInput">
-                                        {{ __('Country') }}
-                                        <span class="opacity-50">*</span>
-                                    </label>
-                                    @error('shipping_country')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                    <x-form.input-label for="shippingCountryInput" :value="__('Country').' *'" />
+                                    <x-form.input-error
+                                        id="shipping_country_error"
+                                        :message="$errors->first('shipping_country')"
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -248,88 +239,93 @@
                         >
                             <h2 class="mb-3">{{ __('Billing Address') }}</h2>
 
+                            {{-- Billing Street --}}
                             <div class="form-floating mb-3">
-                                <input
-                                    type="text"
-                                    @class(['form-control', 'is-invalid' => $errors->has('billing_street')])
+                                <x-form.input-text
                                     id="billingStreetInput"
                                     name="billing_street"
-                                    value="{{ old('billing_street', optional($cart->customerBillingAddress())['street'] ?? '') }}"
+                                    :value="old('billing_street', optional($cart->customerBillingAddress())['street'] ?? '')"
                                     placeholder="{{ __('Street') }}"
-                                    autocomplete="billing street-address"
+                                    required
                                     maxlength="255"
+                                    autocomplete="billing street-address"
+                                    class="{{ $errors->has('billing_street') ? 'is-invalid' : '' }}"
+                                    :describedBy="$errors->has('billing_street') ? 'billing_street_error' : null"
                                 />
-                                <label for="billingStreetInput">
-                                    {{ __('Street') }}
-                                    <span class="opacity-50">*</span>
-                                </label>
-                                @error('billing_street')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                <x-form.input-label for="billingStreetInput" :value="__('Street').' *'" />
+                                <x-form.input-error
+                                    id="billing_street_error"
+                                    :message="$errors->first('billing_street')"
+                                />
                             </div>
 
                             <div class="row">
                                 <div class="col-md-6">
+                                    {{-- Billing City --}}
                                     <div class="form-floating mb-3">
-                                        <input
-                                            type="text"
-                                            @class(['form-control', 'is-invalid' => $errors->has('billing_city')])
+                                        <x-form.input-text
                                             id="billingCityInput"
                                             name="billing_city"
-                                            value="{{ old('billing_city', optional($cart->customerBillingAddress())['city'] ?? '') }}"
+                                            :value="old('billing_city', optional($cart->customerBillingAddress())['city'] ?? '')"
                                             placeholder="{{ __('City') }}"
-                                            autocomplete="billing address-level2"
+                                            required
                                             maxlength="255"
+                                            autocomplete="billing address-level2"
+                                            class="{{ $errors->has('billing_city') ? 'is-invalid' : '' }}"
+                                            :describedBy="$errors->has('billing_city') ? 'billing_city_error' : null"
                                         />
-                                        <label for="billingCityInput">
-                                            {{ __('City') }}
-                                            <span class="opacity-50">*</span>
-                                        </label>
-                                        @error('billing_city')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
+                                        <x-form.input-label for="billingCityInput" :value="__('City').' *'" />
+                                        <x-form.input-error
+                                            id="billing_city_error"
+                                            :message="$errors->first('billing_city')"
+                                        />
                                     </div>
                                 </div>
+
                                 <div class="col-md-3">
+                                    {{-- Billing Postal Code--}}
                                     <div class="form-floating mb-3">
-                                        <input
-                                            type="text"
-                                            @class(['form-control', 'is-invalid' => $errors->has('billing_postal_code')])
+                                        <x-form.input-text
                                             id="billingPostalCodeInput"
                                             name="billing_postal_code"
-                                            value="{{ old('billing_postal_code', optional($cart->customerBillingAddress())['postal_code'] ?? '') }}"
+                                            :value="old('billing_postal_code', optional($cart->customerBillingAddress())['postal_code'] ?? '')"
                                             placeholder="{{ __('Postal code') }}"
-                                            autocomplete="billing postal-code"
+                                            required
                                             maxlength="255"
+                                            autocomplete="billing postal-code"
+                                            class="{{ $errors->has('billing_postal_code') ? 'is-invalid' : '' }}"
+                                            :describedBy="$errors->has('billing_postal_code') ? 'billing_postal_code_error' : null"
                                         />
-                                        <label for="billingPostalCodeInput">
-                                            {{ __('Postal code') }}
-                                            <span class="opacity-50">*</span>
-                                        </label>
-                                        @error('billing_postal_code')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
+                                        <x-form.input-label
+                                            for="billingPostalCodeInput"
+                                            :value="__('Postal code').' *'"
+                                        />
+                                        <x-form.input-error
+                                            id="billing_postal_code_error"
+                                            :message="$errors->first('billing_postal_code')"
+                                        />
                                     </div>
                                 </div>
+
                                 <div class="col-md-3">
+                                    {{-- Billing Country --}}
                                     <div class="form-floating mb-3">
-                                        <input
-                                            type="text"
-                                            @class(['form-control', 'is-invalid' => $errors->has('billing_country')])
+                                        <x-form.input-text
                                             id="billingCountryInput"
                                             name="billing_country"
-                                            value="{{ old('billing_country', optional($cart->customerBillingAddress())['country'] ?? '') }}"
+                                            :value="old('billing_country', optional($cart->customerBillingAddress())['country'] ?? '')"
                                             placeholder="{{ __('Country') }}"
-                                            autocomplete="billing country-name"
+                                            required
                                             maxlength="255"
+                                            autocomplete="billing country-name"
+                                            class="{{ $errors->has('billing_country') ? 'is-invalid' : '' }}"
+                                            :describedBy="$errors->has('billing_country') ? 'billing_country_error' : null"
                                         />
-                                        <label for="billingCountryInput">
-                                            {{ __('Country') }}
-                                            <span class="opacity-50">*</span>
-                                        </label>
-                                        @error('billing_country')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
+                                        <x-form.input-label for="billingCountryInput" :value="__('Country').' *'" />
+                                        <x-form.input-error
+                                            id="billing_country_error"
+                                            :message="$errors->first('billing_country')"
+                                        />
                                     </div>
                                 </div>
                             </div>

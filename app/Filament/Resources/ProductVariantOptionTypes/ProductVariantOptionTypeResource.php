@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ProductVariantOptionTypes;
 
+use App\Filament\Resources\Products\ProductResource;
 use App\Filament\Resources\ProductVariantOptionTypes\Pages\CreateProductVariantOptionType;
 use App\Filament\Resources\ProductVariantOptionTypes\Pages\EditProductVariantOptionType;
 use App\Filament\Resources\ProductVariantOptionTypes\Pages\ListProductVariantOptionTypes;
@@ -23,6 +24,8 @@ class ProductVariantOptionTypeResource extends Resource
     protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::RectangleStack;
 
     protected static ?int $navigationSort = 2300;
+
+    protected static ?string $navigationParentItem = ProductResource::class;
 
     public static function getNavigationGroup(): ?string
     {

@@ -141,14 +141,15 @@
                 </ul>
             </div>
 
-            {{-- Logout --}}
+            {{-- Logout modal trigger --}}
             @auth
-                <form method="POST" action="{{ route('logout') }}">
-                    <x-csrf-input />
-                    <button type="submit" class="nav-link link-body-emphasis text-uppercase">
-                        {{ __('Log out') }}
-                    </button>
-                </form>
+                <button
+                    class="nav-link link-body-emphasis text-uppercase text-start"
+                    data-toggle="modal"
+                    data-target="#logoutModal"
+                >
+                    {{ __('Log out') }}
+                </button>
             @endauth
         </nav>
 
@@ -192,6 +193,41 @@
         </div>
     </div>
 </div>
+
+{{-- Logout modal --}}
+@auth
+    @pushonce('modals-bottom')
+        <div
+            class="modal fade"
+            id="logoutModal"
+            tabindex="-1"
+            role="dialog"
+            aria-labelledby="logoutModalLabel"
+            aria-hidden="true"
+        >
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title fs-5" id="logoutModalLabel">
+                            @lang('Are you sure you want to logout?')
+                        </div>
+                        <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                            @lang(__('No'))
+                        </button>
+
+                        <form method="POST" action="{{ route('logout') }}">
+                            <x-csrf-input />
+                            <x-form.button variant="primary" :value="__('Log out')" />
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endpushonce
+@endauth
 
 @push('scripts-body-bottom')
     {{-- Theme switcher icons --}}

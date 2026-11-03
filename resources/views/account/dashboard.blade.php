@@ -71,11 +71,11 @@
                 </div>
             @endif
 
+            {{-- Logout modal trigger --}}
             <div class="my-4">
-                <form method="POST" action="{{ route('logout') }}">
-                    <x-csrf-input />
-                    <x-form.button variant="outline-secondary" :value="__('Log out')" />
-                </form>
+                <button class="btn btn-outline-secondary" data-toggle="modal" data-target="#logoutModal">
+                    {{ __('Log out') }}
+                </button>
             </div>
         </div>
     </section>

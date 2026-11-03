@@ -142,14 +142,25 @@
 }
 
 /**
- * Print
+ * Print (order printing)
  */
 @media print {
+    .alert,
     .c-navbar,
     .c-offcanvas,
-    .c-footer {
+    .c-header,
+    .c-footer,
+    .c-footer-pietje {
         display: none !important;
     }
+
+    #main section {
+        padding-top: 0;
+    }
+
+    h1 {font-size: 2rem;}
+    h2 {font-size: 1.75rem;}
+    h3 {font-size: 1.25rem;}
 }
 
 /**

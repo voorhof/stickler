@@ -7,8 +7,10 @@ use App\Http\Requests\Account\UpdateProfileRequest;
 use App\Models\Cart;
 use App\Models\Order;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 use Laravel\Head\Facades\Head;
 
@@ -82,6 +84,33 @@ class AccountController extends Controller
 
         return redirect()->route('account.profile')
             ->with('status', 'profile-updated');
+    }
+
+    /**
+     * Delete the user's account.
+     */
+    public function destroyProfile(Request $request): RedirectResponse
+    {
+        $request->validateWithBag('userDeletion', [
+            'password' => ['required', 'current_password'],
+        ]);
+
+        $user = $request->user();
+
+        Auth::logout();
+
+        $user->delete();
+
+        activity('authentication')
+            ->by($user)
+            ->on($user)
+            ->event('delete')
+            ->log(__('User account deleted.'));
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return Redirect::to('/');
     }
 
     /**

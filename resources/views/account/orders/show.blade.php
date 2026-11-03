@@ -6,9 +6,21 @@
                 <div class="col-lg-8">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h1>{{ $order->order_number }}</h1>
-                        <a href="{{ route('account.orders.index') }}" class="btn btn-outline-secondary btn-sm">
-                            {{ __('Back to orders') }}
-                        </a>
+                        <div class="d-flex gap-2">
+                            <button
+                                type="button"
+                                class="btn btn-outline-primary btn-sm d-print-none"
+                                onclick="window.print()"
+                            >
+                                {{ __('Print order') }}
+                            </button>
+                            <a
+                                href="{{ route('account.orders.index') }}"
+                                class="btn btn-outline-secondary btn-sm d-print-none"
+                            >
+                                {{ __('Back to orders') }}
+                            </a>
+                        </div>
                     </div>
 
                     <div class="card mb-4">
@@ -34,9 +46,15 @@
                         <div class="alert alert-info" role="alert">
                             <strong>{{ __('Payment pending') }}</strong>
                             <p class="mb-3">{{ __('Your order will be processed once payment is confirmed.') }}</p>
-                            <form action="{{ route('checkout.pay', $order) }}" method="POST" class="d-inline">
+                            <form
+                                action="{{ route('checkout.pay', $order) }}"
+                                method="POST"
+                                class="d-inline d-print-none"
+                            >
                                 @csrf
-                                <button type="submit" class="btn btn-primary btn-sm">{{ __('Pay now') }}</button>
+                                <button type="submit" class="btn btn-primary btn-sm d-print-none">
+                                    {{ __('Pay now') }}
+                                </button>
                             </form>
                         </div>
                     @endif

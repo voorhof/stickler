@@ -15,6 +15,8 @@ Route::get('/profile', [AccountController::class, 'profile'])
     ->name('profile');
 Route::post('/profile', [AccountController::class, 'updateProfile'])
     ->name('profile.update');
+Route::delete('/profile', [AccountController::class, 'destroyProfile'])
+    ->name('profile.destroy');
 
 /**
  * User order history
