@@ -208,9 +208,9 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="logoutModalLabel">
+                        <div class="modal-title fs-5" id="logoutModalLabel">
                             @lang('Are you sure you want to logout?')
-                        </h1>
+                        </div>
                         <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-footer">

@@ -95,81 +95,72 @@
                             <x-csrf-input />
                             <x-honeypot />
 
+                            {{-- Name --}}
                             <div class="form-floating mb-3">
-                                <input
-                                    type="text"
-                                    @class(['form-control', 'is-invalid' => $errors->has('name')])
+                                <x-form.input-text
                                     id="nameInput"
                                     name="name"
-                                    value="{{ old('name') }}"
-                                    placeholder="Jouw naam"
-                                    autocomplete="name"
+                                    :value="old('name')"
+                                    placeholder="{{ __('Name') }}"
                                     required
-                                    maxlength="250"
+                                    maxlength="255"
+                                    autocomplete="name"
+                                    class="{{ $errors->has('name') ? 'is-invalid' : '' }}"
+                                    :describedBy="$errors->has('name') ? 'name_error' : null"
                                 />
-                                <label for="nameInput">
-                                    @lang('Name')
-                                    <span class="opacity-50">*</span>
-                                </label>
-                                @error('name')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                <x-form.input-label for="nameInput" :value="__('Name').' *'" />
+                                <x-form.input-error id="name_error" :message="$errors->first('name')" />
                             </div>
 
+                            {{-- Email Address --}}
                             <div class="form-floating mb-3">
-                                <input
+                                <x-form.input-text
                                     type="email"
-                                    @class(['form-control', 'is-invalid' => $errors->has('email')])
                                     id="emailInput"
                                     name="email"
-                                    value="{{ old('email') }}"
-                                    placeholder="naam@voorbeeld.be"
-                                    autocomplete="email"
+                                    :value="old('email')"
+                                    placeholder="{{ __('Email address') }}"
                                     required
-                                    maxlength="250"
+                                    maxlength="255"
+                                    autocomplete="email"
+                                    class="{{ $errors->has('email') ? 'is-invalid' : '' }}"
+                                    :describedBy="$errors->has('email') ? 'email_error' : null"
                                 />
-                                <label for="emailInput">
-                                    @lang('Email')
-                                    <span class="opacity-50">*</span></label>
-                                @error('email')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                <x-form.input-label for="emailInput" :value="__('Email address').' *'" />
+                                <x-form.input-error id="email_error" :message="$errors->first('email')" />
                             </div>
 
+                            {{-- Phone --}}
                             <div class="form-floating mb-3">
-                                <input
-                                    type="text"
-                                    @class(['form-control', 'is-invalid' => $errors->has('phone')])
+                                <x-form.input-text
                                     id="phoneInput"
                                     name="phone"
-                                    value="{{ old('phone') }}"
-                                    placeholder="0123456789"
+                                    :value="old('phone')"
+                                    placeholder="{{ __('Phone') }}"
+                                    maxlength="28"
                                     autocomplete="tel"
-                                    maxlength="250"
+                                    class="{{ $errors->has('phone') ? 'is-invalid' : '' }}"
+                                    :describedBy="$errors->has('phone') ? 'phone_error' : null"
                                 />
-                                <label for="phoneInput">@lang('Phone')</label>
-                                @error('phone')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                <x-form.input-label for="phoneInput" :value="__('Phone')" />
+                                <x-form.input-error id="phone_error" :message="$errors->first('phone')" />
                             </div>
 
+                            {{-- Subject --}}
                             <div class="form-floating mb-3">
-                                <input
-                                    type="text"
-                                    @class(['form-control', 'is-invalid' => $errors->has('subject')])
+                                <x-form.input-text
                                     id="subjectInput"
                                     name="subject"
-                                    value="{{ old('subject') }}"
-                                    placeholder="Onderwerp"
+                                    :value="old('subject')"
+                                    placeholder="{{ __('Subject') }}"
                                     required
                                     maxlength="250"
+                                    autocomplete="tel"
+                                    class="{{ $errors->has('subject') ? 'is-invalid' : '' }}"
+                                    :describedBy="$errors->has('subject') ? 'subject_error' : null"
                                 />
-                                <label for="subjectInput">
-                                    @lang('Subject')
-                                    <span class="opacity-50">*</span></label>
-                                @error('subject')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                                <x-form.input-label for="subjectInput" :value="__('Subject').' *'" />
+                                <x-form.input-error id="subject_error" :message="$errors->first('subject')" />
                             </div>
 
                             <div class="form-floating mb-3">
