@@ -1,4 +1,4 @@
-<div class="border-top bg-black" style="position: relative; z-index: 1020">
+<div class="c-footer-pietje border-top bg-black" style="position: relative; z-index: 1020">
     <div class="container-lg small py-4">
         <div class="d-flex align-items-center justify-content-center flex-wrap gap-2">
             <span class="text-white"> Een website van pixel tot perfectie door </span>
