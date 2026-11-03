@@ -16,6 +16,7 @@
                         </div>
                     @endif
 
+                    {{-- Profile fields --}}
                     <form action="{{ route('account.profile.update') }}" method="POST">
                         <x-csrf-input />
 
@@ -113,8 +114,113 @@
                             <label for="passwordConfirmationInput"> {{ __('Confirm new password') }} </label>
                         </div>
 
-                        <x-form.button :value="__('Update password')" />
+                        <x-form.button :value="__('Update password')" class="mb-4" />
                     </form>
+
+                    <hr class="my-4" />
+
+                    {{-- Delete user account --}}
+                    <div>
+                        <h2>
+                            @lang('Delete Account')
+                        </h2>
+
+                        <p>
+                            @lang('Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.')
+                        </p>
+
+                        {{-- Modal trigger --}}
+                        <button class="btn btn-outline-danger" data-toggle="modal" data-target="#deleteAccountModal">
+                            {{ __('Delete Account') }}
+                        </button>
+
+                        {{-- Modal --}}
+                        @push('modals-bottom')
+                            <div
+                                class="modal fade"
+                                id="deleteAccountModal"
+                                tabindex="-1"
+                                role="dialog"
+                                aria-labelledby="deleteAccountModalLabel"
+                                aria-hidden="true"
+                            >
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h1 class="modal-title fs-5" id="deleteAccountModalLabel">
+                                                @lang('Are you sure you want to delete your account?')
+                                            </h1>
+                                            <button
+                                                type="button"
+                                                class="btn-close"
+                                                data-dismiss="modal"
+                                                aria-label="Close"
+                                            ></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>
+                                                @lang('Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.')
+                                            </p>
+
+                                            <form
+                                                method="post"
+                                                action="{{ route('account.profile.destroy') }}"
+                                                id="deleteAccountForm"
+                                            >
+                                                <x-csrf-input />
+                                                @method('delete')
+
+                                                {{-- Hidden username --}}
+                                                <input
+                                                    type="email"
+                                                    name="email"
+                                                    autocomplete="username"
+                                                    value="{{ auth()->user()->email }}"
+                                                    class="visually-hidden"
+                                                    tabindex="-1"
+                                                    aria-hidden="true"
+                                                    readonly
+                                                />
+
+                                                {{-- Password --}}
+                                                <div class="form-floating mb-3">
+                                                    <x-form.input-text
+                                                        type="password"
+                                                        id="password"
+                                                        name="password"
+                                                        placeholder="{{ __('validation.attributes.password') }}"
+                                                        autocomplete="new-password"
+                                                        required
+                                                        class="{{ $errors->userDeletion->has('password') ? 'is-invalid' : '' }}"
+                                                        :describedBy="$errors->userDeletion->has('password') ? 'password_error' : null"
+                                                    />
+                                                    <x-form.input-label
+                                                        for="password"
+                                                        :value="__('validation.attributes.password')"
+                                                    />
+                                                    <x-form.input-error
+                                                        id="password_error"
+                                                        :message="$errors->userDeletion->first('password')"
+                                                    />
+                                                </div>
+                                            </form>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                                @lang(__('No'))
+                                            </button>
+
+                                            <x-form.button
+                                                variant="danger"
+                                                :value="__('Delete')"
+                                                form="deleteAccountForm"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endpush
+                    </div>
                 </div>
             </div>
         </div>

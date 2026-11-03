@@ -151,13 +151,13 @@ class DatabaseInfoSection
                                 ->label(__('Created by'))
                                 ->hidden(fn ($record) => static::isMissingOrEmpty($record, 'created_by_user_id'))
                                 ->formatStateUsing(fn (string $state, $record): string => "$state (ID: $record->created_by_user_id)")
-                                ->url(fn ($record): string => UserResource::getUrl('edit', ['record' => $record->creator]))
+                                ->url(fn ($record): ?string => $record->creator && $record->creator->id ? UserResource::getUrl('edit', ['record' => $record->creator]) : null)
                                 ->color('primary'),
                             TextEntry::make('updater.name')
                                 ->label(__('Updated by'))
                                 ->hidden(fn ($record) => static::isMissingOrEmpty($record, 'updated_by_user_id'))
                                 ->formatStateUsing(fn (string $state, $record): string => "$state (ID: $record->updated_by_user_id)")
-                                ->url(fn ($record): string => UserResource::getUrl('edit', ['record' => $record->updater]))
+                                ->url(fn ($record): ?string => $record->updater && $record->updater->id ? UserResource::getUrl('edit', ['record' => $record->updater]) : null)
                                 ->color('primary'),
                         ]),
                 ]),

@@ -357,3 +357,63 @@ describe('profile edit', function () {
             ->assertSee(route('account.dashboard'));
     });
 });
+
+describe('profile deletion', function () {
+    test('unauthenticated users are redirected to login', function () {
+        $response = $this->delete(route('account.profile.destroy'));
+
+        $response->assertRedirect(route('login'));
+    });
+
+    test('unverified users are redirected to email verification', function () {
+        $user = User::factory()->unverified()->create();
+
+        $response = $this->actingAs($user)->delete(route('account.profile.destroy'));
+
+        $response->assertRedirect(route('verification.notice'));
+    });
+
+    test('user can delete their account with correct password', function () {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->delete(route('account.profile.destroy'), [
+            'password' => 'password',
+        ]);
+
+        $response->assertRedirect('/');
+
+        expect(User::find($user->id))->toBeNull();
+    });
+
+    test('user is logged out after deleting their account', function () {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->delete(route('account.profile.destroy'), [
+            'password' => 'password',
+        ]);
+
+        $this->assertGuest();
+    });
+
+    test('deletion fails with wrong password', function () {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->delete(route('account.profile.destroy'), [
+            'password' => 'wrongpassword',
+        ]);
+
+        $response->assertSessionHasErrorsIn('userDeletion', ['password']);
+
+        expect(User::find($user->id))->not->toBeNull();
+    });
+
+    test('deletion fails without password', function () {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->delete(route('account.profile.destroy'));
+
+        $response->assertSessionHasErrorsIn('userDeletion', ['password']);
+
+        expect(User::find($user->id))->not->toBeNull();
+    });
+});
