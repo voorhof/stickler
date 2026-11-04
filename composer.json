@@ -108,6 +108,8 @@
         ],
         "post-create-project-cmd": [
             "npm install",
+            "npm run build",
+            "@php artisan storage:link",
             "@php artisan key:generate --ansi",
             "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
             "@php artisan migrate --graceful --ansi",

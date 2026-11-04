@@ -26,7 +26,7 @@ class AdminUserAndRoleSeeder extends Seeder
             'name' => config('stickler.admin_users.ceo.name'),
             'email' => config('stickler.admin_users.ceo.email'),
             'password' => Hash::make(config('stickler.admin_users.ceo.password')),
-            'password_needs_update' => false,
+            'password_needs_update' => true,
             'terms_accepted' => true,
             'locale' => config('app.faker_locale'),
         ]);
@@ -37,7 +37,7 @@ class AdminUserAndRoleSeeder extends Seeder
             'name' => config('stickler.admin_users.admin.name'),
             'email' => config('stickler.admin_users.admin.email'),
             'password' => Hash::make(config('stickler.admin_users.admin.password')),
-            'password_needs_update' => false,
+            'password_needs_update' => true,
             'terms_accepted' => true,
             'locale' => config('app.faker_locale'),
         ]);
