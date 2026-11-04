@@ -5,8 +5,6 @@
     ],
     "cloud": true,
     "guidelines": true,
-    "mcp": true,
-    "nightwatch": false,
     "packages": [
         "filament/filament",
         "spatie/laravel-activitylog",
@@ -16,7 +14,6 @@
         "spatie/laravel-responsecache",
         "spatie/laravel-sluggable"
     ],
-    "sail": false,
     "skills": [
         "infer-conventions",
         "deploying-to-cloud",
