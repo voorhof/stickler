@@ -66,7 +66,7 @@ describe('action execution', function () {
                 return view('filament.pages.spatie.health', ['checkResults' => $checkResults]);
             }
 
-            protected function getHeaderActions(): array
+            public function getHeaderActions(): array
             {
                 return [
                     ClearResponseCacheAction::make(),
