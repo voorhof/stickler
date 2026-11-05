@@ -10,12 +10,12 @@
         "@rollup/plugin-replace": "^6.0.3",
         "bootstrap-icons": "^1.13.2",
         "fontaine": "^0.8.2",
-        "laravel-vite-plugin": "^3.2.0",
+        "laravel-vite-plugin": "^3.2.1",
         "prettier": "^3.9.10",
         "prettier-plugin-blade": "^3.3.3",
         "prettier-plugin-tailwindcss": "^0.8.1",
         "sass": "^1.107.1",
-        "vite": "^8.3.5"
+        "vite": "^8.3.6"
     },
     "dependencies": {
         "@popperjs/core": "^2.11.8",

@@ -56,6 +56,23 @@ When starting a project from Stickler, replace the sample identity and content d
 
 The dedicated [Filament implementation guide](FILAMENT.md), [Composer package guide](COMPOSER_PACKAGES.md), and [Node modules guide](NODE_MODULES.md) document package-specific behavior; this section intentionally focuses on how to work with Stickler itself.
 
+### Before Going Live
+
+When preparing a Stickler-based project for production deployment, complete the following checklist to ensure the application is secure, properly configured, and ready for real traffic:
+
+- [ ] **Change all default credentials** — Update the seeded admin user passwords and review the `ADMIN_EMAIL` and `ADMIN_PASSWORD` values in `.env`.
+- [ ] **Update application identity** — Set `APP_NAME`, `APP_URL`, and `APP_LOCALE` in `.env` to match your project.
+- [ ] **Configure a real mail driver** — Replace the default `log` mail driver with a production-ready service (e.g., Mailgun, Postmark, SES) and update the `MAIL_` variables in `.env`.
+- [ ] **Set up payment gateway** — Replace the test `MOLLIE_KEY` with a live API key and verify `PAYMENT_WEBHOOK_URL` points to your production domain.
+- [ ] **Review and update seeded content** — Replace sample products, categories, posts, pages, and opening hours with your own content.
+- [ ] **Disable debug mode** — Set `APP_DEBUG=false` and `APP_ENV=production` in `.env`.
+- [ ] **Secure sessions** — Set `SESSION_SECURE_COOKIE=true` when serving over HTTPS.
+- [ ] **Configure backups** — Verify `BACKUP_` settings in `.env` and run `php artisan backup:run` to confirm backups work.
+- [ ] **Enable response caching** — Set `RESPONSE_CACHE_ENABLED=true` for production performance.
+- [ ] **Configure queue worker** — Ensure a queue worker is running (e.g., via supervisor) for email delivery and webhook processing.
+- [ ] **Set up monitoring** — Configure health checks and review Telescope is disabled in production (default behavior).
+- [ ] **Update branding** — Replace the default logo and artwork in `public/` and update any hardcoded references in Blade views.
+
 ## Installing Stickler
 
 ### Laravel Installer

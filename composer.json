@@ -27,7 +27,7 @@
         "filament/spatie-laravel-tags-plugin": "^5.11",
         "jaybizzle/crawler-detect": "^1.4",
         "laboiteacode/filament-business-hours": "^1.0",
-        "laravel/framework": "^13.39",
+        "laravel/framework": "^13.40",
         "laravel/head": "^0.2.2",
         "laravel/telescope": "^5.27",
         "laravel/tinker": "^3.0",
@@ -101,12 +101,15 @@
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
-            "@php artisan boost:update --ansi"
+            "@php artisan boost:update --ansi --no-discover"
         ],
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
         ],
         "post-create-project-cmd": [
+            "npm install",
+            "npm run build",
+            "@php artisan storage:link",
             "@php artisan key:generate --ansi",
             "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
             "@php artisan migrate --graceful --ansi",
