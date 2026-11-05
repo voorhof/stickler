@@ -144,6 +144,84 @@ describe('cart index', function () {
         expect($profile->enabled($visitorWithoutCart))->toBeTrue()
             ->and($profile->enabled($visitorWithCart))->toBeFalse();
     });
+
+    test('it removes out of stock items and shows warning', function () {
+        $inStockProduct = Product::factory()->create(['stock_quantity' => 10, 'price' => 1999]);
+        $outOfStockProduct = Product::factory()->create(['stock_quantity' => 0, 'price' => 2999]);
+
+        $cart = Cart::factory()->create();
+        CartItem::factory()->create([
+            'cart_id' => $cart->id,
+            'product_id' => $inStockProduct->id,
+            'product_name' => $inStockProduct->title,
+            'quantity' => 1,
+            'unit_price' => 1999,
+            'total_price' => 1999,
+        ]);
+        CartItem::factory()->create([
+            'cart_id' => $cart->id,
+            'product_id' => $outOfStockProduct->id,
+            'product_name' => $outOfStockProduct->title,
+            'quantity' => 1,
+            'unit_price' => 2999,
+            'total_price' => 2999,
+        ]);
+
+        $response = $this->withCookie('cart_token', $cart->cart_token)
+            ->get(route('cart.index'));
+
+        $response->assertRedirect()
+            ->assertSessionHas('warning');
+
+        expect($cart->fresh()->cartItems)->toHaveCount(1)
+            ->and($cart->fresh()->cartItems->first()->product_id)->toBe($inStockProduct->id);
+    });
+
+    test('it does not show warning when all items are in stock', function () {
+        $product = Product::factory()->create(['stock_quantity' => 10, 'price' => 1999]);
+
+        $cart = Cart::factory()->create();
+        CartItem::factory()->create([
+            'cart_id' => $cart->id,
+            'product_id' => $product->id,
+            'product_name' => $product->title,
+            'quantity' => 1,
+            'unit_price' => 1999,
+            'total_price' => 1999,
+        ]);
+
+        $response = $this->withCookie('cart_token', $cart->cart_token)
+            ->get(route('cart.index'));
+
+        $response->assertSuccessful()
+            ->assertSessionMissing('warning');
+    });
+
+    test('it reduces quantity and shows warning when stock drops', function () {
+        $product = Product::factory()->create(['stock_quantity' => 4, 'price' => 1999]);
+
+        $cart = Cart::factory()->create();
+        CartItem::factory()->create([
+            'cart_id' => $cart->id,
+            'product_id' => $product->id,
+            'product_name' => $product->title,
+            'quantity' => 4,
+            'unit_price' => 1999,
+            'total_price' => 7996,
+        ]);
+
+        // Simulate another buyer purchasing some stock
+        $product->stock_quantity = 2;
+        $product->save();
+
+        $response = $this->withCookie('cart_token', $cart->cart_token)
+            ->get(route('cart.index'));
+
+        $response->assertRedirect()
+            ->assertSessionHas('warning');
+
+        expect($cart->fresh()->cartItems->first()->quantity)->toBe(2);
+    });
 });
 
 describe('cart add', function () {
@@ -236,7 +314,18 @@ describe('cart add', function () {
         $cart = $service->getOrCreateCart();
 
         expect(fn () => $service->addItem($cart, $product))
-            ->toThrow(Exception::class, 'Insufficient stock');
+            ->toThrow(Exception::class, __('Insufficient stock for this product'));
+    });
+
+    test('it shows error notification when adding out of stock product', function () {
+        $product = Product::factory()->create(['stock_quantity' => 0, 'price' => 1999]);
+
+        $response = $this->post(route('cart.add', $product), ['quantity' => 1]);
+
+        $response->assertRedirect()
+            ->assertSessionHas('error', __('Insufficient stock for this product'));
+
+        expect(CartItem::count())->toBe(0);
     });
 });
 
@@ -276,6 +365,27 @@ describe('cart update', function () {
             ->post(route('cart.items.update', $item), ['quantity' => 2]);
 
         $response->assertForbidden();
+    });
+
+    test('it shows error notification when updating quantity above available stock', function () {
+        $product = Product::factory()->create(['stock_quantity' => 2, 'price' => 2999]);
+        $cart = Cart::factory()->create();
+        $item = CartItem::factory()->create([
+            'cart_id' => $cart->id,
+            'product_id' => $product->id,
+            'quantity' => 1,
+            'unit_price' => 2999,
+            'total_price' => 2999,
+        ]);
+
+        $response = $this->withCookie('cart_token', $cart->cart_token)
+            ->post(route('cart.items.update', $item), ['quantity' => 10]);
+
+        $response->assertRedirect()
+            ->assertSessionHas('error', __('Insufficient stock for this product'));
+
+        $item->refresh();
+        expect($item->quantity)->toBe(1);
     });
 });
 
@@ -384,6 +494,56 @@ describe('checkout confirmation page', function () {
         $response->assertSuccessful()
             ->assertSee('John Doe')
             ->assertSee('john@example.com');
+    });
+
+    test('it reduces quantity and shows warning on checkout when stock drops', function () {
+        $product = Product::factory()->create(['stock_quantity' => 4, 'price' => 1999]);
+
+        $cart = Cart::factory()->create();
+        CartItem::factory()->create([
+            'cart_id' => $cart->id,
+            'product_id' => $product->id,
+            'product_name' => $product->title,
+            'quantity' => 4,
+            'unit_price' => 1999,
+            'total_price' => 7996,
+        ]);
+
+        // Simulate another buyer purchasing some stock
+        $product->stock_quantity = 2;
+        $product->save();
+
+        $response = $this->withCookie('cart_token', $cart->cart_token)
+            ->get(route('checkout.index'));
+
+        $response->assertRedirect()
+            ->assertSessionHas('warning');
+
+        expect($cart->fresh()->cartItems->first()->quantity)->toBe(2);
+    });
+
+    test('it redirects to cart when all items become out of stock at checkout', function () {
+        $product = Product::factory()->create(['stock_quantity' => 4, 'price' => 1999]);
+
+        $cart = Cart::factory()->create();
+        CartItem::factory()->create([
+            'cart_id' => $cart->id,
+            'product_id' => $product->id,
+            'product_name' => $product->title,
+            'quantity' => 4,
+            'unit_price' => 1999,
+            'total_price' => 7996,
+        ]);
+
+        // Simulate stock selling out completely
+        $product->stock_quantity = 0;
+        $product->save();
+
+        $response = $this->withCookie('cart_token', $cart->cart_token)
+            ->get(route('checkout.index'));
+
+        $response->assertRedirect(route('cart.index'))
+            ->assertSessionHas('error', __('Your cart is empty'));
     });
 });
 

@@ -3,6 +3,18 @@
         <div class="container-xl">
             <h1 class="mb-4">{{ __('Checkout') }}</h1>
 
+            @if (session('warning'))
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    {{ session('warning') }}
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="{{ __('Close') }}"
+                    ></button>
+                </div>
+            @endif
+
             @if ($errors->any())
                 <div class="alert alert-danger">
                     <ul class="mb-0">

@@ -228,6 +228,30 @@ class Product extends Model implements HasMedia, HasRichContent, Sortable
         return $gross - $this->priceNet();
     }
 
+    /**
+     * Check if the product is currently in stock.
+     */
+    public function isInStock(): bool
+    {
+        return $this->stock_quantity > 0;
+    }
+
+    /**
+     * Check if the product is out of stock.
+     */
+    public function isOutOfStock(): bool
+    {
+        return ! $this->isInStock();
+    }
+
+    /**
+     * Check if the product can fulfill the requested quantity.
+     */
+    public function canFulfillQuantity(int $quantity): bool
+    {
+        return $this->stock_quantity >= $quantity;
+    }
+
     /*
     |--------------------------------------------------------------------------
     | Spatie Media Library

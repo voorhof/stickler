@@ -32,21 +32,38 @@ class CartController extends Controller
     /**
      * Display the cart page.
      */
-    public function index(): View
+    public function index(): RedirectResponse|View
     {
         Head::title(__('Cart'))
             ->description(__('View and manage your shopping cart'));
 
         $cart = $this->cartService->getOrCreateCart(Auth::user());
-        $cart->load('cartItems.product.media');
+        $cart->load('cartItems');
+
+        $removedCount = $this->cartService->removeOutOfStockItems($cart);
+
+        if ($removedCount > 0) {
+            return redirect()
+                ->route('cart.index')
+                ->with('warning', __('Out of stock items removed from your cart', ['count' => $removedCount]));
+        }
+
+        $cart->load('cartItems');
+        $adjustedCount = $this->cartService->adjustOverstockedItems($cart);
+
+        $cart->load('cartItems.product.media', 'cartItems.productVariant');
+
+        if ($adjustedCount > 0) {
+            return redirect()
+                ->route('cart.index')
+                ->with('warning', __('Some items in your cart are no longer available in the requested quantity.'));
+        }
 
         return view('public.cart.index', ['cart' => $cart]);
     }
 
     /**
      * Add a product to the cart.
-     *
-     * @throws Exception
      */
     public function store(Request $request, Product $product, ?ProductVariant $productVariant = null): RedirectResponse
     {
@@ -61,7 +78,14 @@ class CartController extends Controller
         abort_if($productVariant !== null && $productVariant->product_id !== $product->id, 404);
 
         $cart = $this->cartService->getOrCreateCart(Auth::user());
-        $this->cartService->addItem($cart, $product, $productVariant, $quantity);
+
+        try {
+            $this->cartService->addItem($cart, $product, $productVariant, $quantity);
+        } catch (Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', $e->getMessage());
+        }
 
         $response = redirect()
             ->route('cart.index')
@@ -76,8 +100,6 @@ class CartController extends Controller
 
     /**
      * Update a cart item's quantity.
-     *
-     * @throws Exception
      */
     public function update(Request $request, CartItem $item): RedirectResponse
     {
@@ -87,7 +109,13 @@ class CartController extends Controller
 
         abort_unless($item->cart_id === $cart->id, 403);
 
-        $this->cartService->updateItem($item, $quantity);
+        try {
+            $this->cartService->updateItem($item, $quantity);
+        } catch (Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', $e->getMessage());
+        }
 
         return redirect()
             ->route('cart.index')
@@ -119,6 +147,18 @@ class CartController extends Controller
             ->description(__('Review your order and provide your details'));
 
         $cart = $this->cartService->getOrCreateCart(Auth::user());
+        $cart->load('cartItems');
+
+        $this->cartService->removeOutOfStockItems($cart);
+
+        if ($cart->isEmpty()) {
+            return redirect()
+                ->route('cart.index')
+                ->with('error', __('Your cart is empty'));
+        }
+
+        $cart->load('cartItems');
+        $adjustedCount = $this->cartService->adjustOverstockedItems($cart);
 
         if ($cart->isEmpty()) {
             return redirect()
@@ -128,10 +168,18 @@ class CartController extends Controller
 
         $cart->load('cartItems.product.media');
 
-        return view('public.checkout.index', [
+        $view = view('public.checkout.index', [
             'cart' => $cart,
             'user' => Auth::user(),
         ]);
+
+        if ($adjustedCount > 0) {
+            return redirect()
+                ->route('checkout.index')
+                ->with('warning', __('Some items in your cart are no longer available in the requested quantity.'));
+        }
+
+        return $view;
     }
 
     /**

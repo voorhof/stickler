@@ -10,6 +10,20 @@
                 </div>
             @endif
 
+            @if (session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ session('error') }}
+                    <button type="button" class="btn-close" data-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
+            @if (session('warning'))
+                <div class="alert alert-primary alert-dismissible fade show" role="alert">
+                    {{ session('warning') }}
+                    <button type="button" class="btn-close" data-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
             @if ($cart->isEmpty())
                 <div class="alert alert-info">{{ __('Your cart is empty') }}</div>
                 <a href="{{ route('products.index') }}" class="btn btn-primary"> {{ __('Browse products') }} </a>
@@ -58,25 +72,30 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <form
-                                            action="{{ route('cart.items.update', $item) }}"
-                                            method="POST"
-                                            class="d-inline"
-                                        >
-                                            <x-csrf-input />
-                                            <div class="input-group input-group-sm" style="width: 140px">
-                                                <input
-                                                    type="number"
-                                                    name="quantity"
-                                                    value="{{ $item->quantity }}"
-                                                    min="1"
-                                                    class="form-control"
-                                                />
-                                                <button type="submit" class="btn btn-outline-secondary">
-                                                    {{ __('Update') }}
-                                                </button>
-                                            </div>
-                                        </form>
+                                        @if ($item->isInStock())
+                                            <form
+                                                action="{{ route('cart.items.update', $item) }}"
+                                                method="POST"
+                                                class="d-inline"
+                                            >
+                                                <x-csrf-input />
+                                                <div class="input-group input-group-sm" style="width: 140px">
+                                                    <input
+                                                        type="number"
+                                                        name="quantity"
+                                                        value="{{ $item->quantity }}"
+                                                        min="1"
+                                                        class="form-control"
+                                                    />
+                                                    <button type="submit" class="btn btn-outline-secondary">
+                                                        {{ __('Update') }}
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        @else
+                                            <span class="text-danger">0</span>
+                                            <small class="text-muted d-block">{{ __('Out of stock') }}</small>
+                                        @endif
                                     </td>
                                     <td>{{ number_format($item->unit_price, 2) }} €</td>
                                     <td>{{ number_format($item->total_price, 2) }} €</td>

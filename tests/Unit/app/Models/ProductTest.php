@@ -520,3 +520,27 @@ test('taxAmount returns zero when VAT rate is zero', function () {
 
     expect($product->taxAmount())->toBe(0.0);
 });
+
+// --------------------------------------------------------------------------
+// Stock Helper Methods
+// --------------------------------------------------------------------------
+
+test('product isInStock returns true when stock is positive', function () {
+    User::factory()->create();
+    $product = Product::factory()->create(['stock_quantity' => 5]);
+
+    expect($product->isInStock())->toBeTrue()
+        ->and($product->isOutOfStock())->toBeFalse()
+        ->and($product->canFulfillQuantity(3))->toBeTrue()
+        ->and($product->canFulfillQuantity(5))->toBeTrue()
+        ->and($product->canFulfillQuantity(6))->toBeFalse();
+});
+
+test('product isInStock returns false when stock is zero', function () {
+    User::factory()->create();
+    $product = Product::factory()->create(['stock_quantity' => 0]);
+
+    expect($product->isInStock())->toBeFalse()
+        ->and($product->isOutOfStock())->toBeTrue()
+        ->and($product->canFulfillQuantity(1))->toBeFalse();
+});

@@ -156,3 +156,39 @@ test('tax rate can be null', function () {
 
     expect($item->tax_rate)->toBeNull();
 });
+
+test('cart item is in stock when product has stock', function () {
+    $product = Product::factory()->create(['stock_quantity' => 5]);
+    $item = CartItem::factory()->create(['product_id' => $product->id]);
+
+    expect($item->isInStock())->toBeTrue();
+});
+
+test('cart item is out of stock when product has zero stock', function () {
+    $product = Product::factory()->create(['stock_quantity' => 0]);
+    $item = CartItem::factory()->create(['product_id' => $product->id]);
+
+    expect($item->isInStock())->toBeFalse();
+});
+
+test('cart item is in stock when variant has stock', function () {
+    $product = Product::factory()->create();
+    $variant = ProductVariant::factory()->create(['product_id' => $product->id, 'stock_quantity' => 3]);
+    $item = CartItem::factory()->withVariant()->create(['product_id' => $product->id, 'product_variant_id' => $variant->id]);
+
+    expect($item->isInStock())->toBeTrue();
+});
+
+test('cart item is out of stock when variant has zero stock', function () {
+    $product = Product::factory()->create();
+    $variant = ProductVariant::factory()->create(['product_id' => $product->id, 'stock_quantity' => 0]);
+    $item = CartItem::factory()->withVariant()->create(['product_id' => $product->id, 'product_variant_id' => $variant->id]);
+
+    expect($item->isInStock())->toBeFalse();
+});
+
+test('cart item is out of stock when product is deleted', function () {
+    $item = CartItem::factory()->create(['product_id' => null]);
+
+    expect($item->isInStock())->toBeFalse();
+});
