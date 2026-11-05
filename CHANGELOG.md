@@ -5,7 +5,21 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/voorhof/stickler/compare/v1.8.1...HEAD)
+## [Unreleased](https://github.com/voorhof/stickler/compare/v1.8.2...HEAD)
+
+## [v1.8.2](https://github.com/voorhof/stickler/compare/v1.8.1...v1.8.2) - 2026-11-05
+
+### What's Changed
+
+* fixes/updates by @voorhof in https://github.com/voorhof/stickler/pull/30
+
+1. Boost update
+2. Compatibility improvements for the Laravel installer
+3. Installation defaults
+4. Welcome page layout update
+5. Composer & NPM updates
+
+**Full Changelog**: https://github.com/voorhof/stickler/compare/v1.8.1...v1.8.2
 
 ## [v1.8.1](https://github.com/voorhof/stickler/compare/v1.8.0...v1.8.1) - 2026-11-03
 
