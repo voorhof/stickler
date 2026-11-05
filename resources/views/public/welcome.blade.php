@@ -1,23 +1,6 @@
 <x-layouts.app>
     @push('scripts-head-bottom')
         <style>
-            .c-welcome {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                min-height: 60vh;
-                text-align: center;
-            }
-
-            .c-welcome-title {
-                margin: 0 0 3rem;
-                font-weight: 700;
-                font-size: clamp(2rem, 5vw, 3rem);
-                line-height: 1.2;
-                color: var(--st-body-color);
-            }
-
             .c-welcome-grid {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -26,44 +9,18 @@
                 max-width: 800px;
             }
 
-            .c-welcome-card {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                gap: 0.5rem;
-                padding: 2rem 1.5rem;
-                border: 1px solid var(--st-border-color);
-                border-radius: var(--st-border-radius-lg);
-                background-color: var(--st-body-bg);
-                text-decoration: none;
+            .c-welcome-grid .card {
                 transition:
                     border-color 0.2s ease,
                     box-shadow 0.2s ease;
             }
-
-            .c-welcome-card:hover {
+            .c-welcome-grid .card:hover {
                 border-color: var(--st-link-color);
                 box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.075);
-                text-decoration: none;
             }
-
-            .c-welcome-card:focus-visible {
+            .c-welcome-grid .card:focus-visible {
                 outline: 2px solid var(--st-link-color);
                 outline-offset: 2px;
-            }
-
-            .c-welcome-card-title {
-                margin: 0;
-                font-size: 1.25rem;
-                font-weight: 600;
-                color: var(--st-body-color);
-            }
-
-            .c-welcome-card-desc {
-                margin: 0;
-                font-size: 0.85rem;
-                color: var(--st-secondary-color);
             }
 
             @media (max-width: 768px) {
@@ -73,7 +30,7 @@
             }
 
             @media (prefers-color-scheme: dark) {
-                .c-welcome-card:hover {
+                .c-welcome-grid .card:hover {
                     box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.3);
                 }
             }
@@ -82,59 +39,75 @@
 
     <section class="py-5">
         <div class="container-xl">
-            <div class="c-welcome">
-                <h1 class="c-welcome-title">
+            <div class="d-flex flex-column align-items-center justify-content-center text-center">
+                <h1 class="fw-bold mb-4">
                     @lang('Welcome')
                 </h1>
 
                 <div class="c-welcome-grid">
-                    <a href="{{ route('posts.index') }}" class="c-welcome-card">
-                        <div class="fs-3"><x-icons.pen /></div>
-                        <h2 class="c-welcome-card-title">{{ __('Blogposts') }}</h2>
-                        <p class="c-welcome-card-desc">{{ __('Read our latest articles') }}</p>
-                    </a>
+                    <div class="card">
+                        <a href="{{ route('posts.index') }}" class="card-body text-decoration-none">
+                            <div class="fs-3"><x-icons.pen /></div>
+                            <h2 class="card-title fs-4 mb-1">{{ __('Blogposts') }}</h2>
+                            <p class="small text-body-secondary">{{ __('Read our latest articles') }}</p>
+                        </a>
+                    </div>
 
-                    <a href="{{ route('projects.index') }}" class="c-welcome-card">
-                        <div class="fs-3"><x-icons.book /></div>
-                        <h2 class="c-welcome-card-title">{{ __('Projects') }}</h2>
-                        <p class="c-welcome-card-desc">{{ __('Explore our work') }}</p>
-                    </a>
+                    <div class="card">
+                        <a href="{{ route('projects.index') }}" class="card-body text-decoration-none">
+                            <div class="fs-3"><x-icons.book /></div>
+                            <h2 class="card-title fs-4 mb-1">{{ __('Projects') }}</h2>
+                            <p class="small text-body-secondary">{{ __('Explore our work') }}</p>
+                        </a>
+                    </div>
 
-                    <a href="{{ route('pages.index') }}" class="c-welcome-card">
-                        <div class="fs-3"><x-icons.file-earmark /></div>
-                        <h2 class="c-welcome-card-title">{{ __('Pages') }}</h2>
-                        <p class="c-welcome-card-desc">{{ __('Browse all pages') }}</p>
-                    </a>
+                    <div class="card">
+                        <a href="{{ route('pages.index') }}" class="card-body text-decoration-none">
+                            <div class="fs-3"><x-icons.file-earmark /></div>
+                            <h2 class="card-title fs-4 mb-1">{{ __('Pages') }}</h2>
+                            <p class="small text-body-secondary">{{ __('Browse all pages') }}</p>
+                        </a>
+                    </div>
 
-                    <a href="{{ route('products.index') }}" class="c-welcome-card">
-                        <div class="fs-3"><x-icons.handbag /></div>
-                        <h2 class="c-welcome-card-title">{{ __('Products') }}</h2>
-                        <p class="c-welcome-card-desc">{{ __('Discover our products') }}</p>
-                    </a>
+                    <div class="card">
+                        <a href="{{ route('products.index') }}" class="card-body text-decoration-none">
+                            <div class="fs-3"><x-icons.handbag /></div>
+                            <h2 class="card-title fs-4 mb-1">{{ __('Products') }}</h2>
+                            <p class="small text-body-secondary">{{ __('Discover our products') }}</p>
+                        </a>
+                    </div>
 
-                    <a href="{{ route('cart.index') }}" class="c-welcome-card">
-                        <div class="fs-3"><x-icons.cart /></div>
-                        <h2 class="c-welcome-card-title">{{ __('Cart') }}</h2>
-                        <p class="c-welcome-card-desc">{{ __('Cart Items') }}</p>
-                    </a>
+                    <div class="card">
+                        <a href="{{ route('cart.index') }}" class="card-body text-decoration-none">
+                            <div class="fs-3"><x-icons.cart /></div>
+                            <h2 class="card-title fs-4 mb-1">{{ __('Cart') }}</h2>
+                            <p class="small text-body-secondary">{{ __('Cart Items') }}</p>
+                        </a>
+                    </div>
 
-                    <a href="{{ route('account.dashboard') }}" class="c-welcome-card">
-                        <div class="fs-3"><x-icons.person-circle /></div>
-                        <h2 class="c-welcome-card-title">{{ __('Account') }}</h2>
-                        <p class="c-welcome-card-desc">{{ __('Dashboard') }}</p>
-                    </a>
+                    <div class="card">
+                        <a href="{{ route('account.dashboard') }}" class="card-body text-decoration-none">
+                            <div class="fs-3"><x-icons.person-circle /></div>
+                            <h2 class="card-title fs-4 mb-1">{{ __('Account') }}</h2>
+                            <p class="small text-body-secondary">{{ __('Dashboard') }}</p>
+                        </a>
+                    </div>
 
-                    <a href="{{ route('contact.index') }}" class="c-welcome-card">
-                        <div class="fs-3"><x-icons.envelope /></div>
-                        <h2 class="c-welcome-card-title">{{ __('Contact') }}</h2>
-                        <p class="c-welcome-card-desc">{{ __('Get in touch') }}</p>
-                    </a>
+                    <div class="card">
+                        <a href="{{ route('contact.index') }}" class="card-body text-decoration-none">
+                            <div class="fs-3"><x-icons.envelope /></div>
+                            <h2 class="card-title fs-4 mb-1">{{ __('Contact') }}</h2>
+                            <p class="small text-body-secondary">{{ __('Get in touch') }}</p>
+                        </a>
+                    </div>
 
-                    <a href="{{ route('brandbook.index') }}" class="c-welcome-card">
-                        <div class="fs-3"><x-icons.palette2 /></div>
-                        <h2 class="c-welcome-card-title">{{ __('Brandbook') }}</h2>
-                        <p class="c-welcome-card-desc">{{ __('View our style guide') }}</p>
-                    </a>
+                    <div class="card">
+                        <a href="{{ route('brandbook.index') }}" class="card-body text-decoration-none">
+                            <div class="fs-3"><x-icons.palette2 /></div>
+                            <h2 class="card-title fs-4 mb-1">{{ __('Brandbook') }}</h2>
+                            <p class="small text-body-secondary">{{ __('View our style guide') }}</p>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
