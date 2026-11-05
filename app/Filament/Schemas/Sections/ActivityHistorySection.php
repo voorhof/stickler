@@ -6,6 +6,7 @@ use App\Filament\Resources\Activities\ActivityResource;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 
 class ActivityHistorySection
@@ -20,22 +21,27 @@ class ActivityHistorySection
             ->collapsible()
             ->collapsed()
             ->persistCollapsed()
-            ->schema([
-                RepeatableEntry::make('activitiesAsSubject')
-                    ->label(__('Activity history'))
-                    ->hiddenLabel()
-                    ->contained(false)
-                    ->state(
-                        $state
-                        ?? fn ($record) => $record?->activitiesAsSubject()->latest()->get(),
-                    )
-                    ->schema([
-                        TextEntry::make('title')
+            ->schema(
+                Schema::make()
+                    ->components([
+                        RepeatableEntry::make('activitiesAsSubject')
                             ->label(__('Activity history'))
                             ->hiddenLabel()
-                            ->formatStateUsing(fn (string $state, $record): string => "$record->created_at - $state ")
-                            ->url(fn ($record): string => ActivityResource::getUrl('view', ['record' => $record])),
-                    ]),
-            ]);
+                            ->contained(false)
+                            ->state(
+                                $state
+                                ?? fn ($record) => $record?->activitiesAsSubject()->latest()->get(),
+                            )
+                            ->schema([
+                                TextEntry::make('title')
+                                    ->label(__('Activity history'))
+                                    ->hiddenLabel()
+                                    ->formatStateUsing(fn (string $state, $record): string => "$record->created_at - $state ")
+                                    ->url(fn ($record): string => ActivityResource::getUrl('view', ['record' => $record])),
+                            ]),
+                    ])
+                    ->lazyLoaded(),
+            )
+            ->key('activity-history-section');
     }
 }

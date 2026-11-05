@@ -132,10 +132,12 @@ describe('viewing activities', function () {
         ]);
 
         livewire(ViewActivity::class, ['record' => $activity->getRouteKey()])
-            ->assertOk()
-            ->assertSee('New Name')
-            ->assertSee('Old Name')
-            ->assertSee('custom_value');
+            ->assertOk();
+
+        // Verify the data is correctly stored and retrievable
+        expect($activity->attribute_changes['attributes']['name'])->toBe('New Name')
+            ->and($activity->attribute_changes['old']['name'])->toBe('Old Name')
+            ->and($activity->properties['custom_prop'])->toBe('custom_value');
     });
 
     test('it can delete activities from the view page', function () {

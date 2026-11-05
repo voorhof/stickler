@@ -4,6 +4,7 @@ namespace App\Filament\Schemas\Sections;
 
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 
 class DocumentUploadSection
@@ -19,16 +20,21 @@ class DocumentUploadSection
             ->collapsible()
             ->collapsed()
             ->persistCollapsed()
-            ->schema([
-                SpatieMediaLibraryFileUpload::make('documents')
-                    ->label(__('Documents'))
-                    ->hiddenLabel()
-                    ->collection('documents')
-                    ->acceptedFileTypes(['application/pdf'])
-                    ->multiple()
-                    ->reorderable()
-                    ->maxSize(1024 * 50) // 50MB
-                    ->columnSpanFull(),
-            ]);
+            ->schema(
+                Schema::make()
+                    ->components([
+                        SpatieMediaLibraryFileUpload::make('documents')
+                            ->label(__('Documents'))
+                            ->hiddenLabel()
+                            ->collection('documents')
+                            ->acceptedFileTypes(['application/pdf'])
+                            ->multiple()
+                            ->reorderable()
+                            ->maxSize(1024 * 50) // 50MB
+                            ->columnSpanFull(),
+                    ])
+                    ->lazyLoaded(),
+            )
+            ->key('document-upload-section');
     }
 }

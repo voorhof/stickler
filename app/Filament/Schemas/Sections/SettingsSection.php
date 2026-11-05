@@ -9,6 +9,7 @@ use App\Filament\Schemas\Components\PublishedDatePicker;
 use App\Filament\Schemas\Components\SlugInput;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Support\Enums\Operation;
 use Filament\Support\Icons\Heroicon;
 
@@ -29,20 +30,25 @@ class SettingsSection
             ->persistCollapsed(function ($operation): bool {
                 return $operation !== Operation::Create->value;
             })
-            ->schema([
-                Grid::make()->schema([
-                    PublishedDatePicker::make()
-                        ->hidden(! $hasPublished)
-                        ->columnOrder($publishColumnOrder),
-                    OrderColumnInput::make()
-                        ->hidden(! $hasOrder),
-                    SlugInput::make(name: $slugName)
-                        ->hidden((fn ($operation): bool => $operation === Operation::Create->value || ! $hasSlug)),
-                    ArchiveToggle::make($archiveLabel)
-                        ->hidden((fn ($operation): bool => $operation === Operation::Create->value || ! $hasArchive)),
-                    ArchivedDatePicker::make()
-                        ->hidden((fn ($operation): bool => $operation === Operation::Create->value || ! $hasArchive)),
-                ]),
-            ]);
+            ->schema(
+                Schema::make()
+                    ->components([
+                        Grid::make()->schema([
+                            PublishedDatePicker::make()
+                                ->hidden(! $hasPublished)
+                                ->columnOrder($publishColumnOrder),
+                            OrderColumnInput::make()
+                                ->hidden(! $hasOrder),
+                            SlugInput::make(name: $slugName)
+                                ->hidden((fn ($operation): bool => $operation === Operation::Create->value || ! $hasSlug)),
+                            ArchiveToggle::make($archiveLabel)
+                                ->hidden((fn ($operation): bool => $operation === Operation::Create->value || ! $hasArchive)),
+                            ArchivedDatePicker::make()
+                                ->hidden((fn ($operation): bool => $operation === Operation::Create->value || ! $hasArchive)),
+                        ]),
+                    ])
+                    ->lazyLoaded(),
+            )
+            ->key('settings-section');
     }
 }

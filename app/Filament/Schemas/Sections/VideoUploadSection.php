@@ -4,6 +4,7 @@ namespace App\Filament\Schemas\Sections;
 
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 
 class VideoUploadSection
@@ -19,16 +20,21 @@ class VideoUploadSection
             ->collapsible()
             ->collapsed()
             ->persistCollapsed()
-            ->schema([
-                SpatieMediaLibraryFileUpload::make('videos')
-                    ->label(__('Videos'))
-                    ->hiddenLabel()
-                    ->collection('videos')
-                    ->acceptedFileTypes(['video/mp4'])
-                    ->multiple()
-                    ->reorderable()
-                    ->maxSize(1024 * 50) // 50MB
-                    ->columnSpanFull(),
-            ]);
+            ->schema(
+                Schema::make()
+                    ->components([
+                        SpatieMediaLibraryFileUpload::make('videos')
+                            ->label(__('Videos'))
+                            ->hiddenLabel()
+                            ->collection('videos')
+                            ->acceptedFileTypes(['video/mp4'])
+                            ->multiple()
+                            ->reorderable()
+                            ->maxSize(1024 * 50) // 50MB
+                            ->columnSpanFull(),
+                    ])
+                    ->lazyLoaded(),
+            )
+            ->key('video-upload-section');
     }
 }

@@ -8,6 +8,7 @@ use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 
 class LinkedModelsSection
@@ -28,27 +29,32 @@ class LinkedModelsSection
             ->collapsible()
             ->collapsed()
             ->persistCollapsed()
-            ->schema([
-                RepeatableEntry::make($relationName)
-                    ->label(__($modelLabel))
-                    ->hiddenLabel()
-                    ->contained(false)
-                    ->grid($grid)
-                    ->schema([
-                        TextEntry::make($entryColumn)
+            ->schema(
+                Schema::make()
+                    ->components([
+                        RepeatableEntry::make($relationName)
                             ->label(__($modelLabel))
                             ->hiddenLabel()
-                            ->color('primary')
-                            ->url(fn ($record): string => $resource::getUrl($url, ['record' => $record])),
-                        ImageEntry::make('preview_url')
-                            ->label(__('Preview'))
-                            ->hidden(fn ($record) => ! $record instanceof Media || ! $record->preview_url)
-                            ->hiddenLabel()
-                            ->imageSize(200)
-                            ->extraImgAttributes(['loading' => 'lazy'])
-                            ->visible(fn ($record) => $record instanceof Media && str_starts_with($record->mime_type, 'image/'))
-                            ->url(fn ($record): string => MediaResource::getUrl('edit', ['record' => $record])),
-                    ]),
-            ]);
+                            ->contained(false)
+                            ->grid($grid)
+                            ->schema([
+                                TextEntry::make($entryColumn)
+                                    ->label(__($modelLabel))
+                                    ->hiddenLabel()
+                                    ->color('primary')
+                                    ->url(fn ($record): string => $resource::getUrl($url, ['record' => $record])),
+                                ImageEntry::make('preview_url')
+                                    ->label(__('Preview'))
+                                    ->hidden(fn ($record) => ! $record instanceof Media || ! $record->preview_url)
+                                    ->hiddenLabel()
+                                    ->imageSize(200)
+                                    ->extraImgAttributes(['loading' => 'lazy'])
+                                    ->visible(fn ($record) => $record instanceof Media && str_starts_with($record->mime_type, 'image/'))
+                                    ->url(fn ($record): string => MediaResource::getUrl('edit', ['record' => $record])),
+                            ]),
+                    ])
+                    ->lazyLoaded(),
+            )
+            ->key('linked-models-section');
     }
 }
