@@ -81,8 +81,10 @@ The easiest way to install this starter kit is using the [Laravel Installer](htt
 This will set up the project automatically.
 
 ```bash
-laravel new my-app --using=voorhof/stickler
+laravel new my-app --using=voorhof/stickler --phpunit
 ```
+
+The `--phpunit` flag is required because Stickler already includes Pest. Without it, the Laravel installer will attempt to install Pest again and run the `pest-plugin-drift` migration tool, which may modify the existing test files.
 
 After installation, update the variables, such as `APP_NAME` and `APP_URL`, in the `.env` file so that they match your environment.
 
