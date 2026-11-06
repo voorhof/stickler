@@ -134,6 +134,11 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
+        },
+        "policy": {
+            "cooldown": {
+                "period": "1 day"
+            }
         }
     },
     "minimum-stability": "stable",
