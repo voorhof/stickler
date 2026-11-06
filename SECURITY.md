@@ -6,8 +6,8 @@ Security fixes are applied to the latest release only.
 
 | Version | Supported |
 | ------- | --------- |
-| 1.5.x   | Yes       |
-| < 1.5   | No        |
+| 1.8.x   | Yes       |
+| < 1.8   | No        |
 
 ## Reporting a Vulnerability
 
