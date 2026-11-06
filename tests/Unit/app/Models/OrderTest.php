@@ -382,6 +382,5 @@ test('order save throws after max retry attempts', function () {
 
     $order = new Order(['order_number' => 'ORD-2026-00002']);
 
-    $this->expectException(Illuminate\Database\UniqueConstraintViolationException::class);
-    $order->save();
+    expect(fn () => $order->save())->toThrow(Illuminate\Database\UniqueConstraintViolationException::class);
 });
