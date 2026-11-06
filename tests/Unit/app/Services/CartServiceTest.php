@@ -564,7 +564,7 @@ test('it fails to convert cart to order when stock is insufficient for quantity 
     // Simulate stock dropping below the requested quantity (but not to 0)
     $product->update(['stock_quantity' => 1]);
 
-    expect(fn() => $service->convertToOrder($cart))
+    expect(fn () => $service->convertToOrder($cart))
         ->toThrow(Exception::class, __('Insufficient stock for this product'))
         ->and($product->fresh()->stock_quantity)->toBe(1)
         ->and($cart->fresh()->cartItems)->toHaveCount(1);
@@ -991,7 +991,7 @@ test('it fails to reserve stock for order when insufficient stock', function () 
 
     $service = app(CartService::class);
 
-    expect(fn() => $service->reserveStockForOrder($order))
+    expect(fn () => $service->reserveStockForOrder($order))
         ->toThrow(Exception::class, __('Insufficient stock for this product'))
         ->and($product->fresh()->stock_quantity)->toBe(1);
 
