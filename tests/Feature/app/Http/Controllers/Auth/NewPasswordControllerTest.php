@@ -5,6 +5,7 @@
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Activitylog\Models\Activity;
 
 test('reset password screen can be rendered', function () {
     Notification::fake();
@@ -87,6 +88,33 @@ test('password reset requires matching confirmation', function () {
         ]));
 
         $response->assertSessionHasErrors(['password']);
+
+        return true;
+    });
+});
+
+test('password reset logs activity with correct event name', function () {
+    Notification::fake();
+
+    $user = User::factory()->create(['password' => Hash::make('password')]);
+
+    $this->post(route('password.email'), ['email' => $user->email]);
+
+    Notification::assertSentTo($user, ResetPassword::class, function ($notification) use ($user) {
+        $this->post(route('password.store', [
+            'token' => $notification->token,
+            'email' => $user->email,
+            'password' => 'newpassword',
+            'password_confirmation' => 'newpassword',
+        ]));
+
+        $activity = Activity::where('log_name', 'authentication')
+            ->where('causer_id', $user->id)
+            ->latest('id')
+            ->first();
+
+        expect($activity)->not->toBeNull()
+            ->and($activity->event)->toBe('password reset');
 
         return true;
     });

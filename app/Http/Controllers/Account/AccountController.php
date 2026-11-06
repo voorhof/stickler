@@ -97,15 +97,15 @@ class AccountController extends Controller
 
         $user = $request->user();
 
-        Auth::logout();
-
-        $user->delete();
-
         activity('authentication')
             ->by($user)
             ->on($user)
             ->event('delete')
             ->log(__('User account deleted.'));
+
+        Auth::logout();
+
+        $user->delete();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
