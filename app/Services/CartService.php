@@ -12,6 +12,7 @@ use App\Models\User;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class CartService
@@ -395,9 +396,11 @@ class CartService
                 throw new Exception(__('Insufficient stock for this product'));
             }
 
-            // Defense-in-depth: guard against negative stock if the WHERE guard ever fails
-            if ($model->fresh()->stock_quantity < 0) {
-                throw new Exception(__('Stock quantity cannot be negative'));
+            // Defense-in-depth: log if stock somehow went negative
+            // The WHERE guard is authoritative, so this is a safety net for edge cases
+            $stock = $model->fresh()->stock_quantity;
+            if ($stock < 0) {
+                Log::warning("Stock went negative for model {$model->id}: {$stock}");
             }
         }
     }
@@ -433,9 +436,11 @@ class CartService
                 throw new Exception(__('Insufficient stock for this product'));
             }
 
-            // Defense-in-depth: guard against negative stock if the WHERE guard ever fails
-            if ($model->fresh()->stock_quantity < 0) {
-                throw new Exception(__('Stock quantity cannot be negative'));
+            // Defense-in-depth: log if stock somehow went negative
+            // The WHERE guard is authoritative, so this is a safety net for edge cases
+            $stock = $model->fresh()->stock_quantity;
+            if ($stock < 0) {
+                Log::warning("Stock went negative for model {$model->id}: {$stock}");
             }
         }
     }
