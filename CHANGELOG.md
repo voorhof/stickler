@@ -5,9 +5,10 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/voorhof/stickler/compare/v1.8.3...HEAD)
+## [Unreleased](https://github.com/voorhof/stickler/compare/v1.8.4...HEAD)
 
 ### Security
+
 - Fixed SQL injection risk in CartService by removing `DB::raw()` usage
 - Added webhook signature verification for Mollie payments
 - Added rate limiting to password reset endpoints (`throttle:3,1` and `throttle:5,1`)
@@ -16,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed activity log ordering in account deletion (log before delete)
 
 ### Performance
+
 - Fixed N+1 queries in CartService with eager loading
 - Fixed N+1 query in ProductVariant::getLabelAttribute() with `relationLoaded` check
 - Fixed N+1 query in RenderResponsiveRichContent trait with `relationLoaded` check
@@ -23,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed race condition on `$model->fresh()` in CartService
 
 ### Bug Fixes
+
 - Fixed race condition in contact form duplicate detection (moved inside `DB::transaction()` with `lockForUpdate()`)
 - Added retry logic for order number generation on unique constraint violation
 - Added null message check in SendMessageReplyMailAction
@@ -30,11 +33,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed policy methods with strict type hints (removed nullable `$user` parameters)
 
 ### New Features
+
 - Added `WebhookResult` enum for structured webhook responses
 - Added `InvalidWebhookSignatureException` for webhook security
 - Improved webhook error responses with proper HTTP status codes
 - Added `boost:install` to post-install scripts
 - Added composer cooldown policy
+
+## [v1.8.4](https://github.com/voorhof/stickler/compare/v1.8.3...v1.8.4) - 2026-11-06
+
+### What's Changed
+
+* fixes/updates by @voorhof in https://github.com/voorhof/stickler/pull/32
+
+1. Added boost:install with --no-interaction to the installation process
+2. Added cooldown period to composer
+3. Improved the payment webhook security
+4. Fixed N+1 query problem in CartService
+5. Fixed SQL Injection Risk in CartService via DB::raw()
+6. Fixed nullable user without null checks
+7. Fixed eager-loading the cartItems relationship
+8. Added signature verification for webhook handler
+9. Fixed convertToOrder() relationship cartItems re-queries
+10. Fixed race condition on $model->fresh() in CartService
+11. Added null checks to $user before logging activity in password controllers
+12. Added a retry order number generation on unique violation
+13. Fixed race condition in Contact Form duplicate detection
+14. Added rate limiting middleware to password forgot and reset endpoints
+15. Added check in RenderResponsiveRichContent to avoid lazy loading media records when the relationship isn't pre-loaded
+16. Added defensive check in getLabelAttribute() to prevent lazy loading
+17. Fixed the N+1 query issue in ProductVariant::getLabelAttribute()
+18. Added message null check to SendMessageReplyMailAction
+19. Added unique lock to sitemap job for potential duplicate sitemap generation
+20. Composer & NPM updates
+21. Updated README
+
+**Full Changelog**: https://github.com/voorhof/stickler/compare/v1.8.3...v1.8.4
 
 ## [v1.8.3](https://github.com/voorhof/stickler/compare/v1.8.2...v1.8.3) - 2026-11-06
 
