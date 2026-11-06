@@ -6,6 +6,7 @@ use App\Contracts\PaymentProvider;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Enums\WebhookResult;
+use App\Exceptions\InvalidWebhookSignatureException;
 use App\Mail\PaymentConfirmation;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -216,6 +217,25 @@ test('it returns error and reports exception when webhook processing encounters 
     $result = $service->handleWebhook('id=tr_Test123');
 
     expect($result)->toBe(WebhookResult::Error);
+});
+
+test('it returns signature invalid when provider throws signature exception', function () {
+    $mockProvider = mock(PaymentProvider::class);
+    $mockProvider->shouldReceive('handleWebhook')
+        ->once()
+        ->andThrow(InvalidWebhookSignatureException::class);
+
+    Mail::fake();
+
+    config(['payment.default' => 'mollie', 'payment.providers.mollie' => PaymentProvider::class]);
+    $service = app(PaymentService::class);
+    app()->instance(PaymentProvider::class, $mockProvider);
+
+    $result = $service->handleWebhook('id=tr_Test123', 'bad-signature');
+
+    expect($result)->toBe(WebhookResult::SignatureInvalid);
+
+    Mail::assertNothingQueued();
 });
 
 // --------------------------------------------------------------------------

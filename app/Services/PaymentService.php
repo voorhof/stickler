@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Contracts\PaymentProvider;
 use App\Enums\PaymentStatus;
 use App\Enums\WebhookResult;
+use App\Exceptions\InvalidWebhookSignatureException;
 use App\Mail\PaymentConfirmation;
 use App\Models\Order;
 use Illuminate\Contracts\Container\BindingResolutionException;
@@ -101,6 +102,8 @@ class PaymentService
             }
 
             return WebhookResult::Success;
+        } catch (InvalidWebhookSignatureException) {
+            return WebhookResult::SignatureInvalid;
         } catch (Throwable $e) {
             report($e);
 

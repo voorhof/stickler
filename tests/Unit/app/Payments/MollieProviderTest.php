@@ -4,6 +4,7 @@
 
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
+use App\Exceptions\InvalidWebhookSignatureException;
 use App\Models\Order;
 use App\Models\User;
 use App\Payments\MollieProvider;
@@ -366,4 +367,79 @@ test('it returns null and reports exception when Mollie API throws during webhoo
     $result = $provider->handleWebhook('id=tr_Test123');
 
     expect($result)->toBeNull();
+});
+
+test('it rejects webhook with invalid signature', function () {
+    config(['mollie.key' => 'test_secret_key']);
+
+    $provider = new MollieProvider;
+
+    expect(fn () => $provider->handleWebhook('id=tr_Test123', 'invalid-signature'))
+        ->toThrow(InvalidWebhookSignatureException::class);
+});
+
+test('it accepts webhook with valid signature', function () {
+    $order = Order::factory()->create([
+        'payment_status' => PaymentStatus::Unpaid,
+        'status' => OrderStatus::Pending,
+    ]);
+
+    $payload = json_encode(['id' => 'tr_Test123']);
+    $secret = 'test_secret_key';
+    $signature = hash_hmac('sha256', $payload, $secret);
+
+    config(['mollie.key' => $secret]);
+
+    Mollie::fake([
+        GetPaymentRequest::class => MockResponse::ok([
+            'id' => 'tr_Test123',
+            'mode' => 'test',
+            'amount' => Money::fromMinorUnits('EUR', 2500)->toArray(),
+            'description' => __('Order :order_number', ['order_number' => $order->order_number]),
+            'method' => 'ideal',
+            'status' => MolliePaymentStatus::Paid->value,
+            'profileId' => 'pfl_test123',
+            'createdAt' => now()->toIso8601String(),
+            'metadata' => [
+                'order_id' => $order->id,
+                'order_number' => $order->order_number,
+            ],
+        ], Payment::class),
+    ]);
+
+    $provider = new MollieProvider;
+    $result = $provider->handleWebhook($payload, $signature);
+
+    expect($result)->not->toBeNull()
+        ->and($result->id)->toBe($order->id);
+});
+
+test('it skips signature verification when signature is empty (classic webhooks)', function () {
+    $order = Order::factory()->create([
+        'payment_status' => PaymentStatus::Unpaid,
+        'status' => OrderStatus::Pending,
+    ]);
+
+    Mollie::fake([
+        GetPaymentRequest::class => MockResponse::ok([
+            'id' => 'tr_Test123',
+            'mode' => 'test',
+            'amount' => Money::fromMinorUnits('EUR', 2500)->toArray(),
+            'description' => __('Order :order_number', ['order_number' => $order->order_number]),
+            'method' => 'ideal',
+            'status' => MolliePaymentStatus::Paid->value,
+            'profileId' => 'pfl_test123',
+            'createdAt' => now()->toIso8601String(),
+            'metadata' => [
+                'order_id' => $order->id,
+                'order_number' => $order->order_number,
+            ],
+        ], Payment::class),
+    ]);
+
+    $provider = new MollieProvider;
+    $result = $provider->handleWebhook('id=tr_Test123', '');
+
+    expect($result)->not->toBeNull()
+        ->and($result->id)->toBe($order->id);
 });

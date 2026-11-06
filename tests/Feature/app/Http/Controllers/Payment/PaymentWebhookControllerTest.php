@@ -65,7 +65,7 @@ describe('payment webhook', function () {
             ->getMock();
         app()->instance(App\Services\PaymentService::class, $paymentService);
 
-        $this->post(route('payment.webhook.mollie'), [])
+        $this->post(route('payment.webhook.mollie'))
             ->assertBadRequest()
             ->assertJson(['error' => 'Invalid payload']);
     });
@@ -82,6 +82,32 @@ describe('payment webhook', function () {
         $this->post(route('payment.webhook.mollie'), ['id' => 'tr_unknown'])
             ->assertNotFound()
             ->assertJson(['error' => 'Payment not found']);
+    });
+
+    test('it returns 400 when signature is invalid', function () {
+        $paymentService = mock(App\Services\PaymentService::class)
+            ->shouldReceive('handleWebhook')
+            ->once()
+            ->andReturn(WebhookResult::SignatureInvalid)
+            ->getMock();
+        app()->instance(App\Services\PaymentService::class, $paymentService);
+
+        $this->post(route('payment.webhook.mollie'), ['id' => 'tr_test123'])
+            ->assertBadRequest()
+            ->assertJson(['error' => 'Invalid payload']);
+    });
+
+    test('it returns 500 on internal error', function () {
+        $paymentService = mock(App\Services\PaymentService::class)
+            ->shouldReceive('handleWebhook')
+            ->once()
+            ->andReturn(WebhookResult::Error)
+            ->getMock();
+        app()->instance(App\Services\PaymentService::class, $paymentService);
+
+        $this->post(route('payment.webhook.mollie'), ['id' => 'tr_test123'])
+            ->assertStatus(500)
+            ->assertJson(['error' => 'Internal error']);
     });
 
     test('it rate limits after 30 requests per minute', function () {
