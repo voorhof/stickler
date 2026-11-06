@@ -364,3 +364,24 @@ test('order model has observer attribute configured', function () {
     expect($attributes)->toHaveCount(1)
         ->and($attributes[0]->getArguments()[0])->toBe(OrderObserver::class);
 });
+
+test('order number is regenerated on unique constraint violation', function () {
+    Order::forceCreate(['order_number' => 'ORD-2026-00001']);
+
+    $order = new Order(['order_number' => 'ORD-2026-00001']);
+    $order->save();
+
+    expect($order->order_number)->not->toBe('ORD-2026-00001')
+        ->and($order->order_number)->toMatch('/^ORD-\d{4}-\d{5}$/');
+});
+
+test('order save throws after max retry attempts', function () {
+    Order::forceCreate(['order_number' => 'ORD-2026-00002']);
+    Order::forceCreate(['order_number' => 'ORD-2026-00003']);
+    Order::forceCreate(['order_number' => 'ORD-2026-00004']);
+
+    $order = new Order(['order_number' => 'ORD-2026-00002']);
+
+    $this->expectException(Illuminate\Database\UniqueConstraintViolationException::class);
+    $order->save();
+});

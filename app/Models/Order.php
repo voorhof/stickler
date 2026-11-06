@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 
@@ -199,14 +200,40 @@ class Order extends Model
         $year = now()->format('Y');
         $prefix = 'ORD-'.$year.'-';
 
-        do {
-            $count = self::withTrashed()->where('order_number', 'like', $prefix.'%')->count();
-            $nextNumber = $count + 1;
-            $sequence = Str::padLeft((string) $nextNumber, 5, '0');
-            $orderNumber = $prefix.$sequence;
-        } while (self::withTrashed()->where('order_number', $orderNumber)->exists());
+        $count = self::withTrashed()->where('order_number', 'like', $prefix.'%')->count();
+        $nextNumber = $count + 1;
+        $sequence = Str::padLeft((string) $nextNumber, 5, '0');
 
-        return $orderNumber;
+        return $prefix.$sequence;
+    }
+
+    /**
+     * Save the model instance, retrying with a new order number if a unique constraint violation occurs.
+     *
+     * Under high concurrency, two requests may generate the same order number. The database
+     * unique constraint catches the collision, and we retry with a fresh number (up to 3 attempts).
+     *
+     * @param  array<string, mixed>  $options
+     */
+    public function save(array $options = []): bool
+    {
+        $maxAttempts = 3;
+        $attempt = 0;
+
+        while ($attempt < $maxAttempts) {
+            try {
+                return parent::save($options);
+            } catch (UniqueConstraintViolationException $exception) {
+                if ($attempt + 1 >= $maxAttempts) {
+                    throw $exception;
+                }
+
+                $this->order_number = self::generateOrderNumber();
+                $attempt++;
+            }
+        }
+
+        return false;
     }
 
     /*
