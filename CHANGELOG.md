@@ -5,7 +5,21 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/voorhof/stickler/compare/v1.8.2...HEAD)
+## [Unreleased](https://github.com/voorhof/stickler/compare/v1.8.3...HEAD)
+
+## [v1.8.3](https://github.com/voorhof/stickler/compare/v1.8.2...v1.8.3) - 2026-11-06
+
+### What's Changed
+
+* fixes/updates by @voorhof in https://github.com/voorhof/stickler/pull/31
+
+1. Added lazyLoaded to section schema loading
+2. Implemented automatic stock quantity check in cart and checkout
+3. Update .gitattributes to ignore SECURITY.md
+4. Updated README
+5. Composer updates
+
+**Full Changelog**: https://github.com/voorhof/stickler/compare/v1.8.2...v1.8.3
 
 ## [v1.8.2](https://github.com/voorhof/stickler/compare/v1.8.1...v1.8.2) - 2026-11-05
 
