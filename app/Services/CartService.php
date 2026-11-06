@@ -281,6 +281,10 @@ class CartService
             // Remove out-of-stock items before converting to order
             $cart->loadMissing('cartItems.product', 'cartItems.productVariant');
             $this->removeOutOfStockItems($cart);
+
+            // Reload cartItems to reflect the updated collection after deletions.
+            // `loadMissing()` would skip re-loading since cartItems is already loaded,
+            // so `load()` forces a fresh query to get the items that remain.
             $cart->load('cartItems');
 
             // Reserve stock atomically at checkout time
