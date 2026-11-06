@@ -5,6 +5,7 @@
 use App\Contracts\PaymentProvider;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
+use App\Enums\WebhookResult;
 use App\Mail\PaymentConfirmation;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -48,7 +49,7 @@ test('it initiates payment and saves provider info to order', function () {
         ->and($order->payment_provider_id)->toBe('tr_Test123');
 });
 
-test('it handles webhook with valid signature and paid status', function () {
+test('it handles webhook with paid status', function () {
     $order = Order::factory()->create([
         'payment_status' => PaymentStatus::Paid,
         'status' => OrderStatus::Confirmed,
@@ -60,10 +61,6 @@ test('it handles webhook with valid signature and paid status', function () {
     $payload = 'id=tr_Test123';
 
     $mockProvider = mock(PaymentProvider::class);
-    $mockProvider->shouldReceive('verifySignature')
-        ->once()
-        ->with($payload, 'valid-signature')
-        ->andReturn(true);
     $mockProvider->shouldReceive('handleWebhook')
         ->once()
         ->with($payload, 'valid-signature')
@@ -77,7 +74,7 @@ test('it handles webhook with valid signature and paid status', function () {
 
     $result = $service->handleWebhook($payload, 'valid-signature');
 
-    expect($result)->toBeTrue();
+    expect($result)->toBe(WebhookResult::Success);
 
     Mail::assertQueued(PaymentConfirmation::class, function ($mail) use ($order) {
         return $mail->hasTo('customer@example.com')
@@ -97,10 +94,6 @@ test('it does not send duplicate confirmation email on webhook retry for already
     $payload = 'id=tr_Test123';
 
     $mockProvider = mock(PaymentProvider::class);
-    $mockProvider->shouldReceive('verifySignature')
-        ->once()
-        ->with($payload, '')
-        ->andReturn(true);
     $mockProvider->shouldReceive('handleWebhook')
         ->once()
         ->with($payload, '')
@@ -114,33 +107,26 @@ test('it does not send duplicate confirmation email on webhook retry for already
 
     $result = $service->handleWebhook($payload);
 
-    expect($result)->toBeTrue();
+    expect($result)->toBe(WebhookResult::Success);
 
     // Idempotency: no email sent for already-paid order retry
     Mail::assertNothingQueued();
 });
 
-test('it returns false when webhook signature is invalid', function () {
-    $mockProvider = mock(PaymentProvider::class);
-    $mockProvider->shouldReceive('verifySignature')
-        ->once()
-        ->andReturn(false);
-    $mockProvider->shouldNotReceive('handleWebhook');
-
+test('it returns bad payload when payload is empty', function () {
     Mail::fake();
 
     config(['payment.default' => 'mollie', 'payment.providers.mollie' => PaymentProvider::class]);
     $service = app(PaymentService::class);
-    app()->instance(PaymentProvider::class, $mockProvider);
 
-    $result = $service->handleWebhook('payload', 'invalid-signature');
+    $result = $service->handleWebhook('');
 
-    expect($result)->toBeFalse();
+    expect($result)->toBe(WebhookResult::BadPayload);
 
     Mail::assertNothingQueued();
 });
 
-test('it returns false and sends no email when payment is not paid', function () {
+test('it sends no email when payment is not paid', function () {
     $order = Order::factory()->create([
         'payment_status' => PaymentStatus::Unpaid,
         'status' => OrderStatus::Pending,
@@ -149,9 +135,6 @@ test('it returns false and sends no email when payment is not paid', function ()
     $payload = 'id=tr_Test123';
 
     $mockProvider = mock(PaymentProvider::class);
-    $mockProvider->shouldReceive('verifySignature')
-        ->once()
-        ->andReturn(true);
     $mockProvider->shouldReceive('handleWebhook')
         ->once()
         ->andReturn($order);
@@ -164,7 +147,7 @@ test('it returns false and sends no email when payment is not paid', function ()
 
     $result = $service->handleWebhook($payload, 'valid-signature');
 
-    expect($result)->toBeFalse();
+    expect($result)->toBe(WebhookResult::Success);
 
     Mail::assertNothingQueued();
 });
@@ -180,9 +163,6 @@ test('it skips email when order has no customer email', function () {
     $payload = 'id=tr_Test123';
 
     $mockProvider = mock(PaymentProvider::class);
-    $mockProvider->shouldReceive('verifySignature')
-        ->once()
-        ->andReturn(true);
     $mockProvider->shouldReceive('handleWebhook')
         ->once()
         ->andReturn($order);
@@ -195,16 +175,13 @@ test('it skips email when order has no customer email', function () {
 
     $result = $service->handleWebhook($payload, 'valid-signature');
 
-    expect($result)->toBeTrue();
+    expect($result)->toBe(WebhookResult::Success);
 
     Mail::assertNothingQueued();
 });
 
-test('it returns false when provider returns null', function () {
+test('it returns not found when provider returns null', function () {
     $mockProvider = mock(PaymentProvider::class);
-    $mockProvider->shouldReceive('verifySignature')
-        ->once()
-        ->andReturn(true);
     $mockProvider->shouldReceive('handleWebhook')
         ->once()
         ->andReturn(null);
@@ -217,7 +194,7 @@ test('it returns false when provider returns null', function () {
 
     $result = $service->handleWebhook('id=invalid', 'valid-signature');
 
-    expect($result)->toBeFalse();
+    expect($result)->toBe(WebhookResult::NotFound);
 
     Mail::assertNothingQueued();
 });
@@ -232,13 +209,13 @@ test('it throws BindingResolutionException when provider class is not configured
         ->toThrow(BindingResolutionException::class);
 });
 
-test('it returns false and reports exception when webhook processing encounters an unexpected error', function () {
+test('it returns error and reports exception when webhook processing encounters an unexpected error', function () {
     config(['payment.default' => 'invalid_provider', 'payment.providers.invalid_provider' => null]);
     $service = app(PaymentService::class);
 
     $result = $service->handleWebhook('id=tr_Test123');
 
-    expect($result)->toBeFalse();
+    expect($result)->toBe(WebhookResult::Error);
 });
 
 // --------------------------------------------------------------------------
@@ -265,7 +242,6 @@ test('it restores product stock when payment fails', function () {
     $payload = 'id=tr_Test123';
 
     $mockProvider = mock(PaymentProvider::class);
-    $mockProvider->shouldReceive('verifySignature')->once()->andReturn(true);
     $mockProvider->shouldReceive('handleWebhook')->once()->andReturn($order);
 
     Mail::fake();
@@ -276,7 +252,7 @@ test('it restores product stock when payment fails', function () {
 
     $result = $service->handleWebhook($payload, 'valid-signature');
 
-    expect($result)->toBeFalse()
+    expect($result)->toBe(WebhookResult::Success)
         ->and($product->fresh()->stock_quantity)->toBe(10);
 
     Mail::assertNothingQueued();
@@ -305,7 +281,6 @@ test('it restores variant stock when payment fails', function () {
     $payload = 'id=tr_Test123';
 
     $mockProvider = mock(PaymentProvider::class);
-    $mockProvider->shouldReceive('verifySignature')->once()->andReturn(true);
     $mockProvider->shouldReceive('handleWebhook')->once()->andReturn($order);
 
     Mail::fake();
@@ -316,7 +291,7 @@ test('it restores variant stock when payment fails', function () {
 
     $result = $service->handleWebhook($payload, 'valid-signature');
 
-    expect($result)->toBeFalse()
+    expect($result)->toBe(WebhookResult::Success)
         ->and($variant->fresh()->stock_quantity)->toBe(5)
         ->and($product->fresh()->stock_quantity)->toBe(100);
 });
@@ -340,7 +315,6 @@ test('it does not restore stock when payment is successful', function () {
     $payload = 'id=tr_Test123';
 
     $mockProvider = mock(PaymentProvider::class);
-    $mockProvider->shouldReceive('verifySignature')->once()->andReturn(true);
     $mockProvider->shouldReceive('handleWebhook')->once()->andReturn($order);
 
     Mail::fake();
@@ -351,6 +325,6 @@ test('it does not restore stock when payment is successful', function () {
 
     $result = $service->handleWebhook($payload, 'valid-signature');
 
-    expect($result)->toBeTrue()
+    expect($result)->toBe(WebhookResult::Success)
         ->and($product->fresh()->stock_quantity)->toBe(7);
 });

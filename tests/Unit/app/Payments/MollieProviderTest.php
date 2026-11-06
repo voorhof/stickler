@@ -302,11 +302,11 @@ test('it returns null when order is not found', function () {
     expect($result)->toBeNull();
 });
 
-test('it verifies signature as true when signature is empty', function () {
+test('it returns false when signature is empty (classic webhooks have no signature)', function () {
     $provider = new MollieProvider;
     $result = $provider->verifySignature('id=tr_Test123');
 
-    expect($result)->toBeTrue();
+    expect($result)->toBeFalse();
 });
 
 test('it verifies a valid signature using hmac', function () {

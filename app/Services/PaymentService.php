@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Contracts\PaymentProvider;
 use App\Enums\PaymentStatus;
+use App\Enums\WebhookResult;
 use App\Mail\PaymentConfirmation;
 use App\Models\Order;
 use Illuminate\Contracts\Container\BindingResolutionException;
@@ -71,23 +72,22 @@ class PaymentService
     /**
      * Handle an incoming webhook from the payment provider.
      *
-     * Verifies the signature, processes the webhook, and sends a confirmation email if paid.
-     *
-     * Returns true if payment was confirmed.
+     * Processes the webhook using fetch-to-confirm and sends a confirmation email if paid.
+     * Returns a WebhookResult indicating the outcome.
      */
-    public function handleWebhook(string $payload, string $signature = ''): bool
+    public function handleWebhook(string $payload, string $signature = ''): WebhookResult
     {
+        if (mb_trim($payload) === '') {
+            return WebhookResult::BadPayload;
+        }
+
         try {
             $provider = $this->provider();
-
-            if (! $provider->verifySignature($payload, $signature)) {
-                return false;
-            }
 
             $order = $provider->handleWebhook($payload, $signature);
 
             if (! $order) {
-                return false;
+                return WebhookResult::NotFound;
             }
 
             // Webhook Idempotency: only send email on the first confirmation, not on webhook retries
@@ -100,11 +100,11 @@ class PaymentService
                 $this->cartService->restoreStockForOrder($order);
             }
 
-            return $order->payment_status === PaymentStatus::Paid;
+            return WebhookResult::Success;
         } catch (Throwable $e) {
             report($e);
 
-            return false;
+            return WebhookResult::Error;
         }
     }
 

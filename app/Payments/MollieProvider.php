@@ -118,11 +118,15 @@ class MollieProvider implements PaymentProvider
 
     /**
      * Verify the webhook signature.
+     *
+     * Classic Mollie webhooks do not send signatures. This method returns false
+     * for empty signatures, as there is nothing to verify. Signature verification
+     * is only applicable for next-gen webhooks with signing secrets configured.
      */
     public function verifySignature(string $payload, string $signature = ''): bool
     {
         if (empty($signature)) {
-            return true;
+            return false;
         }
 
         try {

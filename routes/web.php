@@ -126,6 +126,7 @@ Route::get('/order-confirmed/{order}', [CartController::class, 'thankYou'])
  * Payment webhook routes (no authentication, public endpoints)
  */
 Route::post('/payment/webhook/mollie', [PaymentWebhookController::class, 'handleMollie'])
+    ->middleware('throttle:30,1')
     ->name('payment.webhook.mollie');
 
 /**
