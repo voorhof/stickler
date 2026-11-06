@@ -179,10 +179,12 @@ class CartService
      */
     public function removeOutOfStockItems(Cart $cart): int
     {
+        $cart->loadMissing('cartItems.product', 'cartItems.productVariant');
+
         $removedCount = 0;
 
         foreach ($cart->cartItems as $cartItem) {
-            $product = Product::find($cartItem->product_id);
+            $product = $cartItem->product;
 
             if (! $product) {
                 $cartItem->delete();
@@ -191,9 +193,7 @@ class CartService
                 continue;
             }
 
-            $variant = $cartItem->product_variant_id
-                ? ProductVariant::find($cartItem->product_variant_id)
-                : null;
+            $variant = $cartItem->productVariant;
 
             $stockQuantity = $variant?->stock_quantity ?? $product->stock_quantity;
 
@@ -217,10 +217,12 @@ class CartService
      */
     public function adjustOverstockedItems(Cart $cart): int
     {
+        $cart->loadMissing('cartItems.product', 'cartItems.productVariant');
+
         $adjustedCount = 0;
 
         foreach ($cart->cartItems as $cartItem) {
-            $product = Product::find($cartItem->product_id);
+            $product = $cartItem->product;
 
             if (! $product) {
                 $cartItem->delete();
@@ -229,9 +231,7 @@ class CartService
                 continue;
             }
 
-            $variant = $cartItem->product_variant_id
-                ? ProductVariant::find($cartItem->product_variant_id)
-                : null;
+            $variant = $cartItem->productVariant;
 
             $stockQuantity = $variant?->stock_quantity ?? $product->stock_quantity;
 
@@ -279,7 +279,7 @@ class CartService
     {
         return DB::transaction(function () use ($cart, $data) {
             // Remove out-of-stock items before converting to order
-            $cart->load('cartItems');
+            $cart->loadMissing('cartItems.product', 'cartItems.productVariant');
             $this->removeOutOfStockItems($cart);
             $cart->load('cartItems');
 
@@ -366,16 +366,16 @@ class CartService
      */
     public function reserveStockForCart(Cart $cart): void
     {
+        $cart->loadMissing('cartItems.product', 'cartItems.productVariant');
+
         foreach ($cart->cartItems as $cartItem) {
-            $product = Product::find($cartItem->product_id);
+            $product = $cartItem->product;
 
             if (! $product) {
                 continue;
             }
 
-            $variant = $cartItem->product_variant_id
-                ? ProductVariant::find($cartItem->product_variant_id)
-                : null;
+            $variant = $cartItem->productVariant;
 
             $model = $variant ?? $product;
             $quantity = $cartItem->quantity;
@@ -401,16 +401,16 @@ class CartService
      */
     public function reserveStockForOrder(Order $order): void
     {
+        $order->loadMissing('orderItems.product', 'orderItems.productVariant');
+
         foreach ($order->orderItems as $item) {
-            $product = Product::find($item->product_id);
+            $product = $item->product;
 
             if (! $product) {
                 continue;
             }
 
-            $variant = $item->product_variant_id
-                ? ProductVariant::find($item->product_variant_id)
-                : null;
+            $variant = $item->productVariant;
 
             $model = $variant ?? $product;
             $quantity = $item->quantity;
@@ -435,15 +435,17 @@ class CartService
      */
     public function restoreStockForOrder(Order $order): void
     {
+        $order->loadMissing('orderItems.product', 'orderItems.productVariant');
+
         foreach ($order->orderItems as $item) {
             if ($item->product_variant_id) {
-                $variant = ProductVariant::find($item->product_variant_id);
+                $variant = $item->productVariant;
 
                 if ($variant) {
                     $variant->increment('stock_quantity', $item->quantity);
                 }
             } elseif ($item->product_id) {
-                $product = Product::find($item->product_id);
+                $product = $item->product;
 
                 if ($product) {
                     $product->increment('stock_quantity', $item->quantity);
