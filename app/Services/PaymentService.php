@@ -18,6 +18,7 @@ class PaymentService
      */
     public function __construct(
         protected Container $container,
+        protected CartService $cartService,
     ) {}
 
     /**
@@ -92,6 +93,11 @@ class PaymentService
             // Webhook Idempotency: only send email on the first confirmation, not on webhook retries
             if ($order->payment_status === PaymentStatus::Paid && ! ($order->was_already_paid ?? false)) {
                 $this->sendConfirmationEmail($order);
+            }
+
+            // Restore stock if payment failed, was canceled, or expired
+            if ($order->payment_status === PaymentStatus::Unpaid) {
+                $this->cartService->restoreStockForOrder($order);
             }
 
             return $order->payment_status === PaymentStatus::Paid;

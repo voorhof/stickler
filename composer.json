@@ -43,7 +43,7 @@
         "spatie/laravel-honeypot": "^4.7",
         "spatie/laravel-http-logger": "^1.12",
         "spatie/laravel-medialibrary": "^11.23",
-        "spatie/laravel-permission": "^8.3",
+        "spatie/laravel-permission": "^8.4",
         "spatie/laravel-responsecache": "^8.6",
         "spatie/laravel-settings": "^3.10",
         "spatie/laravel-sitemap": "^8.2",
@@ -101,7 +101,7 @@
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
-            "@php artisan boost:update --ansi --no-discover"
+            "@php artisan boost:update --ansi --no-discover --no-interaction"
         ],
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""

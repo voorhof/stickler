@@ -148,7 +148,7 @@ class CartService
         $variant = $item->productVariant;
 
         if ($product) {
-            $this->validateStock($product, $variant, $quantity, $item->cart);
+            $this->validateStock($product, $variant, $quantity, $item->cart, $item);
         }
 
         $item->quantity = $quantity;
@@ -172,6 +172,81 @@ class CartService
     public function clear(Cart $cart): void
     {
         $cart->cartItems()->delete();
+    }
+
+    /**
+     * Remove out-of-stock items from a cart and return the count of removed items.
+     */
+    public function removeOutOfStockItems(Cart $cart): int
+    {
+        $removedCount = 0;
+
+        foreach ($cart->cartItems as $cartItem) {
+            $product = Product::find($cartItem->product_id);
+
+            if (! $product) {
+                $cartItem->delete();
+                $removedCount++;
+
+                continue;
+            }
+
+            $variant = $cartItem->product_variant_id
+                ? ProductVariant::find($cartItem->product_variant_id)
+                : null;
+
+            $stockQuantity = $variant?->stock_quantity ?? $product->stock_quantity;
+
+            if ($stockQuantity <= 0) {
+                $cartItem->delete();
+                $removedCount++;
+            }
+        }
+
+        return $removedCount;
+    }
+
+    /**
+     * Adjust cart item quantities that exceed current available stock.
+     *
+     * If a product's stock has dropped below the cart item's quantity,
+     * the quantity is reduced to the available stock. If stock is zero,
+     * the item is removed entirely.
+     *
+     * Returns the number of items that were adjusted or removed.
+     */
+    public function adjustOverstockedItems(Cart $cart): int
+    {
+        $adjustedCount = 0;
+
+        foreach ($cart->cartItems as $cartItem) {
+            $product = Product::find($cartItem->product_id);
+
+            if (! $product) {
+                $cartItem->delete();
+                $adjustedCount++;
+
+                continue;
+            }
+
+            $variant = $cartItem->product_variant_id
+                ? ProductVariant::find($cartItem->product_variant_id)
+                : null;
+
+            $stockQuantity = $variant?->stock_quantity ?? $product->stock_quantity;
+
+            if ($stockQuantity <= 0) {
+                $cartItem->delete();
+                $adjustedCount++;
+            } elseif ($cartItem->quantity > $stockQuantity) {
+                $cartItem->quantity = $stockQuantity;
+                $cartItem->total_price = $cartItem->unit_price * $cartItem->quantity;
+                $cartItem->save();
+                $adjustedCount++;
+            }
+        }
+
+        return $adjustedCount;
     }
 
     /**
@@ -203,6 +278,14 @@ class CartService
     public function convertToOrder(Cart $cart, array $data = []): Order
     {
         return DB::transaction(function () use ($cart, $data) {
+            // Remove out-of-stock items before converting to order
+            $cart->load('cartItems');
+            $this->removeOutOfStockItems($cart);
+            $cart->load('cartItems');
+
+            // Reserve stock atomically at checkout time
+            $this->reserveStockForCart($cart);
+
             // Transfer customer data from cart to order
             $customerData = $cart->customer_data ?? [];
 
@@ -274,6 +357,102 @@ class CartService
     }
 
     /**
+     * Atomically reserve (decrement) stock for all items in a cart at checkout time.
+     *
+     * Uses atomic database updates to prevent race conditions: only rows where
+     * stock_quantity >= quantity are updated, preventing overselling.
+     *
+     * @throws Exception If insufficient stock is available for any item.
+     */
+    public function reserveStockForCart(Cart $cart): void
+    {
+        foreach ($cart->cartItems as $cartItem) {
+            $product = Product::find($cartItem->product_id);
+
+            if (! $product) {
+                continue;
+            }
+
+            $variant = $cartItem->product_variant_id
+                ? ProductVariant::find($cartItem->product_variant_id)
+                : null;
+
+            $model = $variant ?? $product;
+            $quantity = $cartItem->quantity;
+
+            // Atomic check-and-decrement: only rows where stock_quantity >= quantity are updated
+            $updated = $model->newQuery()
+                ->where('id', $model->id)
+                ->where('stock_quantity', '>=', $quantity)
+                ->update([
+                    'stock_quantity' => DB::raw('stock_quantity - '.$quantity),
+                ]);
+
+            if ($updated === 0) {
+                throw new Exception(__('Insufficient stock for this product'));
+            }
+        }
+    }
+
+    /**
+     * Decrement stock for all items in an order.
+     *
+     * @throws Exception If insufficient stock is available for any item.
+     */
+    public function reserveStockForOrder(Order $order): void
+    {
+        foreach ($order->orderItems as $item) {
+            $product = Product::find($item->product_id);
+
+            if (! $product) {
+                continue;
+            }
+
+            $variant = $item->product_variant_id
+                ? ProductVariant::find($item->product_variant_id)
+                : null;
+
+            $model = $variant ?? $product;
+            $quantity = $item->quantity;
+
+            $updated = $model->newQuery()
+                ->where('id', $model->id)
+                ->where('stock_quantity', '>=', $quantity)
+                ->update([
+                    'stock_quantity' => DB::raw('stock_quantity - '.$quantity),
+                ]);
+
+            if ($updated === 0) {
+                throw new Exception(__('Insufficient stock for this product'));
+            }
+        }
+    }
+
+    /**
+     * Restore (increment) stock for all items in an order.
+     *
+     * Call this method when an order is cancelled, refunded, or payment fails.
+     */
+    public function restoreStockForOrder(Order $order): void
+    {
+        foreach ($order->orderItems as $item) {
+            if ($item->product_variant_id) {
+                $variant = ProductVariant::find($item->product_variant_id);
+
+                if ($variant) {
+                    $variant->increment('stock_quantity', $item->quantity);
+                }
+            } elseif ($item->product_id) {
+                $product = Product::find($item->product_id);
+
+                if ($product) {
+                    $product->increment('stock_quantity', $item->quantity);
+                }
+            }
+        }
+    }
+
+    /**
      * Delete all expired carts.
      */
     public function cleanupExpired(): int
@@ -294,27 +473,37 @@ class CartService
      *
      * @throws Exception If insufficient stock is available.
      */
-    protected function validateStock(Product $product, ?ProductVariant $variant, int $quantity, ?Cart $cart = null): void
+    protected function validateStock(Product $product, ?ProductVariant $variant, int $quantity, ?Cart $cart = null, ?CartItem $excludeItem = null): void
     {
         $stockQuantity = $variant?->stock_quantity ?? $product->stock_quantity;
 
-        $reservedQuantity = $this->getReservedQuantity($product, $variant, $cart);
+        $reservedQuantity = $this->getReservedQuantity($product, $variant, $cart, $excludeItem);
 
         if ($stockQuantity - $reservedQuantity < $quantity) {
-            throw new Exception("Insufficient stock for $product->title. Available: ".($stockQuantity - $reservedQuantity).", Requested: $quantity.");
+            throw new Exception(__('Insufficient stock for this product'));
         }
     }
 
     /**
      * Get the quantity already reserved in the cart for the given product/variant.
+     *
+     * Optionally exclude a specific CartItem (e.g., when updating an existing item).
      */
-    protected function getReservedQuantity(Product $product, ?ProductVariant $variant, ?Cart $cart = null): int
+    protected function getReservedQuantity(Product $product, ?ProductVariant $variant, ?Cart $cart = null, ?CartItem $excludeItem = null): int
     {
-        return (int) $cart?->cartItems()
-            ->where('product_id', $product->id)
-            ->where('product_variant_id', $variant?->id)
-            ->sum('quantity');
+        if (! $cart) {
+            return 0;
+        }
 
+        $query = $cart->cartItems()
+            ->where('product_id', $product->id)
+            ->where('product_variant_id', $variant?->id);
+
+        if ($excludeItem) {
+            $query->where('id', '!=', $excludeItem->id);
+        }
+
+        return (int) $query->sum('quantity');
     }
 
     /**

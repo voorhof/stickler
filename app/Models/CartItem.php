@@ -147,4 +147,26 @@ class CartItem extends Model
     {
         return $this->belongsTo(ProductVariant::class);
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Stock Checks
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Check if the product or variant for this cart item is still in stock.
+     */
+    public function isInStock(): bool
+    {
+        if ($this->product_variant_id && $this->productVariant) {
+            return $this->productVariant->stock_quantity > 0;
+        }
+
+        if ($this->product) {
+            return $this->product->stock_quantity > 0;
+        }
+
+        return false;
+    }
 }

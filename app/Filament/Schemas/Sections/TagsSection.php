@@ -4,6 +4,7 @@ namespace App\Filament\Schemas\Sections;
 
 use Filament\Forms\Components\SpatieTagsInput;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Support\Enums\Operation;
 use Filament\Support\Icons\Heroicon;
 
@@ -17,10 +18,15 @@ class TagsSection
             ->persistCollapsed(function ($operation): bool {
                 return $operation !== Operation::Create->value;
             })
-            ->schema([
-                SpatieTagsInput::make('tags')
-                    ->hiddenLabel()
-                    ->columnSpanFull(),
-            ]);
+            ->schema(
+                Schema::make()
+                    ->components([
+                        SpatieTagsInput::make('tags')
+                            ->hiddenLabel()
+                            ->columnSpanFull(),
+                    ])
+                    ->lazyLoaded(),
+            )
+            ->key('tags-section');
     }
 }

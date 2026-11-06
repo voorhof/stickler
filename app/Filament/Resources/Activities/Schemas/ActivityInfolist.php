@@ -17,13 +17,18 @@ class ActivityInfolist
         return $schema
             ->components([
                 Grid::make(1)
-                    ->schema([
-                        InfoSection::make(),
-                        AttributesSection::make(),
-                        PropertiesSection::make(),
-                        DatabaseInfoSection::make(),
-                        ActivityHistorySection::make(),
-                    ])
+                    ->schema(
+                        Schema::make()
+                            ->components([
+                                InfoSection::make(),
+                                AttributesSection::make(),
+                                PropertiesSection::make(),
+                                DatabaseInfoSection::make(),
+                                ActivityHistorySection::make(),
+                            ])
+                            ->lazyLoaded(),
+                    )
+                    ->key('activity-infolist')
                     ->columnSpanFull(),
             ]);
     }

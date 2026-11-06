@@ -34,6 +34,7 @@ use Illuminate\Support\HigherOrderCollectionProxy;
  * @method static create(mixed $validated)
  * @method static forceCreate(array $array)
  * @method static where(string $column, mixed $operator, mixed $value = null)
+ * @method static find(int|null $product_variant_id)
  */
 #[Fillable([
     'product_id',
@@ -134,6 +135,30 @@ class ProductVariant extends Model
         $gross = $this->price ?? 0.0;
 
         return $gross - $this->priceNet();
+    }
+
+    /**
+     * Check if the variant is currently in stock.
+     */
+    public function isInStock(): bool
+    {
+        return $this->stock_quantity > 0;
+    }
+
+    /**
+     * Check if the variant is out of stock.
+     */
+    public function isOutOfStock(): bool
+    {
+        return ! $this->isInStock();
+    }
+
+    /**
+     * Check if the variant can fulfill the requested quantity.
+     */
+    public function canFulfillQuantity(int $quantity): bool
+    {
+        return $this->stock_quantity >= $quantity;
     }
 
     /*

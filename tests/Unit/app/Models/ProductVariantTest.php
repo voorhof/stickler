@@ -370,3 +370,39 @@ test('taxAmount returns zero when VAT rate is zero', function () {
 
     expect($variant->taxAmount())->toBe(0.0);
 });
+
+// --------------------------------------------------------------------------
+// Stock Helper Methods
+// --------------------------------------------------------------------------
+
+test('variant isInStock returns true when stock is positive', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->create();
+    $variant = ProductVariant::factory()->create([
+        'product_id' => $product->id,
+        'stock_quantity' => 3,
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
+
+    expect($variant->isInStock())->toBeTrue()
+        ->and($variant->isOutOfStock())->toBeFalse()
+        ->and($variant->canFulfillQuantity(2))->toBeTrue()
+        ->and($variant->canFulfillQuantity(3))->toBeTrue()
+        ->and($variant->canFulfillQuantity(4))->toBeFalse();
+});
+
+test('variant isInStock returns false when stock is zero', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->create();
+    $variant = ProductVariant::factory()->create([
+        'product_id' => $product->id,
+        'stock_quantity' => 0,
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
+
+    expect($variant->isInStock())->toBeFalse()
+        ->and($variant->isOutOfStock())->toBeTrue()
+        ->and($variant->canFulfillQuantity(1))->toBeFalse();
+});

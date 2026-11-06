@@ -9,4 +9,7 @@
 # Keep GitHub workflows in the packagist export
 #/.github export-ignore
 CHANGELOG.md export-ignore
+SECURITY.md export-ignore
 .styleci.yml export-ignore
+.github/ISSUE_TEMPLATE/ export-ignore
+.github/pull_request_template.md export-ignore

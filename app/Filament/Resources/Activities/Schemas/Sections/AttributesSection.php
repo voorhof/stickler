@@ -6,6 +6,7 @@ use App\Filament\Traits\FormatsJsonState;
 use App\Models\Activity;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Support\Enums\Operation;
 use Filament\Support\Icons\Heroicon;
 
@@ -22,16 +23,21 @@ class AttributesSection
                 return $operation !== Operation::Create->value;
             })
             ->columns()
-            ->schema([
-                TextEntry::make('attribute_changes')
-                    ->label(__('Attribute changes'))
-                    ->hiddenLabel()
-                    ->placeholder('-')
-                    ->columnSpanFull()
-                    ->prose()
-                    ->markdown()
-                    // Return ONE string so Filament does not iterate per element
-                    ->state(fn (Activity $record): ?string => static::formatJsonState($record->attribute_changes)),
-            ]);
+            ->schema(
+                Schema::make()
+                    ->components([
+                        TextEntry::make('attribute_changes')
+                            ->label(__('Attribute changes'))
+                            ->hiddenLabel()
+                            ->placeholder('-')
+                            ->columnSpanFull()
+                            ->prose()
+                            ->markdown()
+                            // Return ONE string so Filament does not iterate per element
+                            ->state(fn (Activity $record): ?string => static::formatJsonState($record->attribute_changes)),
+                    ])
+                    ->lazyLoaded(),
+            )
+            ->key('attribute-section');
     }
 }
