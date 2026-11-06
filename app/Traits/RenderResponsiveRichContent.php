@@ -22,7 +22,12 @@ trait RenderResponsiveRichContent
         $mediaByUuid = collect();
 
         if ($uuids !== []) {
-            $mediaByUuid = $this->media->keyBy('uuid')->toBase();
+            if ($this->relationLoaded('media')) {
+                $mediaByUuid = $this->media->keyBy('uuid')->toBase();
+            } else {
+                $mediaByUuid = collect();
+            }
+
             $missingUuids = collect($uuids)->diff($mediaByUuid->keys());
 
             if ($missingUuids->isNotEmpty()) {
