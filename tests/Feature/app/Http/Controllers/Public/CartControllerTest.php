@@ -246,6 +246,7 @@ describe('cart add', function () {
             'is_discounted' => false,
             'sku' => 'VARIANT-SKU',
         ]);
+        $variant->load('options');
 
         $service = app(App\Services\CartService::class);
         $cart = $service->getOrCreateCart();

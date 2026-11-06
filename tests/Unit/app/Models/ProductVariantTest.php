@@ -420,15 +420,13 @@ test('label accessor returns option names when options are loaded', function () 
         'updated_by_user_id' => $user->id,
     ]);
     $type = ProductVariantOptionType::factory()->create();
-    $options = ProductVariantOption::factory()->count(2)->create([
-        'product_variant_option_type_id' => $type->id,
-        'name' => fn (int $index) => 'Option '.($index + 1),
-    ]);
+    $option1 = ProductVariantOption::create(['product_variant_option_type_id' => $type->id, 'name' => 'Red', 'value' => '#ff0000']);
+    $option2 = ProductVariantOption::create(['product_variant_option_type_id' => $type->id, 'name' => 'Large', 'value' => 'L']);
 
-    $variant->options()->attach($options->pluck('id'));
+    $variant->options()->attach([$option1->id, $option2->id]);
     $variant->load('options');
 
-    expect($variant->label)->toBe('Option 1 / Option 2');
+    expect($variant->label)->toBe('Red / Large');
 });
 
 test('label accessor returns empty string when options are not loaded', function () {

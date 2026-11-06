@@ -308,6 +308,7 @@ it('can create an order with product variant', function () {
     $variant = ProductVariant::factory()->create(['product_id' => $product->id]);
     $option = ProductVariantOption::factory()->create();
     $variant->options()->attach($option);
+    $variant->load('options');
 
     livewire(CreateOrder::class)
         ->fillForm([

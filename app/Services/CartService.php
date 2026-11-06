@@ -102,6 +102,10 @@ class CartService
     {
         $this->validateStock($product, $variant, $quantity, $cart);
 
+        if ($variant) {
+            $variant->loadMissing('options');
+        }
+
         $existingItem = $cart->cartItems()
             ->where('product_id', $product->id)
             ->where('product_variant_id', $variant?->id)
