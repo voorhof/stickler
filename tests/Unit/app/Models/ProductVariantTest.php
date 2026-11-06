@@ -406,3 +406,37 @@ test('variant isInStock returns false when stock is zero', function () {
         ->and($variant->isOutOfStock())->toBeTrue()
         ->and($variant->canFulfillQuantity(1))->toBeFalse();
 });
+
+// --------------------------------------------------------------------------
+// Label Accessor
+// --------------------------------------------------------------------------
+
+test('label accessor returns option names when options are loaded', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->create();
+    $variant = ProductVariant::factory()->create([
+        'product_id' => $product->id,
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
+    $type = ProductVariantOptionType::factory()->create();
+    $option1 = ProductVariantOption::create(['product_variant_option_type_id' => $type->id, 'name' => 'Red', 'value' => '#ff0000']);
+    $option2 = ProductVariantOption::create(['product_variant_option_type_id' => $type->id, 'name' => 'Large', 'value' => 'L']);
+
+    $variant->options()->attach([$option1->id, $option2->id]);
+    $variant->load('options');
+
+    expect($variant->label)->toBe('Red / Large');
+});
+
+test('label accessor returns empty string when options are not loaded', function () {
+    $user = User::factory()->create();
+    $product = Product::factory()->create();
+    $variant = ProductVariant::factory()->create([
+        'product_id' => $product->id,
+        'created_by_user_id' => $user->id,
+        'updated_by_user_id' => $user->id,
+    ]);
+
+    expect($variant->label)->toBe('');
+});

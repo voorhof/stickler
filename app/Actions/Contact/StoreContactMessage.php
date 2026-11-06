@@ -23,18 +23,19 @@ class StoreContactMessage
      */
     public function handle(array $data): ?Message
     {
-        $isDuplicate = Message::query()
-            ->where('email', $data['email'])
-            ->where('subject', $data['subject'])
-            ->where('message', $data['message'])
-            ->where('created_at', '>=', now()->subMinutes(self::DUPLICATE_WINDOW_MINUTES))
-            ->exists();
+        return DB::transaction(function () use ($data): ?Message {
+            $isDuplicate = Message::query()
+                ->where('email', $data['email'])
+                ->where('subject', $data['subject'])
+                ->where('message', $data['message'])
+                ->where('created_at', '>=', now()->subMinutes(self::DUPLICATE_WINDOW_MINUTES))
+                ->lockForUpdate()
+                ->exists();
 
-        if ($isDuplicate) {
-            return null;
-        }
+            if ($isDuplicate) {
+                return null;
+            }
 
-        return DB::transaction(function () use ($data): Message {
             $message = Message::create($data);
 
             // Send mail to the admin

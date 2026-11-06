@@ -2,6 +2,7 @@
 
 namespace App\Contracts;
 
+use App\Exceptions\InvalidWebhookSignatureException;
 use App\Models\Order;
 use Throwable;
 
@@ -20,6 +21,8 @@ interface PaymentProvider
      * Handle a webhook from the payment provider and update the associated order.
      *
      * Returns the updated Order on success, or null if the webhook could not be processed.
+     *
+     * @throws InvalidWebhookSignatureException
      */
     public function handleWebhook(string $payload, string $signature = ''): ?Order;
 

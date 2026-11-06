@@ -59,11 +59,14 @@ class NewPasswordController extends Controller
 
         if ($status === Password::PASSWORD_RESET) {
             $user = User::where('email', $request->email)->first();
-            activity('authentication')
-                ->by($user)
-                ->on($user)
-                ->event('password reset request')
-                ->log(__('User account password reset requested.'));
+
+            if ($user) {
+                activity('authentication')
+                    ->by($user)
+                    ->on($user)
+                    ->event('password reset')
+                    ->log(__('User account password reset.'));
+            }
         }
 
         // If the password was successfully reset, we will redirect the user back to

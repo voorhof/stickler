@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Activitylog\Models\Activity;
 
 describe('account dashboard', function () {
     test('unauthenticated users are redirected to login', function () {
@@ -415,5 +416,22 @@ describe('profile deletion', function () {
         $response->assertSessionHasErrorsIn('userDeletion', ['password']);
 
         expect(User::find($user->id))->not->toBeNull();
+    });
+
+    test('deletion logs activity before deleting the user', function () {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->delete(route('account.profile.destroy'), [
+            'password' => 'password',
+        ]);
+
+        $activity = Activity::where('log_name', 'authentication')
+            ->where('causer_id', $user->id)
+            ->latest('id')
+            ->first();
+
+        expect($activity)->not->toBeNull()
+            ->and($activity->event)->toBe('delete')
+            ->and($activity->subject_id)->toBe($user->id);
     });
 });

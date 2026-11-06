@@ -274,6 +274,7 @@ it('can add a cart item with a product variant', function () {
     ]);
     $option = ProductVariantOption::factory()->create();
     $variant->options()->attach($option);
+    $variant->load('options');
 
     livewire(CartItemsRelationManager::class, [
         'ownerRecord' => $cart,

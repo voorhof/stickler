@@ -932,6 +932,71 @@ test('it adjusts multiple items independently', function () {
 });
 
 // --------------------------------------------------------------------------
+// Reserve Stock For Cart
+// --------------------------------------------------------------------------
+
+test('it reserves stock for cart items', function () {
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+
+    $cart = Cart::factory()->create();
+    CartItem::factory()->create([
+        'cart_id' => $cart->id,
+        'product_id' => $product->id,
+        'product_name' => $product->title,
+        'quantity' => 3,
+        'unit_price' => 10,
+        'total_price' => 30,
+    ]);
+
+    $service = app(CartService::class);
+    $service->reserveStockForCart($cart);
+
+    expect($product->fresh()->stock_quantity)->toBe(7);
+});
+
+test('it reserves variant stock for cart items', function () {
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 100]);
+    $variant = ProductVariant::factory()->create(['product_id' => $product->id, 'price' => 1500, 'is_discounted' => false, 'stock_quantity' => 5]);
+
+    $cart = Cart::factory()->create();
+    CartItem::factory()->create([
+        'cart_id' => $cart->id,
+        'product_id' => $product->id,
+        'product_variant_id' => $variant->id,
+        'product_name' => $product->title,
+        'quantity' => 2,
+        'unit_price' => 15,
+        'total_price' => 30,
+    ]);
+
+    $service = app(CartService::class);
+    $service->reserveStockForCart($cart);
+
+    expect($variant->fresh()->stock_quantity)->toBe(3)
+        ->and($product->fresh()->stock_quantity)->toBe(100);
+});
+
+test('it fails to reserve stock for cart when insufficient stock', function () {
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 1]);
+
+    $cart = Cart::factory()->create();
+    CartItem::factory()->create([
+        'cart_id' => $cart->id,
+        'product_id' => $product->id,
+        'product_name' => $product->title,
+        'quantity' => 5,
+        'unit_price' => 10,
+        'total_price' => 50,
+    ]);
+
+    $service = app(CartService::class);
+
+    expect(fn () => $service->reserveStockForCart($cart))
+        ->toThrow(Exception::class, __('Insufficient stock for this product'))
+        ->and($product->fresh()->stock_quantity)->toBe(1);
+});
+
+// --------------------------------------------------------------------------
 // Reserve Stock For Order
 // --------------------------------------------------------------------------
 

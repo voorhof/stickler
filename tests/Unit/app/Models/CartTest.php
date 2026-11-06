@@ -250,3 +250,53 @@ test('customer notes accessor returns null when not set', function () {
 
     expect($cart->customerNotes())->toBeNull();
 });
+
+test('isEmpty works without loading cartItems on empty cart', function () {
+    $cart = Cart::factory()->create();
+    $freshCart = Cart::find($cart->id);
+
+    expect($freshCart->isEmpty())->toBeTrue();
+});
+
+test('isEmpty works without loading cartItems on cart with items', function () {
+    $cart = Cart::factory()->create();
+    CartItem::factory()->create(['cart_id' => $cart->id]);
+
+    $freshCart = Cart::find($cart->id);
+    expect($freshCart->isEmpty())->toBeFalse();
+});
+
+test('totalQuantity works without loading cartItems', function () {
+    $cart = Cart::factory()->create();
+    CartItem::factory()->create(['cart_id' => $cart->id, 'quantity' => 2]);
+    CartItem::factory()->create(['cart_id' => $cart->id, 'quantity' => 3]);
+
+    $freshCart = Cart::find($cart->id);
+    expect($freshCart->totalQuantity())->toBe(5);
+});
+
+test('totalQuantity returns zero without loading cartItems on empty cart', function () {
+    $cart = Cart::factory()->create();
+
+    $freshCart = Cart::find($cart->id);
+    expect($freshCart->totalQuantity())->toBe(0);
+});
+
+test('merge works without loading cartItems', function () {
+    $cart1 = Cart::factory()->create();
+    $cart2 = Cart::factory()->create();
+
+    $product1 = Product::factory()->create();
+    $product2 = Product::factory()->create();
+
+    CartItem::factory()->create(['cart_id' => $cart1->id, 'product_id' => $product1->id, 'quantity' => 1, 'unit_price' => 1000, 'total_price' => 1000]);
+    CartItem::factory()->create(['cart_id' => $cart2->id, 'product_id' => $product2->id, 'quantity' => 1, 'unit_price' => 2000, 'total_price' => 2000]);
+
+    $freshCart1 = Cart::find($cart1->id);
+    $freshCart2 = Cart::find($cart2->id);
+
+    $freshCart1->merge($freshCart2);
+    $freshCart1->refresh();
+
+    expect($freshCart1->cartItems)->toHaveCount(2);
+});

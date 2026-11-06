@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Payment;
 
+use App\Enums\WebhookResult;
 use App\Http\Controllers\Controller;
 use App\Services\PaymentService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 
 class PaymentWebhookController extends Controller
 {
@@ -19,13 +20,31 @@ class PaymentWebhookController extends Controller
     /**
      * Handle the Mollie webhook.
      */
-    public function handleMollie(Request $request): Response
+    public function handleMollie(Request $request): JsonResponse
     {
         $payload = (string) ($request->input('id') ?? $request->getContent());
         $signature = (string) $request->header('X-Mollie-Signature', '');
 
-        $this->paymentService->handleWebhook($payload, $signature);
+        $result = $this->paymentService->handleWebhook($payload, $signature);
 
-        return response()->noContent();
+        return response()->json(
+            $result === WebhookResult::Success
+                ? ['status' => 'processed']
+                : ['error' => $this->errorMessage($result)],
+            $result->httpStatusCode(),
+        );
+    }
+
+    /**
+     * Get the error message for a webhook result.
+     */
+    protected function errorMessage(WebhookResult $result): string
+    {
+        return match ($result) {
+            WebhookResult::BadPayload, WebhookResult::SignatureInvalid => 'Invalid payload',
+            WebhookResult::NotFound => 'Payment not found',
+            WebhookResult::Error => 'Internal error',
+            default => 'Unknown error',
+        };
     }
 }

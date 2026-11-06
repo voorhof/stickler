@@ -12,6 +12,7 @@ use App\Models\User;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class CartService
@@ -101,6 +102,10 @@ class CartService
     {
         $this->validateStock($product, $variant, $quantity, $cart);
 
+        if ($variant) {
+            $variant->loadMissing('options');
+        }
+
         $existingItem = $cart->cartItems()
             ->where('product_id', $product->id)
             ->where('product_variant_id', $variant?->id)
@@ -179,10 +184,12 @@ class CartService
      */
     public function removeOutOfStockItems(Cart $cart): int
     {
+        $cart->loadMissing('cartItems.product', 'cartItems.productVariant');
+
         $removedCount = 0;
 
         foreach ($cart->cartItems as $cartItem) {
-            $product = Product::find($cartItem->product_id);
+            $product = $cartItem->product;
 
             if (! $product) {
                 $cartItem->delete();
@@ -191,9 +198,7 @@ class CartService
                 continue;
             }
 
-            $variant = $cartItem->product_variant_id
-                ? ProductVariant::find($cartItem->product_variant_id)
-                : null;
+            $variant = $cartItem->productVariant;
 
             $stockQuantity = $variant?->stock_quantity ?? $product->stock_quantity;
 
@@ -217,10 +222,12 @@ class CartService
      */
     public function adjustOverstockedItems(Cart $cart): int
     {
+        $cart->loadMissing('cartItems.product', 'cartItems.productVariant');
+
         $adjustedCount = 0;
 
         foreach ($cart->cartItems as $cartItem) {
-            $product = Product::find($cartItem->product_id);
+            $product = $cartItem->product;
 
             if (! $product) {
                 $cartItem->delete();
@@ -229,9 +236,7 @@ class CartService
                 continue;
             }
 
-            $variant = $cartItem->product_variant_id
-                ? ProductVariant::find($cartItem->product_variant_id)
-                : null;
+            $variant = $cartItem->productVariant;
 
             $stockQuantity = $variant?->stock_quantity ?? $product->stock_quantity;
 
@@ -279,8 +284,12 @@ class CartService
     {
         return DB::transaction(function () use ($cart, $data) {
             // Remove out-of-stock items before converting to order
-            $cart->load('cartItems');
+            $cart->loadMissing('cartItems.product', 'cartItems.productVariant');
             $this->removeOutOfStockItems($cart);
+
+            // Reload cartItems to reflect the updated collection after deletions.
+            // `loadMissing()` would skip re-loading since cartItems is already loaded,
+            // so `load()` forces a fresh query to get the items that remain.
             $cart->load('cartItems');
 
             // Reserve stock atomically at checkout time
@@ -366,17 +375,18 @@ class CartService
      */
     public function reserveStockForCart(Cart $cart): void
     {
+        $cart->loadMissing('cartItems.product', 'cartItems.productVariant');
+
         foreach ($cart->cartItems as $cartItem) {
-            $product = Product::find($cartItem->product_id);
+            $product = $cartItem->product;
 
             if (! $product) {
                 continue;
             }
 
-            $variant = $cartItem->product_variant_id
-                ? ProductVariant::find($cartItem->product_variant_id)
-                : null;
+            $variant = $cartItem->productVariant;
 
+            /** @var Product|ProductVariant $model */
             $model = $variant ?? $product;
             $quantity = $cartItem->quantity;
 
@@ -384,12 +394,17 @@ class CartService
             $updated = $model->newQuery()
                 ->where('id', $model->id)
                 ->where('stock_quantity', '>=', $quantity)
-                ->update([
-                    'stock_quantity' => DB::raw('stock_quantity - '.$quantity),
-                ]);
+                ->decrement('stock_quantity', $quantity);
 
             if ($updated === 0) {
                 throw new Exception(__('Insufficient stock for this product'));
+            }
+
+            // Defense-in-depth: log if stock somehow went negative
+            // The WHERE guard is authoritative, so this is a safety net for edge cases
+            $stock = $model->fresh()->stock_quantity;
+            if ($stock < 0) {
+                Log::warning("Stock went negative for model {$model->id}: {$stock}");
             }
         }
     }
@@ -401,29 +416,35 @@ class CartService
      */
     public function reserveStockForOrder(Order $order): void
     {
+        $order->loadMissing('orderItems.product', 'orderItems.productVariant');
+
         foreach ($order->orderItems as $item) {
-            $product = Product::find($item->product_id);
+            $product = $item->product;
 
             if (! $product) {
                 continue;
             }
 
-            $variant = $item->product_variant_id
-                ? ProductVariant::find($item->product_variant_id)
-                : null;
+            $variant = $item->productVariant;
 
+            /** @var Product|ProductVariant $model */
             $model = $variant ?? $product;
             $quantity = $item->quantity;
 
             $updated = $model->newQuery()
                 ->where('id', $model->id)
                 ->where('stock_quantity', '>=', $quantity)
-                ->update([
-                    'stock_quantity' => DB::raw('stock_quantity - '.$quantity),
-                ]);
+                ->decrement('stock_quantity', $quantity);
 
             if ($updated === 0) {
                 throw new Exception(__('Insufficient stock for this product'));
+            }
+
+            // Defense-in-depth: log if stock somehow went negative
+            // The WHERE guard is authoritative, so this is a safety net for edge cases
+            $stock = $model->fresh()->stock_quantity;
+            if ($stock < 0) {
+                Log::warning("Stock went negative for model {$model->id}: {$stock}");
             }
         }
     }
@@ -435,19 +456,17 @@ class CartService
      */
     public function restoreStockForOrder(Order $order): void
     {
+        $order->loadMissing('orderItems.product', 'orderItems.productVariant');
+
         foreach ($order->orderItems as $item) {
             if ($item->product_variant_id) {
-                $variant = ProductVariant::find($item->product_variant_id);
+                $variant = $item->productVariant;
 
-                if ($variant) {
-                    $variant->increment('stock_quantity', $item->quantity);
-                }
+                $variant?->increment('stock_quantity', $item->quantity);
             } elseif ($item->product_id) {
-                $product = Product::find($item->product_id);
+                $product = $item->product;
 
-                if ($product) {
-                    $product->increment('stock_quantity', $item->quantity);
-                }
+                $product?->increment('stock_quantity', $item->quantity);
             }
         }
     }

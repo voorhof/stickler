@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased](https://github.com/voorhof/stickler/compare/v1.8.3...HEAD)
 
+### Security
+- Fixed SQL injection risk in CartService by removing `DB::raw()` usage
+- Added webhook signature verification for Mollie payments
+- Added rate limiting to password reset endpoints (`throttle:3,1` and `throttle:5,1`)
+- Added rate limiting to payment webhook endpoint (`throttle:30,1`)
+- Added null checks in password reset activity logging
+- Fixed activity log ordering in account deletion (log before delete)
+
+### Performance
+- Fixed N+1 queries in CartService with eager loading
+- Fixed N+1 query in ProductVariant::getLabelAttribute() with `relationLoaded` check
+- Fixed N+1 query in RenderResponsiveRichContent trait with `relationLoaded` check
+- Fixed N+1 queries in Cart model methods (`totalQuantity`, `isEmpty`, `getItemsSumInCents`)
+- Fixed race condition on `$model->fresh()` in CartService
+
+### Bug Fixes
+- Fixed race condition in contact form duplicate detection (moved inside `DB::transaction()` with `lockForUpdate()`)
+- Added retry logic for order number generation on unique constraint violation
+- Added null message check in SendMessageReplyMailAction
+- Added unique lock to sitemap job with `ShouldBeUniqueUntilProcessing` and explicit `uniqueId()`
+- Fixed policy methods with strict type hints (removed nullable `$user` parameters)
+
+### New Features
+- Added `WebhookResult` enum for structured webhook responses
+- Added `InvalidWebhookSignatureException` for webhook security
+- Improved webhook error responses with proper HTTP status codes
+- Added `boost:install` to post-install scripts
+- Added composer cooldown policy
+
 ## [v1.8.3](https://github.com/voorhof/stickler/compare/v1.8.2...v1.8.3) - 2026-11-06
 
 ### What's Changed

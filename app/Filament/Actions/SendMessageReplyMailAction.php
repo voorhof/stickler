@@ -48,6 +48,15 @@ class SendMessageReplyMailAction extends Action
             // Get the message to send the reply mail
             $message = Message::find($this->getRecord()->id);
 
+            if (! $message) {
+                Notification::make()
+                    ->title(__('Message not found'))
+                    ->warning()
+                    ->send();
+
+                return;
+            }
+
             // Send mail with temporary password to the user
             Mail::queue(new ContactMessageReply($message));
 

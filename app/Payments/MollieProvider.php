@@ -5,6 +5,7 @@ namespace App\Payments;
 use App\Contracts\PaymentProvider;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
+use App\Exceptions\InvalidWebhookSignatureException;
 use App\Models\Order;
 use Mollie\Api\Exceptions\InvalidSignatureException;
 use Mollie\Api\Exceptions\MollieException;
@@ -52,9 +53,17 @@ class MollieProvider implements PaymentProvider
      *
      * Extracts the payment ID from the payload (supports form-data, JSON, or raw ID),
      * fetches the verified payment status from Mollie API, and updates the order.
+     *
+     * @throws InvalidWebhookSignatureException
      */
     public function handleWebhook(string $payload, string $signature = ''): ?Order
     {
+        // Verify signature when provided (next-gen Mollie webhooks)
+        // Classic Mollie webhooks don't send signatures, so skip when empty
+        if ($signature !== '' && ! $this->verifySignature($payload, $signature)) {
+            throw new InvalidWebhookSignatureException;
+        }
+
         $paymentId = null;
 
         if (str_starts_with($payload, 'tr_') || str_starts_with($payload, 'ord_')) {
@@ -118,11 +127,15 @@ class MollieProvider implements PaymentProvider
 
     /**
      * Verify the webhook signature.
+     *
+     * Classic Mollie webhooks do not send signatures. This method returns false
+     * for empty signatures, as there is nothing to verify. Signature verification
+     * is only applicable for next-gen webhooks with signing secrets configured.
      */
     public function verifySignature(string $payload, string $signature = ''): bool
     {
         if (empty($signature)) {
-            return true;
+            return false;
         }
 
         try {

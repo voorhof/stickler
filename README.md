@@ -21,7 +21,7 @@ Out of the box, Stickler includes:
 - **Media management** powered by Spatie Media Library, including uploads, image conversions, responsive media support, and integration with Filament.
 - **User access and administration** with roles and permissions, panel access checks, admin configuration through `.env`, and optional two-factor authentication support.
 - **Website essentials** such as HTML head management, sitemap generation, robots.txt support, opening hours, cookie consent, and a Bootstrap-based public frontend.
-- **Security and abuse protection** with form honeypots, rate limiting, sanitized rich content rendering, and restricted access to administration and debugging tools.
+- **Security and abuse protection** with form honeypots, rate limiting (including password reset and payment webhook endpoints), webhook signature verification, sanitized rich content rendering, and restricted access to administration and debugging tools.
 - **Operational visibility and resilience** with Telescope for non-production debugging, HTTP and activity logging, cookieless server-side page view analytics, application health checks, database and file backups, and response caching for production workloads. Telescope is not booted in production. See the [Page Views section](FILAMENT.md#page-views) of the Filament guide for details.
 - **Developer experience** with Laravel Boost skills, Vite and Sass asset tooling, Pest tests, Laravel Pint code style checks, and documentation for the installed Composer and Node dependencies.
 
@@ -81,10 +81,18 @@ The easiest way to install this starter kit is using the [Laravel Installer](htt
 This will set up the project automatically.
 
 ```bash
-laravel new my-app --using=voorhof/stickler --phpunit
+laravel new my-app --using=voorhof/stickler:v1.8.3 --phpunit
 ```
 
+> **Important:** Always specify a version tag (e.g., `v1.8.3`) when using the `--using` flag. Without a version, the Laravel installer will check out the development branch (`dev-main`) instead of the latest stable release.
+
 The `--phpunit` flag is required because Stickler already includes Pest. Without it, the Laravel installer will attempt to install Pest again and run the `pest-plugin-drift` migration tool, which may modify the existing test files.
+
+At the end of the installation, the Laravel installer may prompt you with interactive Laravel Boost questions. Boost is already pre-configured for Stickler via `boost.json`, so you can simply accept the defaults by pressing Enter on each prompt. If you prefer to skip these prompts entirely, use the `--no-boost` flag:
+
+```bash
+laravel new my-app --using=voorhof/stickler:v1.8.3 --phpunit --no-boost
+```
 
 After installation, update the variables, such as `APP_NAME` and `APP_URL`, in the `.env` file so that they match your environment.
 
@@ -109,7 +117,7 @@ You can log in to the Filament admin dashboard via `/admin` using the login deta
 You may also install Stickler manually by cloning the repository and running the following commands:
 
 ```bash
-git clone https://github.com/voorhof/stickler.git my-app
+git clone --branch v1.8.3 https://github.com/voorhof/stickler.git my-app
 cd my-app
 composer install
 cp .env.example .env
@@ -203,7 +211,7 @@ Stickler includes a complete checkout and payment lifecycle integrating a databa
   - `PAYMENT_WEBHOOK_URL`: Optional custom webhook override for testing with local tunnels (e.g. Ngrok, Expose, Herd Share).
 - **Security**: The webhook endpoint `payment/webhook/*` is excluded from CSRF verification in `bootstrap/app.php` to accept provider callbacks. Webhooks query Mollie's API directly for verified payment status to prevent tampering.
 - **Queueing**: Payment confirmation emails use `App\Mail\PaymentConfirmation` and implement `ShouldQueue` so email delivery does not block webhook response execution.
-- **Rate limiting**: All cart POST endpoints (`cart.add`, `cart.items.update`, `cart.items.remove`, `checkout.store`, `checkout.pay`) are protected by `throttle:10,1` middleware (10 requests per minute per IP) to prevent abuse and stock manipulation attempts.
+- **Rate limiting**: All cart POST endpoints (`cart.add`, `cart.items.update`, `cart.items.remove`, `checkout.store`, `checkout.pay`) are protected by `throttle:10,1` middleware (10 requests per minute per IP). Password reset endpoints are also rate limited (`throttle:3,1` for email, `throttle:5,1` for token). The payment webhook endpoint uses `throttle:30,1` to prevent abuse while allowing legitimate callbacks.
 
 ### Inclusive VAT Pricing
 

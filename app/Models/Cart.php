@@ -101,7 +101,13 @@ class Cart extends Model
      */
     protected function getItemsSumInCents(): float
     {
-        if ($this->itemsSumCache === null) {
+        if ($this->itemsSumCache !== null) {
+            return $this->itemsSumCache;
+        }
+
+        if ($this->relationLoaded('cartItems')) {
+            $this->itemsSumCache = (float) $this->cartItems->sum(fn ($item) => $item->getAttributes()['total_price']);
+        } else {
             $this->itemsSumCache = (float) $this->cartItems()->sum('total_price');
         }
 
@@ -159,7 +165,11 @@ class Cart extends Model
      */
     public function totalQuantity(): int
     {
-        return $this->cartItems->sum('quantity');
+        if ($this->relationLoaded('cartItems')) {
+            return (int) $this->cartItems->sum('quantity');
+        }
+
+        return (int) $this->cartItems()->sum('quantity');
     }
 
     /**
@@ -167,7 +177,11 @@ class Cart extends Model
      */
     public function isEmpty(): bool
     {
-        return $this->cartItems->isEmpty();
+        if ($this->relationLoaded('cartItems')) {
+            return $this->cartItems->isEmpty();
+        }
+
+        return $this->cartItems()->doesntExist();
     }
 
     /**
@@ -251,6 +265,9 @@ class Cart extends Model
      */
     public function merge(self $other): void
     {
+        $this->loadMissing('cartItems');
+        $other->loadMissing('cartItems');
+
         foreach ($other->cartItems as $item) {
             $existing = $this->cartItems
                 ->where('product_id', $item->product_id)

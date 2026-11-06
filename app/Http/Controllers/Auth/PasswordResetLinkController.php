@@ -44,11 +44,13 @@ class PasswordResetLinkController extends Controller
         if ($status === Password::RESET_LINK_SENT) {
             $user = User::where('email', $request->email)->first();
 
-            activity('authentication')
-                ->by($user)
-                ->on($user)
-                ->event('password reset link')
-                ->log(__('User account password reset link sent.'));
+            if ($user) {
+                activity('authentication')
+                    ->by($user)
+                    ->on($user)
+                    ->event('password reset link')
+                    ->log(__('User account password reset link sent.'));
+            }
         }
 
         return $status === Password::RESET_LINK_SENT

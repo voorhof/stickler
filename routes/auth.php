@@ -32,13 +32,15 @@ Route::middleware('guest')->group(function () {
         ->name('password.request');
 
     Route::post('wachtwoord-vergeten', [PasswordResetLinkController::class, 'store'])
-        ->name('password.email');
+        ->name('password.email')
+        ->middleware('throttle:3,1');
 
     Route::get('wachtwoord-reset/{token}', [NewPasswordController::class, 'create'])
         ->name('password.reset');
 
     Route::post('wachtwoord-reset', [NewPasswordController::class, 'store'])
-        ->name('password.store');
+        ->name('password.store')
+        ->middleware('throttle:5,1');
 });
 
 Route::middleware('auth')->group(function () {

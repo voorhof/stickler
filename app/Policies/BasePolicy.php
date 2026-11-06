@@ -62,7 +62,7 @@ abstract class BasePolicy
     /**
      * Determine whether the user can create resources.
      */
-    public function create(?User $user = null): bool
+    public function create(User $user): bool
     {
         return $user->can($this->permissionName('create'));
     }
@@ -70,7 +70,7 @@ abstract class BasePolicy
     /**
      * Determine whether the user can update the resource.
      */
-    public function update(?User $user = null, ?Model $model = null): bool
+    public function update(User $user, ?Model $model = null): bool
     {
         return $user->can($this->permissionName('update'));
     }
@@ -94,7 +94,7 @@ abstract class BasePolicy
     /**
      * Determine whether the user can delete the resource.
      */
-    public function delete(?User $user = null, ?Model $model = null): bool
+    public function delete(User $user, ?Model $model = null): bool
     {
         return $this->deleteAny($user);
     }
@@ -110,7 +110,7 @@ abstract class BasePolicy
     /**
      * Determine whether the user can restore the resource.
      */
-    public function restore(?User $user = null, ?Model $model = null): bool
+    public function restore(User $user, ?Model $model = null): bool
     {
         return $this->delete($user, $model);
     }
@@ -126,7 +126,7 @@ abstract class BasePolicy
     /**
      * Determine whether the user can permanently delete the resource.
      */
-    public function forceDelete(?User $user = null, ?Model $model = null): bool
+    public function forceDelete(User $user, ?Model $model = null): bool
     {
         return $this->delete($user, $model);
     }
