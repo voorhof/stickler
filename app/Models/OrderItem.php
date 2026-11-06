@@ -33,9 +33,9 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
  * @property int $total_price
  * @property DateTime $created_at
  * @property DateTime $updated_at
- * @property BelongsTo<Order> $order
- * @property BelongsTo<Product>|null $product
- * @property BelongsTo<ProductVariant>|null $productVariant
+ * @property Order $order
+ * @property Product|null $product
+ * @property ProductVariant|null $productVariant
  *
  * @method static create(mixed $validated)
  * @method static forceCreate(array $array)

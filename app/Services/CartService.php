@@ -377,6 +377,7 @@ class CartService
 
             $variant = $cartItem->productVariant;
 
+            /** @var Product|ProductVariant $model */
             $model = $variant ?? $product;
             $quantity = $cartItem->quantity;
 
@@ -384,12 +385,15 @@ class CartService
             $updated = $model->newQuery()
                 ->where('id', $model->id)
                 ->where('stock_quantity', '>=', $quantity)
-                ->update([
-                    'stock_quantity' => DB::raw('stock_quantity - '.$quantity),
-                ]);
+                ->decrement('stock_quantity', $quantity);
 
             if ($updated === 0) {
                 throw new Exception(__('Insufficient stock for this product'));
+            }
+
+            // Defense-in-depth: guard against negative stock if the WHERE guard ever fails
+            if ($model->fresh()->stock_quantity < 0) {
+                throw new Exception(__('Stock quantity cannot be negative'));
             }
         }
     }
@@ -412,18 +416,22 @@ class CartService
 
             $variant = $item->productVariant;
 
+            /** @var Product|ProductVariant $model */
             $model = $variant ?? $product;
             $quantity = $item->quantity;
 
             $updated = $model->newQuery()
                 ->where('id', $model->id)
                 ->where('stock_quantity', '>=', $quantity)
-                ->update([
-                    'stock_quantity' => DB::raw('stock_quantity - '.$quantity),
-                ]);
+                ->decrement('stock_quantity', $quantity);
 
             if ($updated === 0) {
                 throw new Exception(__('Insufficient stock for this product'));
+            }
+
+            // Defense-in-depth: guard against negative stock if the WHERE guard ever fails
+            if ($model->fresh()->stock_quantity < 0) {
+                throw new Exception(__('Stock quantity cannot be negative'));
             }
         }
     }
@@ -441,15 +449,11 @@ class CartService
             if ($item->product_variant_id) {
                 $variant = $item->productVariant;
 
-                if ($variant) {
-                    $variant->increment('stock_quantity', $item->quantity);
-                }
+                $variant?->increment('stock_quantity', $item->quantity);
             } elseif ($item->product_id) {
                 $product = $item->product;
 
-                if ($product) {
-                    $product->increment('stock_quantity', $item->quantity);
-                }
+                $product?->increment('stock_quantity', $item->quantity);
             }
         }
     }
