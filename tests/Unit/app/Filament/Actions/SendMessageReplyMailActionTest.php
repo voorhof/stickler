@@ -95,4 +95,19 @@ describe('action execution', function () {
 
         Mail::assertQueued(ContactMessageReply::class, fn (ContactMessageReply $mail): bool => $mail->hasTo($message->email));
     });
+
+    it('does not send email when message is deleted before execution', function () {
+        Mail::fake();
+
+        $message = Message::factory()->create(['reply' => 'reply text']);
+        $messageId = $message->id;
+        $message->forceDelete();
+
+        $action = SendMessageReplyMailAction::make();
+        $action->record(Message::factory()->make(['id' => $messageId, 'reply' => 'reply text']));
+
+        $action([]);
+
+        Mail::assertNothingQueued();
+    });
 });
