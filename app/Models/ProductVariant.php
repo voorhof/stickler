@@ -191,9 +191,17 @@ class ProductVariant extends Model
 
     /**
      * Get a label for this variant built from its option names.
+     *
+     * Returns an empty string if the options relationship is not loaded,
+     * preventing N+1 lazy loading. Callers should eager-load or use
+     * loadMissing('options') before accessing this attribute.
      */
     public function getLabelAttribute(): string
     {
+        if (! $this->relationLoaded('options')) {
+            return '';
+        }
+
         return $this->options->pluck('name')->implode(' / ');
     }
 }
