@@ -81,8 +81,10 @@ The easiest way to install this starter kit is using the [Laravel Installer](htt
 This will set up the project automatically.
 
 ```bash
-laravel new my-app --using=voorhof/stickler --phpunit
+laravel new my-app --using=voorhof/stickler:v1.8.3 --phpunit
 ```
+
+> **Important:** Always specify a version tag (e.g., `v1.8.3`) when using the `--using` flag. Without a version, the Laravel installer will check out the development branch (`dev-main`) instead of the latest stable release.
 
 The `--phpunit` flag is required because Stickler already includes Pest. Without it, the Laravel installer will attempt to install Pest again and run the `pest-plugin-drift` migration tool, which may modify the existing test files.
 
@@ -109,7 +111,7 @@ You can log in to the Filament admin dashboard via `/admin` using the login deta
 You may also install Stickler manually by cloning the repository and running the following commands:
 
 ```bash
-git clone https://github.com/voorhof/stickler.git my-app
+git clone --branch v1.8.3 https://github.com/voorhof/stickler.git my-app
 cd my-app
 composer install
 cp .env.example .env
