@@ -88,6 +88,12 @@ laravel new my-app --using=voorhof/stickler:v1.8.3 --phpunit
 
 The `--phpunit` flag is required because Stickler already includes Pest. Without it, the Laravel installer will attempt to install Pest again and run the `pest-plugin-drift` migration tool, which may modify the existing test files.
 
+At the end of the installation, the Laravel installer may prompt you with interactive Laravel Boost questions. Boost is already pre-configured for Stickler via `boost.json`, so you can simply accept the defaults by pressing Enter on each prompt. If you prefer to skip these prompts entirely, use the `--no-boost` flag:
+
+```bash
+laravel new my-app --using=voorhof/stickler:v1.8.3 --phpunit --no-boost
+```
+
 After installation, update the variables, such as `APP_NAME` and `APP_URL`, in the `.env` file so that they match your environment.
 
 You can also set `RESPONSE_CACHE_ENABLED` to true (not required for development, but useful for production)
