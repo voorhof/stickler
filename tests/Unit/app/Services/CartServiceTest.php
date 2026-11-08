@@ -1117,3 +1117,187 @@ test('it fails to reserve stock for order when insufficient stock', function () 
         ->and($product->fresh()->stock_quantity)->toBe(1);
 
 });
+
+// --------------------------------------------------------------------------
+// Item Count Memoization
+// --------------------------------------------------------------------------
+
+test('it returns the correct item count for a cart', function () {
+    $cart = Cart::factory()->create();
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+
+    $service = app(CartService::class);
+    $service->addItem($cart, $product, null, 3);
+
+    expect($service->getItemCount($cart))->toBe(3);
+});
+
+test('it returns zero for an empty cart', function () {
+    $cart = Cart::factory()->create();
+
+    $service = app(CartService::class);
+
+    expect($service->getItemCount($cart))->toBe(0);
+});
+
+test('it memoizes the item count and does not requery on subsequent calls', function () {
+    $cart = Cart::factory()->create();
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+
+    $service = app(CartService::class);
+    $service->addItem($cart, $product, null, 3);
+
+    // First call computes and caches
+    $first = $service->getItemCount($cart);
+
+    // Directly modify a cart item in the database to simulate a change
+    $cart->cartItems->first()->update(['quantity' => 5]);
+
+    // Second call should return the cached value, not the new DB value
+    $second = $service->getItemCount($cart);
+
+    expect($first)->toBe(3)
+        ->and($second)->toBe(3);
+});
+
+test('it forgets the memoized count after adding an item', function () {
+    $cart = Cart::factory()->create();
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+
+    $service = app(CartService::class);
+    $service->addItem($cart, $product, null, 3);
+
+    // Prime the cache
+    expect($service->getItemCount($cart))->toBe(3);
+
+    // Add another item — should invalidate the cache
+    $service->addItem($cart, $product, null, 2);
+
+    // Should return the new count
+    expect($service->getItemCount($cart))->toBe(5);
+});
+
+test('it forgets the memoized count after removing an item', function () {
+    $cart = Cart::factory()->create();
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+
+    $service = app(CartService::class);
+    $item = $service->addItem($cart, $product, null, 3);
+
+    // Prime the cache
+    expect($service->getItemCount($cart))->toBe(3);
+
+    $service->removeItem($item);
+
+    expect($service->getItemCount($cart))->toBe(0);
+});
+
+test('it forgets the memoized count after updating an item', function () {
+    $cart = Cart::factory()->create();
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+
+    $service = app(CartService::class);
+    $item = $service->addItem($cart, $product, null, 3);
+
+    // Prime the cache
+    expect($service->getItemCount($cart))->toBe(3);
+
+    $service->updateItem($item, 5);
+
+    expect($service->getItemCount($cart))->toBe(5);
+});
+
+test('it forgets the memoized count after clearing the cart', function () {
+    $cart = Cart::factory()->create();
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+
+    $service = app(CartService::class);
+    $service->addItem($cart, $product, null, 3);
+
+    // Prime the cache
+    expect($service->getItemCount($cart))->toBe(3);
+
+    $service->clear($cart);
+
+    expect($service->getItemCount($cart))->toBe(0);
+});
+
+test('it forgets the memoized count after merging carts', function () {
+    $cart1 = Cart::factory()->create();
+    $cart2 = Cart::factory()->create();
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 20]);
+
+    $service = app(CartService::class);
+    $service->addItem($cart1, $product, null, 2);
+    $service->addItem($cart2, $product, null, 3);
+
+    // Prime the cache for cart1
+    expect($service->getItemCount($cart1))->toBe(2);
+
+    $service->merge($cart2, $cart1);
+
+    expect($service->getItemCount($cart1))->toBe(5);
+});
+
+test('it forgets the memoized count after removing out of stock items', function () {
+    $cart = Cart::factory()->create();
+    $inStockProduct = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+    $outOfStockProduct = Product::factory()->create(['price' => 2000, 'is_discounted' => false, 'stock_quantity' => 0]);
+
+    $service = app(CartService::class);
+    $service->addItem($cart, $inStockProduct, null, 2);
+
+    // Create the out-of-stock item directly via factory to bypass stock validation
+    CartItem::factory()->create([
+        'cart_id' => $cart->id,
+        'product_id' => $outOfStockProduct->id,
+        'product_name' => $outOfStockProduct->title,
+        'quantity' => 1,
+        'unit_price' => 2000,
+        'total_price' => 2000,
+    ]);
+
+    // Prime the cache
+    expect($service->getItemCount($cart))->toBe(3);
+
+    $service->removeOutOfStockItems($cart);
+
+    expect($service->getItemCount($cart))->toBe(2);
+});
+
+test('it forgets the memoized count after adjusting overstocked items', function () {
+    $cart = Cart::factory()->create();
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 4]);
+
+    $service = app(CartService::class);
+    $service->addItem($cart, $product, null, 4);
+
+    // Prime the cache
+    expect($service->getItemCount($cart))->toBe(4);
+
+    // Simulate stock drop
+    $product->update(['stock_quantity' => 2]);
+
+    $service->adjustOverstockedItems($cart);
+
+    expect($service->getItemCount($cart))->toBe(2);
+});
+
+test('it forgets the memoized count explicitly via forgetItemCount', function () {
+    $cart = Cart::factory()->create();
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+
+    $service = app(CartService::class);
+    $service->addItem($cart, $product, null, 3);
+
+    // Prime the cache
+    expect($service->getItemCount($cart))->toBe(3);
+
+    // Directly modify DB
+    $cart->cartItems->first()->update(['quantity' => 7]);
+
+    // Explicitly forget the cache
+    $service->forgetItemCount($cart->id);
+
+    expect($service->getItemCount($cart))->toBe(7);
+});

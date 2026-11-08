@@ -28,6 +28,13 @@ class CartService
     protected ?array $cartCache = null;
 
     /**
+     * Cache for cart item counts within a single request to avoid duplicate queries.
+     *
+     * @var array<int, int>
+     */
+    protected array $itemCountCache = [];
+
+    /**
      * Get or create a cart for the given user or a guest cart.
      */
     public function getOrCreateCart(?User $user = null): Cart
@@ -94,6 +101,22 @@ class CartService
     }
 
     /**
+     * Get the total item count for a cart, memoized within the request lifecycle.
+     */
+    public function getItemCount(Cart $cart): int
+    {
+        return $this->itemCountCache[$cart->id] ??= (int) $cart->cartItems()->sum('quantity');
+    }
+
+    /**
+     * Forget the memoized item count for a cart.
+     */
+    public function forgetItemCount(int $cartId): void
+    {
+        unset($this->itemCountCache[$cartId]);
+    }
+
+    /**
      * Add an item to the cart with stock validation.
      *
      * @throws Exception If insufficient stock is available.
@@ -101,6 +124,8 @@ class CartService
     public function addItem(Cart $cart, Product $product, ?ProductVariant $variant = null, int $quantity = 1): CartItem
     {
         $this->validateStock($product, $variant, $quantity, $cart);
+
+        $this->forgetItemCount($cart->id);
 
         $variant?->loadMissing('options');
 
@@ -147,6 +172,8 @@ class CartService
             return $item;
         }
 
+        $this->forgetItemCount($item->cart_id);
+
         $product = $item->product;
         $variant = $item->productVariant;
 
@@ -166,6 +193,8 @@ class CartService
      */
     public function removeItem(CartItem $item): void
     {
+        $this->forgetItemCount($item->cart_id);
+
         $item->delete();
     }
 
@@ -174,6 +203,8 @@ class CartService
      */
     public function clear(Cart $cart): void
     {
+        $this->forgetItemCount($cart->id);
+
         $cart->cartItems()->delete();
     }
 
@@ -182,6 +213,8 @@ class CartService
      */
     public function removeOutOfStockItems(Cart $cart): int
     {
+        $this->forgetItemCount($cart->id);
+
         $cart->loadMissing('cartItems.product', 'cartItems.productVariant');
 
         $removedCount = 0;
@@ -220,6 +253,8 @@ class CartService
      */
     public function adjustOverstockedItems(Cart $cart): int
     {
+        $this->forgetItemCount($cart->id);
+
         $cart->loadMissing('cartItems.product', 'cartItems.productVariant');
 
         $adjustedCount = 0;
@@ -270,6 +305,8 @@ class CartService
      */
     public function merge(Cart $source, Cart $target): void
     {
+        $this->forgetItemCount($target->id);
+
         $target->merge($source);
     }
 
