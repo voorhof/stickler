@@ -17,12 +17,12 @@ Out of the box, Stickler includes:
 - **A Filament 5 admin panel** with user management, navigation, notifications, soft-delete workflows, reusable form schemas and table definitions, resizable columns, and business-hours management. See the [Filament implementation guide](FILAMENT.md) for details.
 - **Content management building blocks** for posts and other content, including slugs, tags, sorting, localized content, rich text editing, and a custom rich-editor source-code tool.
 - **User authentication** with registration, login, password reset, email verification, and a protected account dashboard. Guest carts are automatically merged into the authenticated cart on login or registration. See the [User Authentication section](#user-authentication) for details.
-- **E-commerce building blocks** with products and product variants (option types, options, SKU, stock and price per variant), categories, orders with order and payment status, a public cart with a navbar badge, stock validation and expiry cleanup, and a complete hosted checkout flow powered by Mollie payments. See the [Store Management section](FILAMENT.md#store-management) of the Filament guide and the [Payment and Checkout section](#payment-and-checkout).
+- **E-commerce building blocks** with products and product variants (option types, options, SKU, stock and price per variant), categories, orders with order and payment status, a public cart with a navbar badge, real-time stock validation, concurrency-safe inventory reservations (`lockForUpdate()`), and a complete hosted checkout flow powered by Mollie payments. See the [Store Management section](FILAMENT.md#store-management) of the Filament guide and the [Payment and Checkout section](#payment-and-checkout).
 - **Media management** powered by Spatie Media Library, including uploads, image conversions, responsive media support, and integration with Filament.
-- **User access and administration** with roles and permissions, panel access checks, admin configuration through `.env`, and optional two-factor authentication support.
-- **Website essentials** such as HTML head management, sitemap generation, robots.txt support, opening hours, cookie consent, and a Bootstrap-based public frontend.
-- **Security and abuse protection** with form honeypots, rate limiting (including password reset and payment webhook endpoints), webhook signature verification, sanitized rich content rendering, and restricted access to administration and debugging tools.
-- **Operational visibility and resilience** with Telescope for non-production debugging, HTTP and activity logging, cookieless server-side page view analytics, application health checks, database and file backups, and response caching for production workloads. Telescope is not booted in production. See the [Page Views section](FILAMENT.md#page-views) of the Filament guide for details.
+- **User access and administration** with roles and permissions, panel access checks, administrative lockout and self-deletion fail-safes (ensuring at least one active admin remains), admin configuration through `.env`, and optional two-factor authentication support.
+- **Website essentials** such as HTML head management, model-driven sitemap generation, robots.txt support, opening hours, cookie consent, and a Bootstrap-based public frontend.
+- **Security and abuse protection** with form honeypots, dynamic HTTP cache headers to prevent public CDN cache poisoning, rate limiting (including password reset and payment webhook endpoints), webhook signature verification, sanitized rich content rendering, and restricted access to administration and debugging tools.
+- **Operational visibility and resilience** with Telescope for non-production debugging, HTTP and activity logging, container-optimized cookieless server-side page view analytics, application health checks, database and file backups, and response caching for production workloads. Telescope is not booted in production. See the [Page Views section](FILAMENT.md#page-views) of the Filament guide for details.
 - **Developer experience** with Laravel Boost skills, Vite and Sass asset tooling, Pest tests, Laravel Pint code style checks, and documentation for the installed Composer and Node dependencies.
 
 The result is a strong baseline for launching a website quickly while keeping the codebase understandable and flexible. Replace the branding, content model, frontend views, and business rules with your own requirements, while retaining the reusable CMS, administration, and operational features that every project needs.
@@ -61,6 +61,7 @@ The dedicated [Filament implementation guide](FILAMENT.md), [Composer package gu
 When preparing a Stickler-based project for production deployment, complete the following checklist to ensure the application is secure, properly configured, and ready for real traffic:
 
 - [ ] **Change all default credentials** — Update the seeded admin user passwords and review the `ADMIN_EMAIL` and `ADMIN_PASSWORD` values in `.env`.
+- [ ] **Verify administrative accounts** — Ensure at least one active administrator exists with a confirmed email address and secure password.
 - [ ] **Update application identity** — Set `APP_NAME`, `APP_URL`, and `APP_LOCALE` in `.env` to match your project.
 - [ ] **Configure a real mail driver** — Replace the default `log` mail driver with a production-ready service (e.g., Mailgun, Postmark, SES) and update the `MAIL_` variables in `.env`.
 - [ ] **Set up payment gateway** — Replace the test `MOLLIE_KEY` with a live API key and verify `PAYMENT_WEBHOOK_URL` points to your production domain.
@@ -68,8 +69,8 @@ When preparing a Stickler-based project for production deployment, complete the 
 - [ ] **Disable debug mode** — Set `APP_DEBUG=false` and `APP_ENV=production` in `.env`.
 - [ ] **Secure sessions** — Set `SESSION_SECURE_COOKIE=true` when serving over HTTPS.
 - [ ] **Configure backups** — Verify `BACKUP_` settings in `.env` and run `php artisan backup:run` to confirm backups work.
-- [ ] **Enable response caching** — Set `RESPONSE_CACHE_ENABLED=true` for production performance.
-- [ ] **Configure queue worker** — Ensure a queue worker is running (e.g., via supervisor) for email delivery and webhook processing.
+- [ ] **Enable response caching & dynamic headers** — Set `RESPONSE_CACHE_ENABLED=true` for production performance.
+- [ ] **Configure queue worker** — Ensure a queue worker is running (e.g., via supervisor) for email delivery, sitemap generation, and webhook processing with transaction-safe commit verification.
 - [ ] **Set up monitoring** — Configure health checks and review Telescope is disabled in production (default behavior).
 - [ ] **Update branding** — Replace the default logo and artwork in `public/` and update any hardcoded references in Blade views.
 
@@ -105,7 +106,7 @@ APP_URL=https://stickler.test
 RESPONSE_CACHE_ENABLED=true
 ```
 
-When response caching is enabled, pages are not cached for visitors with a `cart_token` cookie or a logged-in account. Their navbar cart badge is personal, so a cached page would show the wrong count. After upgrading an existing installation, run `php artisan responsecache:clear` once to remove pages cached before this rule existed.
+When response caching is enabled, public GET routes use dynamic HTTP cache headers (`SetDynamicCacheHeaders`) and Spatie ResponseCache. For anonymous guests, responses include `Cache-Control: public, max-age=60, s-maxage=300` and `ETag` to allow edge CDNs and proxies to cache generic pages. For visitors with a `cart_token` cookie, an authenticated session, or session flash messages, response headers dynamically switch to `Cache-Control: private, max-age=60` with `Vary: Cookie, Accept-Encoding` to prevent shared proxy/CDN cache poisoning. After upgrading an existing installation, run `php artisan responsecache:clear` once to remove pages cached before this rule existed.
 
 You can log in to the Filament admin dashboard via `/admin` using the login details defined in .env:
 
@@ -173,6 +174,7 @@ When a guest user adds items to their cart and then logs in or registers, the `M
 - `MergeGuestCart` (`app/Http/Middleware`) is applied only to the `POST /login` and `POST /registreer` routes, not globally, to avoid unnecessary overhead on every request.
 - The middleware runs after the response is generated (`$next($request)`), so the user is already authenticated before the merge.
 - If the user has a `cart_token` cookie pointing to a non-empty guest cart, the guest cart items are merged into the user's authenticated cart using `CartService::merge()`.
+- The merge runs inside a database transaction, validates stock availability, clamps combined item quantities to available inventory limits, and safely removes items whose inventory has depleted.
 - After the merge, the `cart_token` cookie is updated to point to the user's authenticated cart, so subsequent requests use the correct cart.
 - If the guest cart is empty, not a guest cart, or the user has no `cart_token` cookie, the middleware returns immediately without any database queries.
 
@@ -195,7 +197,7 @@ Stickler includes a complete checkout and payment lifecycle integrating a databa
 
 1. **Cart Review (`GET /cart`)**: Customers review items, adjust quantities with real-time stock validation, or remove products. Product discounts and variant pricing rules are automatically applied.
 2. **Order Confirmation (`GET /checkout`)**: Customers provide contact info (name, email, phone), shipping address, and optional billing address (with a "same as shipping" toggle) and order notes. For logged-in users, details are pre-filled automatically from their user profile.
-3. **Order Placement (`POST /checkout`)**: Validates the form via `StoreOrderRequest`, creates an `Order` and associated `OrderItem` snapshots in a database transaction, clears the active cart, and delegates payment creation to `PaymentService`.
+3. **Order Placement (`POST /checkout`)**: Validates the form via `StoreOrderRequest`, creates an `Order` and associated `OrderItem` snapshots in a database transaction with pessimistic row locking (`lockForUpdate()`) to atomically reserve stock and prevent race-condition overselling. Clears the active cart and delegates payment creation to `PaymentService`. If stock is depleted concurrently, the customer is gracefully redirected back to their cart with a clear notification.
 4. **Hosted Payment Redirect**: The customer is redirected to Mollie's secure checkout page (supporting iDEAL, Bancontact, Credit Card, Apple Pay, and other configured payment methods).
 5. **Webhook Processing (`POST /payment/webhook/mollie`)**: Mollie asynchronously notifies the application of payment status updates. The application securely verifies payment status directly via the Mollie API, updates the order to `paid` and `confirmed`, and dispatches the queued `PaymentConfirmation` email.
 6. **Order Confirmation & Thank-You (`GET /order-confirmed/{order}`)**: Displays order details, items breakdown, pricing, and live payment status. Protected by authorization checks: authenticated users can only view their own orders, and guest visitors can only view orders placed during their current session.

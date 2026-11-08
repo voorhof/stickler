@@ -397,8 +397,9 @@ A custom configuration array excluded_from_slug is defined in config/sluggable.p
 The `products`, `product`, `cart` and `brandbook` entries were added for the store and public routes, so a page or product can never take a slug that collides with `/products`, `/product`, `/cart` or `/brandbook`.
 
 This list is used across the application:
-1. Filament Form Validation (SlugInput): The reusable SlugInput component (App\Filament\Schemas\Components\SlugInput) applies Rule::notIn(config('sluggable.excluded_from_slug')) to prevent users from manually entering reserved slugs in the admin panel.
-2. Model Observers (PageObserver): During creating and updating model events in PageObserver, the model checks if the assigned slug is within config('sluggable.excluded_from_slug'). If matched, a unique timestamp suffix (now()->format('-y-m-d-H-i-s')) is automatically appended to avoid route collisions with existing system routes.
+1. Model-Level Slug Generation (`GenerateSlugAction`): `App\Actions\Sluggable\GenerateSlugAction` extends Spatie's action and is registered in `config/sluggable.php`. When generating slugs across any sluggable model (`Page`, `Post`, `Product`, `Category`, `Project`), it checks against `config('sluggable.excluded_from_slug')` and automatically assigns clean numeric suffixes (e.g., `cart-1`, `cart-2`) to avoid collisions.
+2. Filament Form Validation (`SlugInput`): The reusable `SlugInput` component (`App\Filament\Schemas\Components\SlugInput`) applies `Rule::notIn(config('sluggable.excluded_from_slug'))` to notify administrators when entering reserved slugs in the admin panel.
+3. Route-Level Negative Lookahead Constraint: The wildcard `/{page}` route in `routes/web.php` enforces a dynamic regex constraint compiled from `config('sluggable.excluded_from_slug')` so reserved system endpoints are never shadowed by page routes.
 
 ## Spatie Permission
 [Documentation](https://spatie.be/docs/laravel-permission/v8/introduction)  
@@ -943,8 +944,7 @@ Schedule::command('activitylog:clean --force')
 [Documentation](https://spatie.be/docs/laravel-sitemap/v8)  
 [GitHub](https://github.com/spatie/laravel-sitemap)
 
-This package can generate a sitemap without you having to add URLs to it manually. 
-This works by crawling your entire site.
+This package generates a standard XML sitemap for search engines. The application uses a model-driven approach via `App\Console\Commands\GenerateSitemap` that directly queries registered static routes and published `Page`, `Post`, `Product`, and `Project` records, avoiding slow HTTP loopback crawling and potential timeout issues.
 
 **Config** file was published to `config/sitemap.php`.
 
@@ -1218,6 +1218,7 @@ By default, the package will now cache all successful GET requests that return t
 Inside the `bootstrap/app.php` file the CacheResponse middleware and the DoNotCacheResponse alias are added:
 
 ```php
+use App\Http\Middleware\SetDynamicCacheHeaders;
 use Spatie\ResponseCache\Middlewares\CacheResponse;
 use Spatie\ResponseCache\Middlewares\DoNotCacheResponse;
 
@@ -1227,10 +1228,19 @@ use Spatie\ResponseCache\Middlewares\DoNotCacheResponse;
     ]);
 
     $middleware->alias([
+        'cache.dynamic' => SetDynamicCacheHeaders::class,
         'doNotCacheResponse' => DoNotCacheResponse::class,
     ]);
 })
 ```
+
+### Dynamic Edge Cache Headers & CDN Protection (`SetDynamicCacheHeaders`)
+
+The application combines Spatie ResponseCache with dynamic HTTP cache headers (`SetDynamicCacheHeaders` registered as `cache.dynamic`) across public routes in `routes/web.php`.
+
+- **Anonymous Guests**: Served with `Cache-Control: public, max-age=60, s-maxage=300, stale-while-revalidate=600, must-revalidate` and `ETag`, allowing shared CDNs and edge proxies to cache generic pages for 300 seconds.
+- **Personalized Sessions**: When a user is authenticated, has an active `cart_token` cookie, or has pending session notifications, headers dynamically switch to `Cache-Control: private, max-age=60` with `Vary: Cookie, Accept-Encoding`. This strictly forbids shared CDN caching while preserving localized browser navigation speed and preventing cart/user leakage across visitors.
+- **ResponseCache Cache Profile (`CacheAllSuccessfulGetRequestsWithoutCart`)**: Server-side origin caching automatically bypasses requests from authenticated users, requests containing a `cart_token`, or requests with session flash messages.
 
 The `ContactController` does not use the `#[NoCache]` attribute.
 To prevent caching on specific routes, you can use the `#[NoCache]` attribute on controller methods
@@ -1512,14 +1522,19 @@ This option only applies if you have already published older assets using `php a
 
 This package detects bots and crawlers by their User-Agent string. It ships a maintained list of bot patterns and is used by the page view tracker to flag bot visits.
 
-The package is required in `composer.json` (`"jaybizzle/crawler-detect": "^1.4"`).
+The package is required in `composer.json` (`"jaybizzle/crawler-detect": "^1.4"`). It is registered as a singleton in `AppServiceProvider` so compiled regex patterns are shared across requests.
 
-The `TrackPageView` middleware (`app/Http/Middleware/TrackPageView.php`) uses the `Jaybizzle\CrawlerDetect\CrawlerDetect` class:
+The `TrackPageView` middleware (`app/Http/Middleware/TrackPageView.php`) receives the `CrawlerDetect` singleton via constructor injection:
 
 ```php
 use Jaybizzle\CrawlerDetect\CrawlerDetect;
 
-$isBot = (new CrawlerDetect)->isCrawler($request->userAgent());
+public function __construct(
+    protected CrawlerDetect $crawlerDetect,
+) {}
+
+// Inside request tracking:
+$isBot = $this->crawlerDetect->isCrawler($request->userAgent());
 ```
 
 The result is stored in the `is_bot` column of the `page_views` table. The middleware also skips requests that have an empty User-Agent or a browser prefetch header (`Purpose: prefetch` or `Sec-Purpose: prefetch`).

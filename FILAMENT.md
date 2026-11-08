@@ -136,12 +136,16 @@ Located at `app/Filament/Resources/Users/Schemas/UserForm.php`.
 Instead of defining the form directly in the resource, we use a dedicated schema class.
 This makes it easier to reuse or modify the form logic.
 
+**Administrative Lockout Protection (`RoleSection`)**:
+In `app/Filament/Resources/Users/Schemas/Sections/RoleSection.php`, when editing an administrator who is the last remaining active admin in the database (`User::role('Admin')->withoutTrashed()->count() <= 1`), the role selector is automatically disabled and guarded with custom validation. This prevents administrators from accidentally revoking their own admin role or demoting the last admin and permanently locking themselves out of the Filament panel.
+
 ### 5. Users Table
 Located at `app/Filament/Resources/Users/Tables/UsersTable.php`.
 This class handles the table configuration, including:
 - **Columns**: Searchable name and email, formatted dates.
 - **Filters**: Filter for verified users and a `TrashedFilter` for soft deletes.
 - **Actions**: Edit, Delete, Force Delete, and Restore.
+- **Lockout Protection**: `SoftDeleteAction`, `HardDeleteAction`, and bulk deletion actions (`SoftDeleteBulkAction`, `HardDeleteBulkAction`) check `UserPolicy` and prevent deleting or force-deleting the last active administrator. Furthermore, `UserObserver` throws an `AdministrativeLockoutException` as a database-level fail-safe against accidental deletion.
 
 ## Working with Soft Deletes
 
@@ -149,6 +153,7 @@ Since the `User` resource was generated with `--soft-deletes`, it includes:
 - `TrashedFilter` in the table.
 - `SoftDeletingScope` handling in the `UserResource`.
 - Restore and Force Delete actions in the table's bulk actions.
+- Automatic lockout protection ensuring the last active administrator cannot be soft-deleted or permanently purged.
 
 ## Adding a New Resource
 
