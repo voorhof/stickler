@@ -7,7 +7,7 @@ use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
-#[Signature('carts:cleanup')]
+#[Signature('carts:cleanup {--force : Force the operation without user confirmation}')]
 #[Description('Clear expired carts from the database.')]
 class CleanupExpiredCartsCommand extends Command
 {
@@ -16,9 +16,19 @@ class CleanupExpiredCartsCommand extends Command
      */
     public function handle(CartService $cartService): int
     {
-        $deletedCount = $cartService->cleanupExpired();
+        if (! $this->option('force')) {
+            if ($this->confirm('Are you sure you want to delete all expired carts?')) {
+                $deletedCount = $cartService->cleanupExpired();
 
-        $this->info("$deletedCount expired cart(s) deleted.");
+                $this->info("$deletedCount expired cart(s) deleted.");
+            } else {
+                $this->info('Cart cleanup cancelled.');
+            }
+        } else {
+            $deletedCount = $cartService->cleanupExpired();
+
+            $this->info("$deletedCount expired cart(s) deleted.");
+        }
 
         return self::SUCCESS;
     }
