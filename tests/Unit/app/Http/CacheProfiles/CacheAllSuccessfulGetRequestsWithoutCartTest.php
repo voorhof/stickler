@@ -26,10 +26,26 @@ describe('cache profile', function () {
     it('disables the response cache for a logged in user', function () {
         $this->actingAs(User::factory()->create());
 
-        $request = Request::create('/', 'GET');
+        $request = Request::create('/');
 
         expect($this->cacheProfile->enabled($request))->toBeFalse();
     });
+
+    it('disables the response cache when session contains flash messages', function (string $flashKey) {
+        $session = new Illuminate\Session\Store('test_session', new Illuminate\Session\ArraySessionHandler(10));
+        $session->flash($flashKey, 'Flash notification');
+
+        $request = Request::create('/');
+        $request->setLaravelSession($session);
+
+        expect($this->cacheProfile->enabled($request))->toBeFalse();
+    })->with([
+        'success' => ['success'],
+        'error' => ['error'],
+        'status' => ['status'],
+        'errors' => ['errors'],
+        'alert' => ['alert'],
+    ]);
 
     it('does not cache a non-GET request', function () {
         $request = Request::create('/', 'POST');

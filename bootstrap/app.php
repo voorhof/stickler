@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\SetDynamicCacheHeaders;
 use App\Http\Middleware\TrackPageView;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -52,9 +53,10 @@ return Application::configure(basePath: dirname(__DIR__))
             CacheResponse::class,
         ]);
 
-        // Spatie Response Cache: do not cache responses with the "doNotCacheResponse" middleware
+        // Middleware aliases
         $middleware->alias([
             'doNotCacheResponse' => DoNotCacheResponse::class,
+            'cache.dynamic' => SetDynamicCacheHeaders::class,
         ]);
 
         // Use the Spatie HttpLogger globally

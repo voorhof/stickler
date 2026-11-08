@@ -20,7 +20,7 @@ use Spatie\HttpLogger\Middlewares\HttpLogger;
  * Note: Add extra added routes you want to keep counts for,
  * to $trackedRouteNames inside the TrackPageView class.
  */
-Route::middleware('cache.headers:public;max_age=60;s_maxage=300;stale_while_revalidate=600;etag')->group(function () {
+Route::middleware('cache.dynamic:public;max_age=60;s_maxage=300;stale_while_revalidate=600;etag')->group(function () {
     /**
      * Index welcome route for the application
      */
@@ -143,7 +143,7 @@ if (app()->environment('local')) {
  *
  * PageController routes (!put these routes last!)
  */
-Route::middleware('cache.headers:public;max_age=60;s_maxage=300;stale_while_revalidate=600;etag')->group(function () {
+Route::middleware('cache.dynamic:public;max_age=60;s_maxage=300;stale_while_revalidate=600;etag')->group(function () {
     Route::get('/pages', [PageController::class, 'index'])
         ->name('pages.index');
     Route::get('/{page}', [PageController::class, 'show'])
