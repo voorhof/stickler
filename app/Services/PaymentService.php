@@ -96,11 +96,6 @@ class PaymentService
                 $this->sendConfirmationEmail($order);
             }
 
-            // Restore stock if payment failed, was canceled, or expired
-            if ($order->payment_status === PaymentStatus::Unpaid) {
-                $this->cartService->restoreStockForOrder($order);
-            }
-
             return WebhookResult::Success;
         } catch (InvalidWebhookSignatureException) {
             return WebhookResult::SignatureInvalid;
