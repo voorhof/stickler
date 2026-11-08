@@ -1,6 +1,6 @@
 <?php
 
-/** @noinspection PhpUnhandledExceptionInspection */
+/** @noinspection PhpUnhandledExceptionInspection, PhpPossiblePolymorphicInvocationInspection */
 
 use App\Enums\PaymentStatus;
 use App\Models\Cart;
@@ -859,6 +859,27 @@ describe('thank you page', function () {
         $response->assertForbidden();
     });
 
+    test('it shows the thank you page for guests with a signed url', function () {
+        $product = Product::factory()->create(['price' => 2999]);
+        $order = Order::factory()->create(['user_id' => null, 'subtotal' => 5998]);
+        App\Models\OrderItem::factory()->create([
+            'order_id' => $order->id,
+            'product_id' => $product->id,
+            'product_name' => $product->title,
+            'quantity' => 2,
+            'unit_price' => 2999,
+            'total_price' => 5998,
+        ]);
+
+        $signedUrl = Illuminate\Support\Facades\URL::signedRoute('order.confirmed', ['order' => $order]);
+
+        $response = $this->get($signedUrl);
+
+        $response->assertSuccessful()
+            ->assertViewIs('public.checkout.thankyou')
+            ->assertSeeText($order->order_number);
+    });
+
     test('it sets head metadata on thank you page', function () {
         $user = User::factory()->create();
         $order = Order::factory()->create(['user_id' => $user->id]);
@@ -956,6 +977,31 @@ describe('retry payment', function () {
         $response = $this->post(route('checkout.pay', $order));
 
         $response->assertForbidden();
+    });
+
+    test('guest can retry payment with a signed url', function () {
+        $order = Order::factory()->create([
+            'user_id' => null,
+            'payment_status' => PaymentStatus::Unpaid,
+        ]);
+
+        $paymentService = mock(App\Services\PaymentService::class)
+            ->shouldReceive('initiatePayment')
+            ->once()
+            ->with(Mockery::on(fn ($arg) => $arg->is($order)))
+            ->andReturn([
+                'payment_id' => 'tr_signed_retry',
+                'checkout_url' => 'https://mollie.com/checkout/signed-retry',
+            ])
+            ->mock();
+
+        app()->instance(App\Services\PaymentService::class, $paymentService);
+
+        $signedUrl = Illuminate\Support\Facades\URL::signedRoute('checkout.pay', ['order' => $order]);
+
+        $response = $this->post($signedUrl);
+
+        $response->assertRedirect('https://mollie.com/checkout/signed-retry');
     });
 
     test('handles retry payment failure gracefully', function () {

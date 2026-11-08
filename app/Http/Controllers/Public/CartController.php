@@ -267,13 +267,17 @@ class CartController extends Controller
     public function retryPayment(Request $request, Order $order): RedirectResponse
     {
         // Authenticated users can only pay for their own orders
-        if (Auth::check()) {
-            abort_unless($order->user_id === Auth::id(), 403);
+        if (! Auth::check()) {
+            // Guest users can access via session or signed URL
+            $hasSessionAccess = $request->session()->get('last_guest_order_id') === $order->id;
+            $hasValidSignature = $request->hasValidSignature();
+
+            abort_unless($hasSessionAccess || $hasValidSignature, 403);
         }
 
-        // Guest users can only pay for the last order they placed (stored in session)
-        if (! Auth::check()) {
-            abort_unless($request->session()->get('last_guest_order_id') === $order->id, 403);
+        // Authenticated users can only pay for their own orders
+        if (Auth::check()) {
+            abort_unless($order->user_id === Auth::id(), 403);
         }
 
         if ($order->payment_status === PaymentStatus::Paid) {
@@ -304,13 +308,17 @@ class CartController extends Controller
             ->description(__('Your order has been placed successfully'));
 
         // Authenticated users can only view their own orders
-        if (Auth::check()) {
-            abort_unless($order->user_id === Auth::id(), 403);
+        if (! Auth::check()) {
+            // Guest users can access via session or signed URL
+            $hasSessionAccess = $request->session()->get('last_guest_order_id') === $order->id;
+            $hasValidSignature = $request->hasValidSignature();
+
+            abort_unless($hasSessionAccess || $hasValidSignature, 403);
         }
 
-        // Guest users can only view the last order they placed (stored in session)
-        if (! Auth::check()) {
-            abort_unless($request->session()->get('last_guest_order_id') === $order->id, 403);
+        // Authenticated users can only view their own orders
+        if (Auth::check()) {
+            abort_unless($order->user_id === Auth::id(), 403);
         }
 
         $order->load('orderItems');

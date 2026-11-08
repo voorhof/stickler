@@ -7,6 +7,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Exceptions\InvalidWebhookSignatureException;
 use App\Models\Order;
+use Illuminate\Support\Facades\URL;
 use Mollie\Api\Exceptions\InvalidSignatureException;
 use Mollie\Api\Exceptions\MollieException;
 use Mollie\Api\Http\Data\Money;
@@ -34,7 +35,7 @@ class MollieProvider implements PaymentProvider
         $payment = Mollie::send(new CreatePaymentRequest(
             description: __('Order :order_number', ['order_number' => $order->order_number]),
             amount: Money::fromMinorUnits('EUR', (int) $order->getAttributes()['total']),
-            redirectUrl: route('order.confirmed', ['order' => $order]),
+            redirectUrl: URL::signedRoute('order.confirmed', ['order' => $order]),
             webhookUrl: $webhookUrl,
             metadata: [
                 'order_id' => $order->id,
