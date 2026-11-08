@@ -368,8 +368,8 @@ class CartService
     /**
      * Atomically reserve (decrement) stock for all items in a cart at checkout time.
      *
-     * Uses atomic database updates to prevent race conditions: only rows where
-     * stock_quantity >= quantity are updated, preventing overselling.
+     * Uses pessimistic row locking and atomic database updates to prevent race conditions:
+     * only rows where stock_quantity >= quantity are updated, preventing overselling.
      *
      * @throws Exception If insufficient stock is available for any item.
      */
@@ -377,6 +377,7 @@ class CartService
     {
         $cart->loadMissing('cartItems.product', 'cartItems.productVariant');
 
+        $itemsByModel = [];
         foreach ($cart->cartItems as $cartItem) {
             $product = $cartItem->product;
 
@@ -388,7 +389,28 @@ class CartService
 
             /** @var Product|ProductVariant $model */
             $model = $variant ?? $product;
-            $quantity = $cartItem->quantity;
+            $key = $model::class.':'.$model->id;
+
+            if (! isset($itemsByModel[$key])) {
+                $itemsByModel[$key] = [
+                    'model' => $model,
+                    'quantity' => 0,
+                ];
+            }
+
+            $itemsByModel[$key]['quantity'] += $cartItem->quantity;
+        }
+
+        foreach ($itemsByModel as $entry) {
+            /** @var Product|ProductVariant $model */
+            $model = $entry['model'];
+            $quantity = $entry['quantity'];
+
+            $lockedModel = $model->newQuery()->lockForUpdate()->find($model->id);
+
+            if (! $lockedModel || $lockedModel->stock_quantity < $quantity) {
+                throw new Exception(__('Insufficient stock for this product'));
+            }
 
             // Atomic check-and-decrement: only rows where stock_quantity >= quantity are updated
             $updated = $model->newQuery()
@@ -418,6 +440,7 @@ class CartService
     {
         $order->loadMissing('orderItems.product', 'orderItems.productVariant');
 
+        $itemsByModel = [];
         foreach ($order->orderItems as $item) {
             $product = $item->product;
 
@@ -429,7 +452,28 @@ class CartService
 
             /** @var Product|ProductVariant $model */
             $model = $variant ?? $product;
-            $quantity = $item->quantity;
+            $key = $model::class.':'.$model->id;
+
+            if (! isset($itemsByModel[$key])) {
+                $itemsByModel[$key] = [
+                    'model' => $model,
+                    'quantity' => 0,
+                ];
+            }
+
+            $itemsByModel[$key]['quantity'] += $item->quantity;
+        }
+
+        foreach ($itemsByModel as $entry) {
+            /** @var Product|ProductVariant $model */
+            $model = $entry['model'];
+            $quantity = $entry['quantity'];
+
+            $lockedModel = $model->newQuery()->lockForUpdate()->find($model->id);
+
+            if (! $lockedModel || $lockedModel->stock_quantity < $quantity) {
+                throw new Exception(__('Insufficient stock for this product'));
+            }
 
             $updated = $model->newQuery()
                 ->where('id', $model->id)

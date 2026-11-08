@@ -5,6 +5,7 @@
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\User;
 use App\Observers\CartObserver;
 use App\Policies\CartPolicy;
@@ -128,7 +129,7 @@ test('cart merge combines items from another cart', function () {
     $cart1 = Cart::factory()->create();
     $cart2 = Cart::factory()->create();
 
-    $product = Product::factory()->create();
+    $product = Product::factory()->create(['stock_quantity' => 10]);
     CartItem::factory()->create(['cart_id' => $cart1->id, 'product_id' => $product->id, 'quantity' => 2, 'unit_price' => 1000, 'total_price' => 2000]);
     CartItem::factory()->create(['cart_id' => $cart2->id, 'product_id' => $product->id, 'quantity' => 1, 'unit_price' => 1000, 'total_price' => 1000]);
 
@@ -139,12 +140,70 @@ test('cart merge combines items from another cart', function () {
         ->and($cart1->cartItems->first()->quantity)->toBe(3);
 });
 
+test('cart merge clamps combined quantity to available product stock', function () {
+    $cart1 = Cart::factory()->create();
+    $cart2 = Cart::factory()->create();
+
+    $product = Product::factory()->create(['stock_quantity' => 4]);
+    CartItem::factory()->create(['cart_id' => $cart1->id, 'product_id' => $product->id, 'quantity' => 3, 'unit_price' => 1000, 'total_price' => 3000]);
+    CartItem::factory()->create(['cart_id' => $cart2->id, 'product_id' => $product->id, 'quantity' => 3, 'unit_price' => 1000, 'total_price' => 3000]);
+
+    $cart1->merge($cart2);
+    $cart1->refresh();
+
+    expect($cart1->cartItems)->toHaveCount(1)
+        ->and($cart1->cartItems->first()->quantity)->toBe(4)
+        ->and($cart1->cartItems->first()->total_price)->toBe(4000);
+});
+
+test('cart merge clamps combined quantity to available variant stock', function () {
+    $cart1 = Cart::factory()->create();
+    $cart2 = Cart::factory()->create();
+
+    $product = Product::factory()->create(['stock_quantity' => 100]);
+    $variant = ProductVariant::factory()->create(['product_id' => $product->id, 'stock_quantity' => 3]);
+    CartItem::factory()->create(['cart_id' => $cart1->id, 'product_id' => $product->id, 'product_variant_id' => $variant->id, 'quantity' => 2, 'unit_price' => 1000, 'total_price' => 2000]);
+    CartItem::factory()->create(['cart_id' => $cart2->id, 'product_id' => $product->id, 'product_variant_id' => $variant->id, 'quantity' => 2, 'unit_price' => 1000, 'total_price' => 2000]);
+
+    $cart1->merge($cart2);
+    $cart1->refresh();
+
+    expect($cart1->cartItems)->toHaveCount(1)
+        ->and($cart1->cartItems->first()->quantity)->toBe(3);
+});
+
+test('cart merge removes zero stock items during merge', function () {
+    $cart1 = Cart::factory()->create();
+    $cart2 = Cart::factory()->create();
+
+    $product = Product::factory()->create(['stock_quantity' => 0]);
+    CartItem::factory()->create(['cart_id' => $cart1->id, 'product_id' => $product->id, 'quantity' => 2, 'unit_price' => 1000, 'total_price' => 2000]);
+    CartItem::factory()->create(['cart_id' => $cart2->id, 'product_id' => $product->id, 'quantity' => 1, 'unit_price' => 1000, 'total_price' => 1000]);
+
+    $cart1->merge($cart2);
+    $cart1->refresh();
+
+    expect($cart1->cartItems)->toHaveCount(0);
+});
+
+test('cart merge does nothing when merging cart with itself', function () {
+    $cart1 = Cart::factory()->create();
+    $product = Product::factory()->create(['stock_quantity' => 10]);
+    CartItem::factory()->create(['cart_id' => $cart1->id, 'product_id' => $product->id, 'quantity' => 2, 'unit_price' => 1000, 'total_price' => 2000]);
+
+    $cart1->merge($cart1);
+    $cart1->refresh();
+
+    expect($cart1->cartItems)->toHaveCount(1)
+        ->and($cart1->cartItems->first()->quantity)->toBe(2);
+});
+
 test('cart merge moves unique items', function () {
     $cart1 = Cart::factory()->create();
     $cart2 = Cart::factory()->create();
 
-    $product1 = Product::factory()->create();
-    $product2 = Product::factory()->create();
+    $product1 = Product::factory()->create(['stock_quantity' => 10]);
+    $product2 = Product::factory()->create(['stock_quantity' => 10]);
 
     CartItem::factory()->create(['cart_id' => $cart1->id, 'product_id' => $product1->id, 'quantity' => 1, 'unit_price' => 1000, 'total_price' => 1000]);
     CartItem::factory()->create(['cart_id' => $cart2->id, 'product_id' => $product2->id, 'quantity' => 1, 'unit_price' => 2000, 'total_price' => 2000]);
@@ -153,6 +212,21 @@ test('cart merge moves unique items', function () {
     $cart1->refresh();
 
     expect($cart1->cartItems)->toHaveCount(2);
+});
+
+test('cart merge clamps unique item quantity to available stock', function () {
+    $cart1 = Cart::factory()->create();
+    $cart2 = Cart::factory()->create();
+
+    $product = Product::factory()->create(['stock_quantity' => 2]);
+    CartItem::factory()->create(['cart_id' => $cart2->id, 'product_id' => $product->id, 'quantity' => 5, 'unit_price' => 1000, 'total_price' => 5000]);
+
+    $cart1->merge($cart2);
+    $cart1->refresh();
+
+    expect($cart1->cartItems)->toHaveCount(1)
+        ->and($cart1->cartItems->first()->quantity)->toBe(2)
+        ->and($cart1->cartItems->first()->total_price)->toBe(2000);
 });
 
 test('cart uses observer', function () {

@@ -232,7 +232,15 @@ class CartController extends Controller
         $this->cartService->saveCustomerData($cart, $customerData);
 
         // Convert cart to order (transfers customer data)
-        $order = $this->cartService->convertToOrder($cart);
+        try {
+            $order = $this->cartService->convertToOrder($cart);
+        } catch (Throwable $e) {
+            report($e);
+
+            return redirect()
+                ->route('cart.index')
+                ->with('error', $e->getMessage() ?: __('Unable to process order. Please check item availability.'));
+        }
 
         // Store the last guest order ID in the session for thank-you page access
         if ($cart->is_guest) {

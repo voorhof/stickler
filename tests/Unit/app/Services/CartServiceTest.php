@@ -996,6 +996,34 @@ test('it fails to reserve stock for cart when insufficient stock', function () {
         ->and($product->fresh()->stock_quantity)->toBe(1);
 });
 
+test('it aggregates stock requirements for duplicate product items in cart', function () {
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 5]);
+
+    $cart = Cart::factory()->create();
+    CartItem::factory()->create([
+        'cart_id' => $cart->id,
+        'product_id' => $product->id,
+        'product_name' => $product->title,
+        'quantity' => 3,
+        'unit_price' => 10,
+        'total_price' => 30,
+    ]);
+    CartItem::factory()->create([
+        'cart_id' => $cart->id,
+        'product_id' => $product->id,
+        'product_name' => $product->title,
+        'quantity' => 3,
+        'unit_price' => 10,
+        'total_price' => 30,
+    ]);
+
+    $service = app(CartService::class);
+
+    expect(fn () => $service->reserveStockForCart($cart))
+        ->toThrow(Exception::class, __('Insufficient stock for this product'))
+        ->and($product->fresh()->stock_quantity)->toBe(5);
+});
+
 // --------------------------------------------------------------------------
 // Reserve Stock For Order
 // --------------------------------------------------------------------------
@@ -1017,6 +1045,34 @@ test('it reserves stock for order items', function () {
     $service->reserveStockForOrder($order);
 
     expect($product->fresh()->stock_quantity)->toBe(7);
+});
+
+test('it aggregates stock requirements for duplicate product items in order', function () {
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 5]);
+
+    $order = App\Models\Order::factory()->create();
+    OrderItem::factory()->create([
+        'order_id' => $order->id,
+        'product_id' => $product->id,
+        'product_name' => $product->title,
+        'quantity' => 3,
+        'unit_price' => 10,
+        'total_price' => 30,
+    ]);
+    OrderItem::factory()->create([
+        'order_id' => $order->id,
+        'product_id' => $product->id,
+        'product_name' => $product->title,
+        'quantity' => 3,
+        'unit_price' => 10,
+        'total_price' => 30,
+    ]);
+
+    $service = app(CartService::class);
+
+    expect(fn () => $service->reserveStockForOrder($order))
+        ->toThrow(Exception::class, __('Insufficient stock for this product'))
+        ->and($product->fresh()->stock_quantity)->toBe(5);
 });
 
 test('it reserves variant stock for order items', function () {
