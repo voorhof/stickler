@@ -44,7 +44,7 @@ test('update follows hierarchical rules', function () {
         ->and($this->policy->update($otherUser, $otherUser))->toBeFalse();
 });
 
-test('delete follows hierarchical rules', function () {
+test('delete follows hierarchical rules and protects the last admin', function () {
     $admin = User::factory()->create();
     $admin->assignRole('Admin');
     $admin->givePermissionTo('delete users');
@@ -54,11 +54,19 @@ test('delete follows hierarchical rules', function () {
 
     $otherUser = User::factory()->create();
 
-    expect($this->policy->delete($admin, $admin))->toBeTrue()
+    // Sole admin cannot be deleted
+    expect($this->policy->delete($admin, $admin))->toBeFalse()
         ->and($this->policy->delete($admin, $regularUser))->toBeTrue()
         ->and($this->policy->delete($regularUser, $admin))->toBeFalse()
         ->and($this->policy->delete($regularUser, $otherUser))->toBeTrue()
         ->and($this->policy->delete($otherUser, $otherUser))->toBeFalse();
+
+    // When a second admin exists, deletion is permitted
+    $secondAdmin = User::factory()->create();
+    $secondAdmin->assignRole('Admin');
+
+    expect($this->policy->delete($admin, $secondAdmin))->toBeTrue()
+        ->and($this->policy->delete($admin, $admin))->toBeTrue();
 });
 
 test('deleteAny allows users with delete users permission', function () {
@@ -69,7 +77,7 @@ test('deleteAny allows users with delete users permission', function () {
     expect($this->policy->deleteAny($user))->toBeTrue();
 });
 
-test('restore and forceDelete follow delete hierarchical rules', function () {
+test('restore and forceDelete follow hierarchical rules and protect the last admin', function () {
     $admin = User::factory()->create();
     $admin->assignRole('Admin');
     $admin->givePermissionTo('delete users');
@@ -79,14 +87,22 @@ test('restore and forceDelete follow delete hierarchical rules', function () {
 
     $otherUser = User::factory()->create();
 
+    // Sole admin cannot be force deleted
     expect($this->policy->restore($admin, $admin))->toBeTrue()
         ->and($this->policy->restore($admin, $regularUser))->toBeTrue()
         ->and($this->policy->restore($regularUser, $admin))->toBeFalse()
         ->and($this->policy->restore($regularUser, $otherUser))->toBeTrue()
-        ->and($this->policy->forceDelete($admin, $admin))->toBeTrue()
+        ->and($this->policy->forceDelete($admin, $admin))->toBeFalse()
         ->and($this->policy->forceDelete($admin, $regularUser))->toBeTrue()
         ->and($this->policy->forceDelete($regularUser, $admin))->toBeFalse()
         ->and($this->policy->forceDelete($regularUser, $otherUser))->toBeTrue();
+
+    // When a second admin exists, force delete is permitted
+    $secondAdmin = User::factory()->create();
+    $secondAdmin->assignRole('Admin');
+
+    expect($this->policy->forceDelete($admin, $secondAdmin))->toBeTrue()
+        ->and($this->policy->forceDelete($admin, $admin))->toBeTrue();
 });
 
 test('restoreAny and forceDeleteAny delegate to deleteAny', function () {

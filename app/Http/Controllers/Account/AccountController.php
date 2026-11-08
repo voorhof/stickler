@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Account\UpdateProfileRequest;
 use App\Models\Cart;
 use App\Models\Order;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -96,6 +97,10 @@ class AccountController extends Controller
         ]);
 
         $user = $request->user();
+
+        if ($user->hasRole('Admin') && User::role('Admin')->withoutTrashed()->where('id', '!=', $user->id)->count() === 0) {
+            return back()->withErrors(['deletion' => __('The last remaining administrator cannot be deleted.')], 'userDeletion');
+        }
 
         activity('authentication')
             ->by($user)

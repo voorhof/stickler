@@ -489,3 +489,35 @@ it('denies restoring a user when the user does not have delete permission', func
         'id' => $user->id,
     ]);
 });
+
+it('hides soft delete action on the sole admin user to prevent administrative lockout', function () {
+    $admin = auth()->user();
+
+    livewire(EditUser::class, ['record' => $admin->getRouteKey()])
+        ->assertActionHidden(SoftDeleteAction::class);
+});
+
+it('shows soft delete action on an admin user when another admin exists', function () {
+    $adminRole = Role::where('name', 'Admin')->first();
+    $secondAdmin = User::factory()->create();
+    $secondAdmin->assignRole($adminRole);
+
+    livewire(EditUser::class, ['record' => $secondAdmin->getRouteKey()])
+        ->assertActionVisible(SoftDeleteAction::class);
+});
+
+it('disables the role select when editing the sole admin user to prevent demotion lockout', function () {
+    $admin = auth()->user();
+
+    livewire(EditUser::class, ['record' => $admin->getRouteKey()])
+        ->assertFormFieldDisabled('roles');
+});
+
+it('enables the role select when editing an admin user and another admin exists', function () {
+    $adminRole = Role::where('name', 'Admin')->first();
+    $secondAdmin = User::factory()->create();
+    $secondAdmin->assignRole($adminRole);
+
+    livewire(EditUser::class, ['record' => $secondAdmin->getRouteKey()])
+        ->assertFormFieldEnabled('roles');
+});
