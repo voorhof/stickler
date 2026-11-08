@@ -31,12 +31,6 @@ class PageObserver
             $page->created_by_user_id = Auth::id();
             $page->updated_by_user_id = Auth::id();
         }
-
-        $excludedSlugs = config('sluggable.excluded_from_slug');
-
-        if (in_array($page->slug, $excludedSlugs)) {
-            $page->slug = $page->slug.now()->format('-y-m-d-H-i-s');
-        }
     }
 
     /**
@@ -49,12 +43,6 @@ class PageObserver
     {
         if (Auth::check()) {
             $page->updated_by_user_id = Auth::id();
-        }
-
-        $excludedSlugs = config('sluggable.excluded_from_slug');
-
-        if (in_array($page->slug, $excludedSlugs)) {
-            $page->slug = $page->slug.now()->format('-y-m-d-H-i-s');
         }
     }
 

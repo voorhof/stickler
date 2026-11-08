@@ -1,8 +1,8 @@
 <?php
 
+use App\Actions\Sluggable\GenerateSlugAction;
 use Spatie\Sluggable\Actions\BuildSelfHealingRouteKeyAction;
 use Spatie\Sluggable\Actions\ExtractIdentifierFromSelfHealingRouteKeyAction;
-use Spatie\Sluggable\Actions\GenerateSlugAction;
 
 return [
     /*

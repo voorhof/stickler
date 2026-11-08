@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Sluggable\GenerateSlugAction;
 use App\Http\Controllers\Payment\PaymentWebhookController;
 use App\Http\Controllers\Public\BrandbookController;
 use App\Http\Controllers\Public\CartController;
@@ -147,5 +148,6 @@ Route::middleware('cache.dynamic:public;max_age=60;s_maxage=300;stale_while_reva
     Route::get('/pages', [PageController::class, 'index'])
         ->name('pages.index');
     Route::get('/{page}', [PageController::class, 'show'])
+        ->where('page', GenerateSlugAction::getExcludedSlugsRegexPattern())
         ->name('pages.show');
 });
