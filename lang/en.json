@@ -223,6 +223,7 @@
     "Guard": "Guard",
     "Guest": "Guest",
     "Guest cart": "Guest cart",
+    "has been confirmed.": "has been confirmed.",
     "Hello!": "Hello!",
     "Hey! :model :title (ID: :id) has been removed": "Hey! :model :title (ID: :id) has been removed",
     "Hey! :model :title (ID: :id) has been unlinked from user": "Hey! :model :title (ID: :id) has been unlinked from user",
@@ -340,6 +341,7 @@
     "Order number": "Order number",
     "Orders": "Orders",
     "Order Summary": "Order Summary",
+    "Order total": "Order total",
     "Original Image": "Original Image",
     "Original Video": "Original Video",
     "Origin source": "Origin source",
@@ -514,6 +516,7 @@
     "Terms and policies": "Terms and policies",
     "Thanks": "Thanks",
     "Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn't receive the email, we will gladly send you another.": "Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn't receive the email, we will gladly send you another.",
+    "Thank you": "Thank you",
     "Thank you for your message! We’ll get back to you as soon as possible.": "Thank you for your message! We’ll get back to you as soon as possible.",
     "Thank you for your order!": "Thank you for your order!",
     "The current password is required when changing your password.": "The current password is required when changing your password.",
@@ -642,6 +645,8 @@
     "Your new password must be different from your current password.": "Your new password must be different from your current password.",
     "Your order has been placed successfully.": "Your order has been placed successfully.",
     "Your order will be processed once payment is confirmed.": "Your order will be processed once payment is confirmed.",
+    "Your order will be processed shortly.": "Your order will be processed shortly.",
     "Your original message": "Your original message",
+    "Your payment for order": "Your payment for order",
     "Your profile has been updated successfully.": "Your profile has been updated successfully."
 }

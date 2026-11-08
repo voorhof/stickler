@@ -223,6 +223,7 @@
     "Guard": "Guard",
     "Guest": "Gast",
     "Guest cart": "Gastwinkelmand",
+    "has been confirmed.": "is bevestigd.",
     "Hello!": "Hallo!",
     "Hey! :model :title (ID: :id) has been removed": "Hey! :model :title (ID: :id) is verwijderd",
     "Hey! :model :title (ID: :id) has been unlinked from user": "Hey! :model :title (ID: :id) is ontkoppeld van gebruiker",
@@ -340,6 +341,7 @@
     "Order number": "Bestelnummer",
     "Orders": "Bestellingen",
     "Order Summary": "Besteloverzicht",
+    "Order total": "Besteltotaal",
     "Original Image": "Originele afbeelding",
     "Original Video": "Originele video",
     "Origin source": "Bron",
@@ -514,6 +516,7 @@
     "Terms and policies": "Voorwaarden en beleid",
     "Thanks": "Bedankt",
     "Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn't receive the email, we will gladly send you another.": "Bedankt voor het registreren! Voordat je aan de slag kunt, moet je jouw e-mailadres verifiëren door op de link te klikken die we net naar je hebben gestuurd. Als je de e-mail niet hebt ontvangen, sturen we je graag een andere.",
+    "Thank you": "Hartelijk dank",
     "Thank you for your message! We’ll get back to you as soon as possible.": "Bedankt voor je bericht! We nemen zo snel mogelijk contact met je op.",
     "Thank you for your order!": "Bedankt voor uw bestelling!",
     "The current password is required when changing your password.": "Het huidige wachtwoord is vereist bij het wijzigen van je wachtwoord.",
@@ -642,6 +645,8 @@
     "Your new password must be different from your current password.": "Je nieuw wachtwoord moet anders zijn dan je huidige wachtwoord.",
     "Your order has been placed successfully.": "Uw bestelling is succesvol geplaatst.",
     "Your order will be processed once payment is confirmed.": "Uw bestelling wordt verwerkt zodra de betaling bevestigd is.",
+    "Your order will be processed shortly.": "Uw bestelling wordt binnenkort verwerkt.",
     "Your original message": "Je originele bericht",
+    "Your payment for order": "Uw betaling voor bestelling",
     "Your profile has been updated successfully.": "Je profiel is succesvol bijgewerkt."
 }
