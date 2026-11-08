@@ -102,9 +102,7 @@ class CartService
     {
         $this->validateStock($product, $variant, $quantity, $cart);
 
-        if ($variant) {
-            $variant->loadMissing('options');
-        }
+        $variant?->loadMissing('options');
 
         $existingItem = $cart->cartItems()
             ->where('product_id', $product->id)
@@ -267,6 +265,8 @@ class CartService
 
     /**
      * Merge two carts, combining quantities for matching items.
+     *
+     * @throws Throwable
      */
     public function merge(Cart $source, Cart $target): void
     {
@@ -426,7 +426,7 @@ class CartService
             // The WHERE guard is authoritative, so this is a safety net for edge cases
             $stock = $model->fresh()->stock_quantity;
             if ($stock < 0) {
-                Log::warning("Stock went negative for model {$model->id}: {$stock}");
+                Log::warning("Stock went negative for model $model->id: $stock");
             }
         }
     }
@@ -488,7 +488,7 @@ class CartService
             // The WHERE guard is authoritative, so this is a safety net for edge cases
             $stock = $model->fresh()->stock_quantity;
             if ($stock < 0) {
-                Log::warning("Stock went negative for model {$model->id}: {$stock}");
+                Log::warning("Stock went negative for model $model->id: $stock");
             }
         }
     }

@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Throwable;
 
 /**
  * @property int $id
@@ -263,6 +264,8 @@ class Cart extends Model
 
     /**
      * Merge another cart into this cart with stock validation and clamping.
+     *
+     * @throws Throwable
      */
     public function merge(self $other): void
     {

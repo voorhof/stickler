@@ -1,6 +1,6 @@
 <?php
 
-/** @noinspection PhpPossiblePolymorphicInvocationInspection */
+/** @noinspection PhpPossiblePolymorphicInvocationInspection, PhpUnhandledExceptionInspection */
 
 use App\Models\Cart;
 use App\Models\CartItem;
