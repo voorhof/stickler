@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added dynamic HTTP cache headers middleware (`SetDynamicCacheHeaders`) and synchronized response cache bypass logic to prevent public CDN and shared proxy cache poisoning on dynamic user-facing routes
 - Implemented administrative lockout prevention in `UserPolicy`, `UserObserver`, `AccountController`, and Filament `RoleSection` to prevent deleting, permanently purging, or demoting the last active administrator
 - Added dynamic negative lookahead regex route constraint to catch-all `/{page}` route in `routes/web.php` compiled from `config('sluggable.excluded_from_slug')` to prevent system route shadowing
+- Secured guest order confirmation and payment retry access with Laravel signed URLs (`URL::signedRoute()`) to prevent `403 Forbidden` errors on mobile banking redirects and cross-device email links
 - Fixed SQL injection risk in CartService by removing `DB::raw()` usage
 - Added webhook signature verification for Mollie payments
 - Added rate limiting to password reset endpoints (`throttle:3,1` and `throttle:5,1`)
@@ -23,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bound `Jaybizzle\CrawlerDetect` as a container singleton in `AppServiceProvider` and injected into `TrackPageView` to eliminate redundant regex recompilation across HTTP requests
 - Converted `GenerateSitemap` to model-driven sitemap generation querying published records directly instead of executing loopback HTTP crawling
+- Scoped `View::composer` in `AppServiceProvider` from wildcard `'*'` to `'components.navbar'` and added memoized `getItemCount()` in `CartService` to eliminate per-component query amplification
 - Fixed N+1 queries in CartService with eager loading
 - Fixed N+1 query in ProductVariant::getLabelAttribute() with `relationLoaded` check
 - Fixed N+1 query in RenderResponsiveRichContent trait with `relationLoaded` check
@@ -33,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Implemented pessimistic row locking (`lockForUpdate()`) and atomic stock validation in `CartService` during checkout to prevent concurrent race-condition overselling
 - Added inventory quantity clamping and transaction isolation in `Cart::merge()` when merging guest carts into user carts
+- Implemented state-driven idempotent stock restoration in `OrderObserver` — stock is restored exactly once when an order transitions to `Cancelled`, preventing premature release on pending payments and inventory inflation from webhook retries
+- Fixed scheduled `carts:cleanup --force` command signature mismatch by adding `{--force}` option to `CleanupExpiredCartsCommand` to prevent daily scheduler crashes
 - Enabled `after_commit` across queue connections in `config/queue.php` and wrapped transactional mail delivery in `StoreContactMessage` to prevent queue workers processing jobs before database commits
 - Fixed race condition in contact form duplicate detection (moved inside `DB::transaction()` with `lockForUpdate()`)
 - Added retry logic for order number generation on unique constraint violation
@@ -44,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `App\Actions\Sluggable\GenerateSlugAction` extending Spatie Sluggable to treat `config('sluggable.excluded_from_slug')` as reserved keywords and auto-increment clean numeric suffixes across all models
 - Added `AdministrativeLockoutException` for explicit model-level and policy-level admin lockout handling
+- Added `PruneOrphanedMediaCommand` (`media:prune-orphans`) — a scheduled maintenance command that wraps Spatie's `media-library:clean --delete-orphaned` to remove media records and disk files whose parent model no longer exists, running weekly on Sundays
 - Added `WebhookResult` enum for structured webhook responses
 - Added `InvalidWebhookSignatureException` for webhook security
 - Improved webhook error responses with proper HTTP status codes

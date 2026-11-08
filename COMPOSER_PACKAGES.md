@@ -537,6 +537,25 @@ An artisan command is available to generate missing responsive images:
 php artisan media:generate-missing-responsive-images
 ```
 
+### Orphaned Media Cleanup
+
+Spatie Media Library provides a built-in `media-library:clean` command that finds and removes media records whose parent model no longer exists, and sweeps disk directories with no matching database record.
+
+The application wraps this command with `App\Console\Commands\PruneOrphanedMediaCommand` (`media:prune-orphans`), which adds a `--force` flag (bypasses confirmation for scheduled cron execution) and a `--dry-run` flag (lists orphans without deleting). The command is scheduled to run weekly on Sundays at 06:07 via `routes/console.php`.
+
+```bash
+# Run with confirmation prompt
+php artisan media:prune-orphans
+
+# Run without confirmation (for scheduled tasks)
+php artisan media:prune-orphans --force
+
+# Preview orphans without deleting
+php artisan media:prune-orphans --force --dry-run
+```
+
+True orphans typically only occur from raw database manipulation, uninstalled model classes, or failed operations — Spatie's `InteractsWithMedia` trait already cascades media deletion on `forceDeleting` events.
+
 ### Filament Plugin
 
 The **Filament plug-in** for uploading media from the admin panel to Spatie Media Library is also installed in composer.json.
