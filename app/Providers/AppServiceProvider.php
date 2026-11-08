@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Jaybizzle\CrawlerDetect\CrawlerDetect;
 use Laravel\Telescope\TelescopeServiceProvider as LaravelTelescopeServiceProvider;
 
 /*
@@ -25,16 +26,19 @@ class AppServiceProvider extends ServiceProvider
         // Bind CartService as a singleton so the internal cart cache is shared across all view composers
         $this->app->singleton(CartService::class);
 
+        // Bind CrawlerDetect as a singleton to share compiled regexes across requests
+        $this->app->singleton(CrawlerDetect::class);
+
+        // LaravelTelescopeServiceProvider bootstraps TelescopeServiceProvider in non-production environments
         if ($this->app->isProduction()) {
             return;
         }
-
-        // LaravelTelescopeServiceProvider bootstraps TelescopeServiceProvider
         foreach ([LaravelTelescopeServiceProvider::class, TelescopeServiceProvider::class] as $provider) {
             if (class_exists($provider)) {
                 $this->app->register($provider);
             }
         }
+
     }
 
     /**

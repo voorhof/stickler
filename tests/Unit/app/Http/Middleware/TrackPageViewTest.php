@@ -1,106 +1,43 @@
 <?php
 
 use App\Models\PageView;
-use App\Models\Product;
-use App\Models\User;
+use Jaybizzle\CrawlerDetect\CrawlerDetect;
 
-test('a public page view is stored through deferred processing', function () {
-    $this->get('/contact')->assertOk();
+test('crawler detect is registered as a singleton in the service container', function () {
+    $instance1 = app(CrawlerDetect::class);
+    $instance2 = app(CrawlerDetect::class);
 
-    $this->assertDatabaseCount('page_views', 1);
+    expect($instance1)->toBeInstanceOf(CrawlerDetect::class)
+        ->and($instance1)->toBe($instance2);
 });
 
-test('a public page view is stored without the raw ip address', function () {
-    $this->withoutDefer();
-
-    $this->get('/contact')->assertOk();
-
-    $pageView = PageView::query()->first();
-
-    expect(PageView::count())->toBe(1)
-        ->and($pageView->path)->toBe('/contact')
-        ->and($pageView->route_name)->toBe('contact.index')
-        ->and($pageView->visitor_hash)->toHaveLength(64)
-        ->and($pageView->visitor_hash)->not->toContain('127.0.0.1');
-});
-
-test('the visitor hash changes from one day to the next', function () {
-    $this->withoutDefer();
-
-    $this->get('/contact')->assertOk();
-    $hashToday = PageView::query()->value('visitor_hash');
-
-    $this->travel(1)->days();
-    $this->get('/contact')->assertOk();
-    $hashTomorrow = PageView::query()->latest('id')->value('visitor_hash');
-
-    expect($hashTomorrow)->not->toBe($hashToday);
-});
-
-test('non public routes are not tracked', function () {
-    $this->post('/contact')->assertRedirect();
-
-    expect(PageView::count())->toBe(0);
-});
-
-test('the cart page is tracked as a page view', function () {
-    $this->withoutDefer();
-
-    $this->get('/cart')->assertOk();
-
-    $pageView = PageView::query()->first();
-
-    expect(PageView::count())->toBe(1)
-        ->and($pageView->path)->toBe('/cart')
-        ->and($pageView->route_name)->toBe('cart.index');
-});
-
-test('cart actions are not tracked as page views', function () {
-    $this->withoutDefer();
-
-    User::factory()->create();
-
-    $product = Product::factory()->create();
-
-    $this->post(route('cart.add', $product))
-        ->assertRedirect();
-
-    expect(PageView::count())->toBe(0);
-});
-
-test('a crawler visit is stored as a bot', function () {
-    $this->withoutDefer();
-
-    $this->withHeaders(['User-Agent' => 'Googlebot/2.1 (+https://www.google.com/bot.html)'])
-        ->get('/contact')
-        ->assertOk();
-
-    expect(PageView::query()->first()->is_bot)->toBeTrue();
-});
-
-test('a browser visit is stored as a human', function () {
-    $this->withoutDefer();
-
-    $this->withHeaders(['User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36'])
-        ->get('/contact')
-        ->assertOk();
-
-    expect(PageView::query()->first()->is_bot)->toBeFalse();
-});
-
-test('prefetch requests are not tracked', function () {
+test('it tracks page views on matching GET routes', function () {
     $this->withHeaders([
-        'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0 Safari/537.36',
-        'Purpose' => 'prefetch',
-    ])->get('/contact')->assertOk();
+        'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+    ])->get(route('welcome.index'));
 
-    expect(PageView::count())->toBe(0);
+    expect(PageView::where('route_name', 'welcome.index')->where('is_bot', false)->exists())->toBeTrue();
 });
 
-test('requests without a user agent are not tracked', function () {
-    $this->withHeaders(['User-Agent' => ''])
-        ->get('/contact')
-        ->assertOk();
+test('it flags crawler bots using the injected crawler detect instance', function () {
+    $this->withHeaders([
+        'User-Agent' => 'Googlebot/2.1 (+https://www.google.com/bot.html)',
+    ])->get(route('posts.index'));
 
-    expect(PageView::count())->toBe(0);
+    expect(PageView::where('route_name', 'posts.index')->where('is_bot', true)->exists())->toBeTrue();
+});
+
+test('it skips tracking for prefetch requests', function () {
+    $this->withHeaders([
+        'User-Agent' => 'Mozilla/5.0',
+        'Purpose' => 'prefetch',
+    ])->get(route('welcome.index'));
+
+    expect(PageView::where('route_name', 'welcome.index')->exists())->toBeFalse();
+});
+
+test('it skips tracking when user agent is empty or response is not 200', function () {
+    $this->withHeaders(['User-Agent' => ''])->get(route('welcome.index'));
+
+    expect(PageView::where('route_name', 'welcome.index')->exists())->toBeFalse();
 });

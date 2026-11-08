@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Application;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
+use Jaybizzle\CrawlerDetect\CrawlerDetect;
 use Laravel\Telescope\TelescopeServiceProvider as LaravelTelescopeServiceProvider;
 
 test('it extends service provider', function () {
@@ -25,6 +26,7 @@ test('it registers Telescope outside production', function () {
     $application = Mockery::mock(Application::class);
     $application->shouldReceive('isProduction')->once()->andReturnFalse();
     $application->shouldReceive('singleton')->once()->with(CartService::class);
+    $application->shouldReceive('singleton')->once()->with(CrawlerDetect::class);
     $application->shouldReceive('register')->once()->with(LaravelTelescopeServiceProvider::class);
     $application->shouldReceive('register')->once()->with(TelescopeServiceProvider::class);
 
@@ -35,6 +37,7 @@ test('it does not register Telescope in production', function () {
     $application = Mockery::mock(Application::class);
     $application->shouldReceive('isProduction')->once()->andReturnTrue();
     $application->shouldReceive('singleton')->once()->with(CartService::class);
+    $application->shouldReceive('singleton')->once()->with(CrawlerDetect::class);
     $application->shouldNotReceive('register');
 
     new AppServiceProvider($application)->register();

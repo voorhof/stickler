@@ -38,8 +38,8 @@ class StoreContactMessage
 
             $message = Message::create($data);
 
-            // Send mail to the admin
-            Mail::queue(new ContactMessageReceived($message));
+            // Send mail to the admin after transaction commits
+            Mail::queue((new ContactMessageReceived($message))->afterCommit());
 
             return $message;
         });

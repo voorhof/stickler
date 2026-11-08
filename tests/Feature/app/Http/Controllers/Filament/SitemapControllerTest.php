@@ -8,16 +8,10 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Queue;
-use Spatie\Sitemap\Sitemap;
-use Spatie\Sitemap\SitemapGenerator;
 
 describe('sitemap generation', function () {
     test('it queues sitemap generation when authorized', function () {
         Queue::fake([GenerateSitemapJob::class]);
-        $sitemapGenerator = Mockery::mock(SitemapGenerator::class);
-        $sitemapGenerator->shouldReceive('setUrl')->andReturnSelf();
-        $sitemapGenerator->shouldReceive('getSitemap')->andReturn(new Sitemap);
-        $this->app->instance(SitemapGenerator::class, $sitemapGenerator);
 
         Permission::firstOrCreate(['name' => 'edit settings']);
         Permission::firstOrCreate(['name' => 'access admin']);
@@ -66,10 +60,6 @@ describe('sitemap generation', function () {
 
     test('it redirects back, queues generation, and sends a database notification', function () {
         Queue::fake([GenerateSitemapJob::class]);
-        $sitemapGenerator = Mockery::mock(SitemapGenerator::class);
-        $sitemapGenerator->shouldReceive('setUrl')->andReturnSelf();
-        $sitemapGenerator->shouldReceive('getSitemap')->andReturn(new Sitemap);
-        $this->app->instance(SitemapGenerator::class, $sitemapGenerator);
 
         Permission::firstOrCreate(['name' => 'edit settings']);
         Permission::firstOrCreate(['name' => 'access admin']);
