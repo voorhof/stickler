@@ -13,6 +13,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Throwable;
 
 class CartService
@@ -380,6 +381,11 @@ class CartService
             }
 
             $order = Order::create(array_merge($orderData, $data));
+
+            // Generate and assign the order number using the auto-incrementing ID.
+            // This must happen inside the transaction so the activity log captures the real number.
+            $order->order_number = 'ORD-'.now()->format('Y').'-'.Str::padLeft((string) $order->id, 5, '0');
+            $order->save();
 
             foreach ($items as $cartItem) {
                 $attrs = $cartItem->getAttributes();

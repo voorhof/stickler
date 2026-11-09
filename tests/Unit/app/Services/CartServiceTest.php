@@ -192,6 +192,25 @@ test('it converts cart to order', function () {
         ->and($cart->fresh()->cartItems)->toBeEmpty();
 });
 
+test('it generates an order number using the auto-incrementing id during convertToOrder', function () {
+    $product = Product::factory()->create(['price' => 1000, 'stock_quantity' => 10]);
+    $cart = Cart::factory()->create();
+    CartItem::factory()->create([
+        'cart_id' => $cart->id,
+        'product_id' => $product->id,
+        'product_name' => $product->title,
+        'quantity' => 1,
+        'unit_price' => 1000,
+        'total_price' => 1000,
+    ]);
+
+    $service = app(CartService::class);
+    $order = $service->convertToOrder($cart);
+
+    expect($order->order_number)->toMatch('/^ORD-\d{4}-\d{5}$/')
+        ->and($order->order_number)->toBe('ORD-'.now()->format('Y').'-'.mb_str_pad((string) $order->id, 5, '0', STR_PAD_LEFT));
+});
+
 test('it cleans up expired carts', function () {
     Cart::factory()->expired()->create();
     Cart::factory()->create();

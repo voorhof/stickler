@@ -1,6 +1,6 @@
 <?php
 
-/** @noinspection PhpUnhandledExceptionInspection, PhpPossiblePolymorphicInvocationInspection */
+/** @noinspection PhpUnhandledExceptionInspection, PhpPossiblePolymorphicInvocationInspection, PhpUnusedLocalVariableInspection */
 
 use App\Enums\PaymentStatus;
 use App\Models\Cart;
@@ -827,7 +827,7 @@ describe('thank you page', function () {
     test('it shows the thank you page with order details for authenticated users', function () {
         $user = User::factory()->create();
         $product = Product::factory()->create(['price' => 2999]);
-        $order = Order::factory()->create(['user_id' => $user->id, 'subtotal' => 5998, 'payment_status' => PaymentStatus::Unpaid]);
+        $order = Order::factory()->create(['user_id' => $user->id, 'subtotal' => 5998, 'payment_status' => PaymentStatus::Unpaid, 'order_number' => 'ORD-2026-00001']);
         App\Models\OrderItem::factory()->create([
             'order_id' => $order->id,
             'product_id' => $product->id,
@@ -849,7 +849,7 @@ describe('thank you page', function () {
 
     test('it shows the thank you page for guests with the last order id in session', function () {
         $product = Product::factory()->create(['price' => 2999]);
-        $order = Order::factory()->create(['user_id' => null, 'subtotal' => 5998]);
+        $order = Order::factory()->create(['user_id' => null, 'subtotal' => 5998, 'order_number' => 'ORD-2026-00002']);
         App\Models\OrderItem::factory()->create([
             'order_id' => $order->id,
             'product_id' => $product->id,
@@ -898,7 +898,7 @@ describe('thank you page', function () {
 
     test('it shows the thank you page for guests with a signed url', function () {
         $product = Product::factory()->create(['price' => 2999]);
-        $order = Order::factory()->create(['user_id' => null, 'subtotal' => 5998]);
+        $order = Order::factory()->create(['user_id' => null, 'subtotal' => 5998, 'order_number' => 'ORD-2026-00003']);
         App\Models\OrderItem::factory()->create([
             'order_id' => $order->id,
             'product_id' => $product->id,
@@ -925,6 +925,7 @@ describe('thank you page', function () {
 
         $response->assertViewHas('payNowUrl', function ($value) use ($order) {
             $expectedUrl = route('checkout.pay', $order);
+
             // The URL should NOT contain a signature parameter
             return str_contains($value, 'signature=') === false
                 && str_contains($value, 'expires=') === false

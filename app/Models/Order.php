@@ -22,12 +22,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Str;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 
 /**
  * @property int $id
- * @property string $order_number
+ * @property string|null $order_number
  * @property int|null $user_id
  * @property OrderStatus $status
  * @property PaymentStatus $payment_status
@@ -172,44 +171,6 @@ class Order extends Model
         return Attribute::make(
             get: fn () => $this->order_number,
         );
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Boot & Lifecycle
-    |--------------------------------------------------------------------------
-    */
-
-    /**
-     * Bootstrap any application services.
-     */
-    protected static function boot(): void
-    {
-        parent::boot();
-
-        static::creating(function (Order $order) {
-            if (! $order->order_number) {
-                $order->order_number = 'PENDING';
-            }
-        });
-
-        static::saved(function (Order $order) {
-            if ($order->order_number === 'PENDING') {
-                $order->order_number = self::generateOrderNumber($order->id);
-                $order->saveQuietly();
-            }
-        });
-    }
-
-    /**
-     * Generate a unique order number like ORD-2026-00001 using the auto-incrementing ID.
-     */
-    protected static function generateOrderNumber(int $id): string
-    {
-        $year = now()->format('Y');
-        $sequence = Str::padLeft((string) $id, 5, '0');
-
-        return 'ORD-'.$year.'-'.$sequence;
     }
 
     /*

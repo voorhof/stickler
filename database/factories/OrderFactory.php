@@ -25,6 +25,7 @@ class OrderFactory extends Factory
         $shippingAmount = $this->faker->randomElement([0, 299, 499, 999]);
 
         return [
+            'order_number' => null,
             'user_id' => User::factory(),
             'status' => OrderStatus::Pending,
             'payment_status' => PaymentStatus::Unpaid,
