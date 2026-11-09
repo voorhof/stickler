@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Categories\Schemas\Sections;
 
+use App\Models\Category;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -31,6 +33,20 @@ class ForModelToggleSection
                         ->columnSpanFull(),
                     Toggle::make('for_projects')
                         ->label(__('For :model', ['model' => __('Projects')]))
+                        ->columnSpanFull(),
+                    Select::make('parent_id')
+                        ->label(__('Parent category'))
+                        ->options(function ($get): array {
+                            $recordId = $get('recordId');
+                            $query = Category::whereNull('parent_id');
+                            if ($recordId) {
+                                $query->where('id', '!=', $recordId);
+                            }
+
+                            return $query->pluck('title', 'id')->toArray();
+                        })
+                        ->searchable()
+                        ->nullable()
                         ->columnSpanFull(),
                 ]),
             ]);

@@ -16,6 +16,7 @@ use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
@@ -35,6 +36,9 @@ class CategoriesTable
                 OrderColumn::make(),
                 IdColumn::make(),
                 TitleColumn::make(),
+                TextColumn::make('parent.title')
+                    ->label(__('Parent category'))
+                    ->default('—'),
                 IconColumn::make('for_pages')
                     ->label(__('For :model', ['model' => __('Pages')])),
                 IconColumn::make('for_posts')

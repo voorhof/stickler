@@ -171,6 +171,25 @@ it('can create a category', function () {
     ]);
 });
 
+it('can create a child category with a parent', function () {
+    $parent = Category::factory()->create(['title' => 'Parent Category', 'slug' => 'parent-category']);
+
+    livewire(CreateCategory::class)
+        ->fillForm([
+            'title' => 'Child Category',
+            'parent_id' => $parent->id,
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors()
+        ->assertNotified();
+
+    $this->assertDatabaseHas(Category::class, [
+        'title' => 'Child Category',
+        'slug' => 'child-category',
+        'parent_id' => $parent->id,
+    ]);
+});
+
 it('can create a category with for_model toggles', function () {
     livewire(CreateCategory::class)
         ->fillForm([
