@@ -7,6 +7,7 @@ use App\Filament\Resources\Orders\OrderResource;
 use App\Models\Order;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\HtmlString;
 
 class PendingOrdersWidget extends StatsOverviewWidget
@@ -23,6 +24,11 @@ class PendingOrdersWidget extends StatsOverviewWidget
     protected static bool $isLazy = false;
 
     protected ?string $pollingInterval = null;
+
+    public static function canView(): bool
+    {
+        return Gate::allows('viewAny', Order::class);
+    }
 
     public static function getStatColor(int $count): string
     {

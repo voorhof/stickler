@@ -56,6 +56,19 @@ describe('widget display', function () {
     });
 });
 
+describe('authorization', function () {
+    it('denies access when the user does not have view orders permission', function () {
+        $restrictedRole = Role::factory()->create(['name' => 'Restricted']);
+        $restrictedRole->givePermissionTo('access admin');
+        $restrictedUser = User::factory()->create();
+        $restrictedUser->assignRole($restrictedRole);
+        $this->actingAs($restrictedUser);
+
+        livewire(PendingOrdersWidget::class)
+            ->assertForbidden();
+    });
+});
+
 describe('color logic', function () {
     it('sets the color to warning when there are pending orders', function () {
         expect(PendingOrdersWidget::getStatColor(1))->toBe('warning');
