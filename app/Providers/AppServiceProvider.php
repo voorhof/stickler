@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use Jaybizzle\CrawlerDetect\CrawlerDetect;
 use Laravel\Telescope\TelescopeServiceProvider as LaravelTelescopeServiceProvider;
 
 /*
@@ -25,16 +26,19 @@ class AppServiceProvider extends ServiceProvider
         // Bind CartService as a singleton so the internal cart cache is shared across all view composers
         $this->app->singleton(CartService::class);
 
+        // Bind CrawlerDetect as a singleton to share compiled regexes across requests
+        $this->app->singleton(CrawlerDetect::class);
+
+        // LaravelTelescopeServiceProvider bootstraps TelescopeServiceProvider in non-production environments
         if ($this->app->isProduction()) {
             return;
         }
-
-        // LaravelTelescopeServiceProvider bootstraps TelescopeServiceProvider
         foreach ([LaravelTelescopeServiceProvider::class, TelescopeServiceProvider::class] as $provider) {
             if (class_exists($provider)) {
                 $this->app->register($provider);
             }
         }
+
     }
 
     /**
@@ -49,12 +53,12 @@ class AppServiceProvider extends ServiceProvider
         // Strict mode catches lazy loading, discarded attributes, and missing attributes early.
         Model::shouldBeStrict(! $this->app->isProduction());
 
-        // Share cart item count with all views
-        View::composer('*', function ($view) {
-            $cart = app(CartService::class)->findCurrentCart(auth()->user());
+        // Share cart item count only with the navbar component to avoid per-component query amplification
+        View::composer('components.navbar', function ($view) {
+            $cartService = app(CartService::class);
+            $cart = $cartService->findCurrentCart(auth()->user());
 
-            // Use a simple SUM query instead of loading the full items relationship
-            $view->with('cartItemCount', $cart ? (int) $cart->cartItems()->sum('quantity') : 0);
+            $view->with('cartItemCount', $cart ? $cartService->getItemCount($cart) : 0);
         });
     }
 }

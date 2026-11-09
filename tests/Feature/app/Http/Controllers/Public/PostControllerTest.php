@@ -79,7 +79,8 @@ describe('posts show', function () {
         $response->assertSuccessful()
             ->assertViewIs('public.posts.show')
             ->assertViewHas('post', function (Post $viewPost) use ($post) {
-                return $viewPost->id === $post->id;
+                return $viewPost->id === $post->id
+                    && $viewPost->relationLoaded('media');
             })
             ->assertSeeText($post->title)
             ->assertSeeText($post->intro);

@@ -62,6 +62,13 @@ Schedule::command('carts:cleanup --force')
     ->daily()->at('06:06');
 
 /**
+ * Orphaned media cleanup
+ * Deletes media files and records that are no longer associated with any active model.
+ */
+Schedule::command('media:prune-orphans --force')
+    ->weeklyOn(Illuminate\Console\Scheduling\Schedule::SUNDAY, '06:07');
+
+/**
  * Clear the response cache when scheduled content becomes public.
  */
 Schedule::command('content:clear-scheduled-cache')

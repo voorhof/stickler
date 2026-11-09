@@ -33,6 +33,8 @@ class PageController extends Controller
     {
         abort_unless($page->isPublished(), 404);
 
+        $page->load('media');
+
         Head::title($page->title)
             ->description($page->intro);
 

@@ -136,12 +136,16 @@ Located at `app/Filament/Resources/Users/Schemas/UserForm.php`.
 Instead of defining the form directly in the resource, we use a dedicated schema class.
 This makes it easier to reuse or modify the form logic.
 
+**Administrative Lockout Protection (`RoleSection`)**:
+In `app/Filament/Resources/Users/Schemas/Sections/RoleSection.php`, when editing an administrator who is the last remaining active admin in the database (`User::role('Admin')->withoutTrashed()->count() <= 1`), the role selector is automatically disabled and guarded with custom validation. This prevents administrators from accidentally revoking their own admin role or demoting the last admin and permanently locking themselves out of the Filament panel.
+
 ### 5. Users Table
 Located at `app/Filament/Resources/Users/Tables/UsersTable.php`.
 This class handles the table configuration, including:
 - **Columns**: Searchable name and email, formatted dates.
 - **Filters**: Filter for verified users and a `TrashedFilter` for soft deletes.
 - **Actions**: Edit, Delete, Force Delete, and Restore.
+- **Lockout Protection**: `SoftDeleteAction`, `HardDeleteAction`, and bulk deletion actions (`SoftDeleteBulkAction`, `HardDeleteBulkAction`) check `UserPolicy` and prevent deleting or force-deleting the last active administrator. Furthermore, `UserObserver` throws an `AdministrativeLockoutException` as a database-level fail-safe against accidental deletion.
 
 ## Working with Soft Deletes
 
@@ -149,6 +153,7 @@ Since the `User` resource was generated with `--soft-deletes`, it includes:
 - `TrashedFilter` in the table.
 - `SoftDeletingScope` handling in the `UserResource`.
 - Restore and Force Delete actions in the table's bulk actions.
+- Automatic lockout protection ensuring the last active administrator cannot be soft-deleted or permanently purged.
 
 ## Adding a New Resource
 
@@ -299,7 +304,7 @@ The store resources manage the product catalogue, categories, orders and carts. 
 - The **Clear carts** header action (`app/Filament/Actions/CartCleanupAction.php`) asks for a `max_days` value in a confirmation modal and deletes carts not updated within that many days. The default is 30 days.
 - The scheduled `carts:cleanup --force` command runs daily at 06:06 and deletes carts whose `expires_at` has passed.
 - Each authenticated user can have only one active cart, enforced by a unique constraint on `(user_id, is_guest)` at the database level. The `CartService::getOrCreateCart()` method uses `firstOrCreate` to prevent duplicates at the application level.
-- Guest carts are identified by a `cart_token` cookie (30 days). When a guest logs in or registers, the `MergeGuestCart` middleware merges the guest cart into the user's authenticated cart automatically. See the [User Authentication section](README.md#user-authentication) for details.
+- Guest carts are identified by a `cart_token` cookie (30 days). When a guest logs in or registers, the `MergeGuestCart` middleware merges the guest cart into the user's authenticated cart automatically. See the [User Authentication section](STICKLER.md#user-authentication) for details.
 
 ### Dashboard widget: PendingOrdersWidget
 
@@ -509,21 +514,21 @@ The contact view displays each day's translated name, opening periods, open/clos
 [Documentation](https://filamentphp.com/plugins/filament-spatie-media-library)  
 [GitHub](https://github.com/filamentphp/spatie-laravel-media-library-plugin)
 
-More info in the main [README](README.md) file.
+More info in the [COMPOSER_PACKAGES.md](COMPOSER_PACKAGES.md) file.
 
 
 ### Spatie Settings
 [Documentation](https://filamentphp.com/plugins/filament-spatie-settings )  
 [GitHub](https://github.com/filamentphp/spatie-laravel-settings-plugin)
 
-More info in the main [README](README.md) file.
+More info in the [COMPOSER_PACKAGES.md](COMPOSER_PACKAGES.md) file.
 
 
 ### Spatie Tags
 [Documentation](https://filamentphp.com/plugins/filament-spatie-tags)  
 [GitHub](https://github.com/filamentphp/spatie-laravel-tags-plugin)
 
-More info in the main [README](README.md) file.
+More info in the [COMPOSER_PACKAGES.md](COMPOSER_PACKAGES.md) file.
 
 
 ## Testing

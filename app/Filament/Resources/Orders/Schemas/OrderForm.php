@@ -36,7 +36,7 @@ class OrderForm
                                 Grid::make()->schema([
                                     TextInput::make('order_number')
                                         ->label(__('Order number'))
-                                        ->required()
+                                        ->nullable()
                                         ->disabled()
                                         ->visibleOn('edit'),
                                     Select::make('user_id')

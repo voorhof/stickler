@@ -32,6 +32,7 @@ class ProjectObserver
         $this->flushResponseCache();
         $this->dispatchSitemapGeneration();
         $this->syncImageAltToMediaName($project); // defaults to ['content']
+        $project->flushRichContentCache();
 
         // e.g. a model with two rich-content fields:
         // $this->syncImageAltToMediaName($project, ['content', 'method']);
@@ -41,5 +42,6 @@ class ProjectObserver
     {
         $this->flushResponseCache();
         $this->dispatchSitemapGeneration();
+        $project->flushRichContentCache();
     }
 }

@@ -2,6 +2,7 @@
 
 /** @noinspection PhpUnhandledExceptionInspection */
 
+use App\Exceptions\InsufficientStockException;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\OrderItem;
@@ -57,7 +58,7 @@ test('it validates stock when adding item', function () {
     $service = app(CartService::class);
 
     expect(fn () => $service->addItem($cart, $product, null, 5))
-        ->toThrow(Exception::class, __('Insufficient stock for this product'));
+        ->toThrow(InsufficientStockException::class, __('Insufficient stock for this product'));
 });
 
 test('it updates item quantity', function () {
@@ -96,7 +97,7 @@ test('it validates stock when updating item quantity', function () {
 
     // Updating to 5 when only 3 in stock should fail
     expect(fn () => $service->updateItem($item, 5))
-        ->toThrow(Exception::class, __('Insufficient stock for this product'));
+        ->toThrow(InsufficientStockException::class, __('Insufficient stock for this product'));
 });
 
 test('it validates stock when updating item with other cart items reserved', function () {
@@ -191,6 +192,25 @@ test('it converts cart to order', function () {
         ->and($cart->fresh()->cartItems)->toBeEmpty();
 });
 
+test('it generates an order number using the auto-incrementing id during convertToOrder', function () {
+    $product = Product::factory()->create(['price' => 1000, 'stock_quantity' => 10]);
+    $cart = Cart::factory()->create();
+    CartItem::factory()->create([
+        'cart_id' => $cart->id,
+        'product_id' => $product->id,
+        'product_name' => $product->title,
+        'quantity' => 1,
+        'unit_price' => 1000,
+        'total_price' => 1000,
+    ]);
+
+    $service = app(CartService::class);
+    $order = $service->convertToOrder($cart);
+
+    expect($order->order_number)->toMatch('/^ORD-\d{4}-\d{5}$/')
+        ->and($order->order_number)->toBe('ORD-'.now()->format('Y').'-'.mb_str_pad((string) $order->id, 5, '0', STR_PAD_LEFT));
+});
+
 test('it cleans up expired carts', function () {
     Cart::factory()->expired()->create();
     Cart::factory()->create();
@@ -240,7 +260,7 @@ test('it validates variant stock when adding item', function () {
     $service = app(CartService::class);
 
     expect(fn () => $service->addItem($cart, $product, $variant, 5))
-        ->toThrow(Exception::class, __('Insufficient stock for this product'));
+        ->toThrow(InsufficientStockException::class, __('Insufficient stock for this product'));
 });
 
 test('it considers reserved quantity when validating stock', function () {
@@ -251,7 +271,7 @@ test('it considers reserved quantity when validating stock', function () {
     $service->addItem($cart, $product, null, 3);
 
     expect(fn () => $service->addItem($cart, $product, null, 3))
-        ->toThrow(Exception::class, __('Insufficient stock for this product'));
+        ->toThrow(InsufficientStockException::class, __('Insufficient stock for this product'));
 });
 
 test('it creates a new guest cart when cookie token is missing', function () {
@@ -565,7 +585,7 @@ test('it fails to convert cart to order when stock is insufficient for quantity 
     $product->update(['stock_quantity' => 1]);
 
     expect(fn () => $service->convertToOrder($cart))
-        ->toThrow(Exception::class, __('Insufficient stock for this product'))
+        ->toThrow(InsufficientStockException::class, __('Insufficient stock for this product'))
         ->and($product->fresh()->stock_quantity)->toBe(1)
         ->and($cart->fresh()->cartItems)->toHaveCount(1);
 
@@ -992,8 +1012,36 @@ test('it fails to reserve stock for cart when insufficient stock', function () {
     $service = app(CartService::class);
 
     expect(fn () => $service->reserveStockForCart($cart))
-        ->toThrow(Exception::class, __('Insufficient stock for this product'))
+        ->toThrow(InsufficientStockException::class, __('Insufficient stock for this product'))
         ->and($product->fresh()->stock_quantity)->toBe(1);
+});
+
+test('it aggregates stock requirements for duplicate product items in cart', function () {
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 5]);
+
+    $cart = Cart::factory()->create();
+    CartItem::factory()->create([
+        'cart_id' => $cart->id,
+        'product_id' => $product->id,
+        'product_name' => $product->title,
+        'quantity' => 3,
+        'unit_price' => 10,
+        'total_price' => 30,
+    ]);
+    CartItem::factory()->create([
+        'cart_id' => $cart->id,
+        'product_id' => $product->id,
+        'product_name' => $product->title,
+        'quantity' => 3,
+        'unit_price' => 10,
+        'total_price' => 30,
+    ]);
+
+    $service = app(CartService::class);
+
+    expect(fn () => $service->reserveStockForCart($cart))
+        ->toThrow(InsufficientStockException::class, __('Insufficient stock for this product'))
+        ->and($product->fresh()->stock_quantity)->toBe(5);
 });
 
 // --------------------------------------------------------------------------
@@ -1017,6 +1065,34 @@ test('it reserves stock for order items', function () {
     $service->reserveStockForOrder($order);
 
     expect($product->fresh()->stock_quantity)->toBe(7);
+});
+
+test('it aggregates stock requirements for duplicate product items in order', function () {
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 5]);
+
+    $order = App\Models\Order::factory()->create();
+    OrderItem::factory()->create([
+        'order_id' => $order->id,
+        'product_id' => $product->id,
+        'product_name' => $product->title,
+        'quantity' => 3,
+        'unit_price' => 10,
+        'total_price' => 30,
+    ]);
+    OrderItem::factory()->create([
+        'order_id' => $order->id,
+        'product_id' => $product->id,
+        'product_name' => $product->title,
+        'quantity' => 3,
+        'unit_price' => 10,
+        'total_price' => 30,
+    ]);
+
+    $service = app(CartService::class);
+
+    expect(fn () => $service->reserveStockForOrder($order))
+        ->toThrow(InsufficientStockException::class, __('Insufficient stock for this product'))
+        ->and($product->fresh()->stock_quantity)->toBe(5);
 });
 
 test('it reserves variant stock for order items', function () {
@@ -1057,7 +1133,191 @@ test('it fails to reserve stock for order when insufficient stock', function () 
     $service = app(CartService::class);
 
     expect(fn () => $service->reserveStockForOrder($order))
-        ->toThrow(Exception::class, __('Insufficient stock for this product'))
+        ->toThrow(InsufficientStockException::class, __('Insufficient stock for this product'))
         ->and($product->fresh()->stock_quantity)->toBe(1);
 
+});
+
+// --------------------------------------------------------------------------
+// Item Count Memoization
+// --------------------------------------------------------------------------
+
+test('it returns the correct item count for a cart', function () {
+    $cart = Cart::factory()->create();
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+
+    $service = app(CartService::class);
+    $service->addItem($cart, $product, null, 3);
+
+    expect($service->getItemCount($cart))->toBe(3);
+});
+
+test('it returns zero for an empty cart', function () {
+    $cart = Cart::factory()->create();
+
+    $service = app(CartService::class);
+
+    expect($service->getItemCount($cart))->toBe(0);
+});
+
+test('it memoizes the item count and does not requery on subsequent calls', function () {
+    $cart = Cart::factory()->create();
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+
+    $service = app(CartService::class);
+    $service->addItem($cart, $product, null, 3);
+
+    // First call computes and caches
+    $first = $service->getItemCount($cart);
+
+    // Directly modify a cart item in the database to simulate a change
+    $cart->cartItems->first()->update(['quantity' => 5]);
+
+    // Second call should return the cached value, not the new DB value
+    $second = $service->getItemCount($cart);
+
+    expect($first)->toBe(3)
+        ->and($second)->toBe(3);
+});
+
+test('it forgets the memoized count after adding an item', function () {
+    $cart = Cart::factory()->create();
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+
+    $service = app(CartService::class);
+    $service->addItem($cart, $product, null, 3);
+
+    // Prime the cache
+    expect($service->getItemCount($cart))->toBe(3);
+
+    // Add another item — should invalidate the cache
+    $service->addItem($cart, $product, null, 2);
+
+    // Should return the new count
+    expect($service->getItemCount($cart))->toBe(5);
+});
+
+test('it forgets the memoized count after removing an item', function () {
+    $cart = Cart::factory()->create();
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+
+    $service = app(CartService::class);
+    $item = $service->addItem($cart, $product, null, 3);
+
+    // Prime the cache
+    expect($service->getItemCount($cart))->toBe(3);
+
+    $service->removeItem($item);
+
+    expect($service->getItemCount($cart))->toBe(0);
+});
+
+test('it forgets the memoized count after updating an item', function () {
+    $cart = Cart::factory()->create();
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+
+    $service = app(CartService::class);
+    $item = $service->addItem($cart, $product, null, 3);
+
+    // Prime the cache
+    expect($service->getItemCount($cart))->toBe(3);
+
+    $service->updateItem($item, 5);
+
+    expect($service->getItemCount($cart))->toBe(5);
+});
+
+test('it forgets the memoized count after clearing the cart', function () {
+    $cart = Cart::factory()->create();
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+
+    $service = app(CartService::class);
+    $service->addItem($cart, $product, null, 3);
+
+    // Prime the cache
+    expect($service->getItemCount($cart))->toBe(3);
+
+    $service->clear($cart);
+
+    expect($service->getItemCount($cart))->toBe(0);
+});
+
+test('it forgets the memoized count after merging carts', function () {
+    $cart1 = Cart::factory()->create();
+    $cart2 = Cart::factory()->create();
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 20]);
+
+    $service = app(CartService::class);
+    $service->addItem($cart1, $product, null, 2);
+    $service->addItem($cart2, $product, null, 3);
+
+    // Prime the cache for cart1
+    expect($service->getItemCount($cart1))->toBe(2);
+
+    $service->merge($cart2, $cart1);
+
+    expect($service->getItemCount($cart1))->toBe(5);
+});
+
+test('it forgets the memoized count after removing out of stock items', function () {
+    $cart = Cart::factory()->create();
+    $inStockProduct = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+    $outOfStockProduct = Product::factory()->create(['price' => 2000, 'is_discounted' => false, 'stock_quantity' => 0]);
+
+    $service = app(CartService::class);
+    $service->addItem($cart, $inStockProduct, null, 2);
+
+    // Create the out-of-stock item directly via factory to bypass stock validation
+    CartItem::factory()->create([
+        'cart_id' => $cart->id,
+        'product_id' => $outOfStockProduct->id,
+        'product_name' => $outOfStockProduct->title,
+        'quantity' => 1,
+        'unit_price' => 2000,
+        'total_price' => 2000,
+    ]);
+
+    // Prime the cache
+    expect($service->getItemCount($cart))->toBe(3);
+
+    $service->removeOutOfStockItems($cart);
+
+    expect($service->getItemCount($cart))->toBe(2);
+});
+
+test('it forgets the memoized count after adjusting overstocked items', function () {
+    $cart = Cart::factory()->create();
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 4]);
+
+    $service = app(CartService::class);
+    $service->addItem($cart, $product, null, 4);
+
+    // Prime the cache
+    expect($service->getItemCount($cart))->toBe(4);
+
+    // Simulate stock drop
+    $product->update(['stock_quantity' => 2]);
+
+    $service->adjustOverstockedItems($cart);
+
+    expect($service->getItemCount($cart))->toBe(2);
+});
+
+test('it forgets the memoized count explicitly via forgetItemCount', function () {
+    $cart = Cart::factory()->create();
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+
+    $service = app(CartService::class);
+    $service->addItem($cart, $product, null, 3);
+
+    // Prime the cache
+    expect($service->getItemCount($cart))->toBe(3);
+
+    // Directly modify DB
+    $cart->cartItems->first()->update(['quantity' => 7]);
+
+    // Explicitly forget the cache
+    $service->forgetItemCount($cart->id);
+
+    expect($service->getItemCount($cart))->toBe(7);
 });

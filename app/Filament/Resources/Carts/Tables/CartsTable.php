@@ -34,10 +34,10 @@ class CartsTable
                     ->boolean()
                     ->trueColor('warning')
                     ->falseColor('success'),
-                TextColumn::make('items_count')
+                TextColumn::make('cart_items_count')
                     ->label(__('Items'))
                     ->badge()
-                    ->state(fn ($record): int => $record->items_count ?? $record->cartItems()->count()),
+                    ->state(fn ($record): int => (int) ($record->cart_items_count ?? 0)),
                 TextColumn::make('total')
                     ->label(__('Total'))
                     ->money('EUR'),

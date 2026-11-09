@@ -24,7 +24,7 @@ class OrderResource extends Resource
 
     protected static string|BackedEnum|null $activeNavigationIcon = Heroicon::ShoppingCart;
 
-    protected static ?string $recordTitleAttribute = 'order_number';
+    protected static ?string $recordTitleAttribute = 'id';
 
     protected static bool $isGloballySearchable = true;
 

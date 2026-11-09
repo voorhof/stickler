@@ -32,6 +32,7 @@ class ProductObserver
         $this->flushResponseCache();
         $this->dispatchSitemapGeneration();
         $this->syncImageAltToMediaName($product); // defaults to ['content']
+        $product->flushRichContentCache();
 
         // e.g. a model with two rich-content fields:
         // $this->syncImageAltToMediaName($product, ['content', 'method']);
@@ -41,5 +42,6 @@ class ProductObserver
     {
         $this->flushResponseCache();
         $this->dispatchSitemapGeneration();
+        $product->flushRichContentCache();
     }
 }

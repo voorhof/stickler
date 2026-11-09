@@ -22,13 +22,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\UniqueConstraintViolationException;
-use Illuminate\Support\Str;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 
 /**
  * @property int $id
- * @property string $order_number
+ * @property string|null $order_number
  * @property int|null $user_id
  * @property OrderStatus $status
  * @property PaymentStatus $payment_status
@@ -42,6 +40,7 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
  * @property string|null $payment_provider
  * @property string|null $payment_provider_id
  * @property string|null $notes
+ * @property DateTime|null $stock_restored_at
  * @property DateTime $created_at
  * @property DateTime $updated_at
  * @property BelongsTo<User>|null $user
@@ -61,6 +60,7 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
     'user_id',
     'status',
     'payment_status',
+    'stock_restored_at',
     'subtotal',
     'tax_amount',
     'shipping_amount',
@@ -107,6 +107,7 @@ class Order extends Model
             'payment_status' => PaymentStatus::class,
             'shipping_address' => 'array',
             'billing_address' => 'array',
+            'stock_restored_at' => 'datetime',
         ];
     }
 
@@ -170,70 +171,6 @@ class Order extends Model
         return Attribute::make(
             get: fn () => $this->order_number,
         );
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Boot & Lifecycle
-    |--------------------------------------------------------------------------
-    */
-
-    /**
-     * Bootstrap any application services.
-     */
-    protected static function boot(): void
-    {
-        parent::boot();
-
-        static::creating(function (Order $order) {
-            if (! $order->order_number) {
-                $order->order_number = self::generateOrderNumber();
-            }
-        });
-    }
-
-    /**
-     * Generate a unique order number like ORD-2026-00001.
-     */
-    protected static function generateOrderNumber(): string
-    {
-        $year = now()->format('Y');
-        $prefix = 'ORD-'.$year.'-';
-
-        $count = self::withTrashed()->where('order_number', 'like', $prefix.'%')->count();
-        $nextNumber = $count + 1;
-        $sequence = Str::padLeft((string) $nextNumber, 5, '0');
-
-        return $prefix.$sequence;
-    }
-
-    /**
-     * Save the model instance, retrying with a new order number if a unique constraint violation occurs.
-     *
-     * Under high concurrency, two requests may generate the same order number. The database
-     * unique constraint catches the collision, and we retry with a fresh number (up to 3 attempts).
-     *
-     * @param  array<string, mixed>  $options
-     */
-    public function save(array $options = []): bool
-    {
-        $maxAttempts = 3;
-        $attempt = 0;
-
-        while ($attempt < $maxAttempts) {
-            try {
-                return parent::save($options);
-            } catch (UniqueConstraintViolationException $exception) {
-                if ($attempt + 1 >= $maxAttempts) {
-                    throw $exception;
-                }
-
-                $this->order_number = self::generateOrderNumber();
-                $attempt++;
-            }
-        }
-
-        return false;
     }
 
     /*

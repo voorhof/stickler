@@ -7,6 +7,11 @@ use App\Models\Post;
 use App\Models\User;
 use App\Support\RichContent\RichContentImages;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+
+beforeEach(function () {
+    Storage::fake(config('media-library.disk_name'));
+});
 
 describe('altByUuid', function () {
     test('it returns empty array for non-string or blank input', function () {

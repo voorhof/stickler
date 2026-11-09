@@ -100,7 +100,8 @@ describe('products show', function () {
         $response->assertSuccessful()
             ->assertViewIs('public.products.show')
             ->assertViewHas('product', function (Product $viewProduct) use ($product) {
-                return $viewProduct->id === $product->id;
+                return $viewProduct->id === $product->id
+                    && $viewProduct->relationLoaded('media');
             })
             ->assertSeeText($product->title)
             ->assertSeeText($product->intro);
@@ -172,6 +173,7 @@ describe('products show', function () {
             ->assertViewHas('product', function (Product $viewProduct) use ($product, $variant, $redOption) {
                 expect($viewProduct->id)->toBe($product->id)
                     ->and($viewProduct->relationLoaded('variants'))->toBeTrue()
+                    ->and($viewProduct->relationLoaded('media'))->toBeTrue()
                     ->and($viewProduct->relationLoaded('categories'))->toBeTrue();
 
                 $viewVariant = $viewProduct->variants->firstWhere('id', $variant->id);
@@ -291,6 +293,7 @@ describe('products show', function () {
             ->assertViewHas('product', function (Product $viewProduct) use ($product, $categories) {
                 expect($viewProduct->id)->toBe($product->id)
                     ->and($viewProduct->relationLoaded('categories'))->toBeTrue()
+                    ->and($viewProduct->relationLoaded('media'))->toBeTrue()
                     ->and($viewProduct->categories->pluck('id')->sort()->values()->toArray())
                     ->toBe($categories->pluck('id')->sort()->values()->toArray());
 

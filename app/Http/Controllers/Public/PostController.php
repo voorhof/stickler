@@ -33,6 +33,8 @@ class PostController extends Controller
     {
         abort_unless($post->isPublished(), 404);
 
+        $post->load('media');
+
         Head::title($post->title)
             ->description($post->intro);
 

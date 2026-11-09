@@ -8,6 +8,11 @@ use App\Models\Post;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+
+beforeEach(function () {
+    Storage::fake(config('media-library.disk_name'));
+});
 
 describe('copying media', function () {
     test('it copies media referenced in rich content attributes and updates model attribute', function () {

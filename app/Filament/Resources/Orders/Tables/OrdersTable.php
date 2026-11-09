@@ -28,11 +28,12 @@ class OrdersTable
                 IdColumn::make(),
                 TextColumn::make('order_number')
                     ->label(__('Order number'))
+                    ->default(__('Not assigned'))
                     ->searchable()
                     ->weight('medium'),
                 TextColumn::make('user.name')
                     ->label(__('Customer'))
-                    ->getStateUsing(fn ($record): string => $record->customerName())
+                    ->default(__('Guest'))
                     ->toggleable(),
                 TextColumn::make('status')
                     ->label(__('Status'))
@@ -55,10 +56,10 @@ class OrdersTable
                 TextColumn::make('total')
                     ->label(__('Total'))
                     ->money('EUR'),
-                TextColumn::make('items_count')
+                TextColumn::make('order_items_count')
                     ->label(__('Items'))
                     ->badge()
-                    ->state(fn ($record): int => $record->items_count ?? $record->orderItems()->count())
+                    ->state(fn ($record): int => (int) ($record->order_items_count ?? 0))
                     ->toggleable(isToggledHiddenByDefault: true),
                 CreatedColumn::make(),
                 UpdatedColumn::make(),

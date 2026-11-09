@@ -14,6 +14,13 @@ use Symfony\Component\HttpFoundation\Response;
 class TrackPageView
 {
     /**
+     * Create a new middleware instance.
+     */
+    public function __construct(
+        protected CrawlerDetect $crawlerDetect,
+    ) {}
+
+    /**
      * @var list<string>
      */
     protected array $trackedRouteNames = [
@@ -79,7 +86,7 @@ class TrackPageView
      */
     protected function isBot(Request $request): bool
     {
-        return (new CrawlerDetect)->isCrawler($request->userAgent());
+        return $this->crawlerDetect->isCrawler($request->userAgent());
     }
 
     /**

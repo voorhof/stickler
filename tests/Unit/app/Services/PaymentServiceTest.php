@@ -11,7 +11,6 @@ use App\Mail\PaymentConfirmation;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
-use App\Models\ProductVariant;
 use App\Models\User;
 use App\Services\PaymentService;
 use Illuminate\Contracts\Container\BindingResolutionException;
@@ -239,10 +238,10 @@ test('it returns signature invalid when provider throws signature exception', fu
 });
 
 // --------------------------------------------------------------------------
-// Stock Restoration on Payment Failure
+// Stock Reservation and Webhook Handling
 // --------------------------------------------------------------------------
 
-test('it restores product stock when payment fails', function () {
+test('it does not restore stock during webhook processing when order remains pending unpaid (retains stock for retry)', function () {
     $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
 
     // Simulate stock already reserved at checkout
@@ -273,19 +272,16 @@ test('it restores product stock when payment fails', function () {
     $result = $service->handleWebhook($payload, 'valid-signature');
 
     expect($result)->toBe(WebhookResult::Success)
-        ->and($product->fresh()->stock_quantity)->toBe(10);
+        ->and($product->fresh()->stock_quantity)->toBe(7);
 
     Mail::assertNothingQueued();
 });
 
-test('it restores variant stock when payment fails', function () {
-    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 100]);
-    $variant = ProductVariant::factory()->create([
-        'product_id' => $product->id,
-        'price' => 1500,
-        'is_discounted' => false,
-        'stock_quantity' => 3,
-    ]);
+test('it restores stock when webhook cancels the order on failed payment', function () {
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+
+    // Simulate stock already reserved at checkout
+    $product->update(['stock_quantity' => 7]);
 
     $order = Order::factory()->create([
         'payment_status' => PaymentStatus::Unpaid,
@@ -294,14 +290,24 @@ test('it restores variant stock when payment fails', function () {
     OrderItem::factory()->create([
         'order_id' => $order->id,
         'product_id' => $product->id,
-        'product_variant_id' => $variant->id,
-        'quantity' => 2,
+        'product_variant_id' => null,
+        'quantity' => 3,
     ]);
 
     $payload = 'id=tr_Test123';
 
+    // Simulate the provider cancelling the order on failed payment
     $mockProvider = mock(PaymentProvider::class);
-    $mockProvider->shouldReceive('handleWebhook')->once()->andReturn($order);
+    $mockProvider->shouldReceive('handleWebhook')
+        ->once()
+        ->andReturnUsing(function () use ($order) {
+            $order->update([
+                'payment_status' => PaymentStatus::Unpaid->value,
+                'status' => OrderStatus::Cancelled->value,
+            ]);
+
+            return $order->fresh();
+        });
 
     Mail::fake();
 
@@ -312,8 +318,10 @@ test('it restores variant stock when payment fails', function () {
     $result = $service->handleWebhook($payload, 'valid-signature');
 
     expect($result)->toBe(WebhookResult::Success)
-        ->and($variant->fresh()->stock_quantity)->toBe(5)
-        ->and($product->fresh()->stock_quantity)->toBe(100);
+        ->and($order->fresh()->status)->toBe(OrderStatus::Cancelled)
+        ->and($product->fresh()->stock_quantity)->toBe(10);
+
+    Mail::assertNothingQueued();
 });
 
 test('it does not restore stock when payment is successful', function () {

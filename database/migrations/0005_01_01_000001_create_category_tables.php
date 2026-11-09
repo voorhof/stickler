@@ -31,6 +31,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->primary(['category_id', 'categorizable_id', 'categorizable_type']);
+            $table->index(['categorizable_type', 'categorizable_id'], 'categorizables_type_id_index');
         });
     }
 

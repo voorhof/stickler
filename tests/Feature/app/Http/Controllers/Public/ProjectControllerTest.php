@@ -79,7 +79,8 @@ describe('projects show', function () {
         $response->assertSuccessful()
             ->assertViewIs('public.projects.show')
             ->assertViewHas('project', function (Project $viewProject) use ($project) {
-                return $viewProject->id === $project->id;
+                return $viewProject->id === $project->id
+                    && $viewProject->relationLoaded('media');
             })
             ->assertSeeText($project->title)
             ->assertSeeText($project->intro);

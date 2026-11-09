@@ -10,6 +10,7 @@ use App\Observers\ProjectObserver;
 
 use function Illuminate\Support\defer;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Queue;
 
 use function Pest\Laravel\actingAs;
@@ -241,4 +242,48 @@ it('updates the created activity with content after the second save', function (
 
     expect($activity)->not->toBeNull()
         ->and($activity->properties['attributes']['content'])->toBe('<p>Rich editor content</p>');
+});
+
+it('flushes rich content cache when a project is saved', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $project = Project::create([
+        'title' => 'Rich Content Cache Test Project',
+        'intro' => 'Testing rich content cache flush.',
+        'content' => '<p>Original content</p>',
+    ]);
+
+    // Render to populate the cache
+    $project->renderResponsiveRichContent();
+    $cacheKey = 'rich_content.'.Project::class.'.'.$project->getKey().'.content';
+
+    expect(Cache::get($cacheKey))->not->toBeNull();
+
+    // Update the project, which should flush the cache via the observer
+    $project->update(['content' => '<p>Updated content</p>']);
+
+    expect(Cache::get($cacheKey))->toBeNull();
+});
+
+it('flushes rich content cache when a project is deleted', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $project = Project::create([
+        'title' => 'Rich Content Cache Delete Test Project',
+        'intro' => 'Testing rich content cache flush on delete.',
+        'content' => '<p>Content to delete</p>',
+    ]);
+
+    // Render to populate the cache
+    $project->renderResponsiveRichContent();
+    $cacheKey = 'rich_content.'.Project::class.'.'.$project->getKey().'.content';
+
+    expect(Cache::get($cacheKey))->not->toBeNull();
+
+    // Delete the project, which should flush the cache via the observer
+    $project->delete();
+
+    expect(Cache::get($cacheKey))->toBeNull();
 });

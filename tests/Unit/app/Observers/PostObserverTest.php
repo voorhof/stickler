@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 
 use function Illuminate\Support\defer;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Queue;
 
 use function Pest\Laravel\actingAs;
@@ -242,4 +243,48 @@ it('updates the created activity with content after the second save', function (
 
     expect($activity)->not->toBeNull()
         ->and($activity->properties['attributes']['content'])->toBe('<p>Rich editor content</p>');
+});
+
+it('flushes rich content cache when a post is saved', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $post = Post::create([
+        'title' => 'Rich Content Cache Test Post',
+        'intro' => 'Testing rich content cache flush.',
+        'content' => '<p>Original content</p>',
+    ]);
+
+    // Render to populate the cache
+    $post->renderResponsiveRichContent();
+    $cacheKey = 'rich_content.'.Post::class.'.'.$post->getKey().'.content';
+
+    expect(Cache::get($cacheKey))->not->toBeNull();
+
+    // Update the post, which should flush the cache via the observer
+    $post->update(['content' => '<p>Updated content</p>']);
+
+    expect(Cache::get($cacheKey))->toBeNull();
+});
+
+it('flushes rich content cache when a post is deleted', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $post = Post::create([
+        'title' => 'Rich Content Cache Delete Test Post',
+        'intro' => 'Testing rich content cache flush on delete.',
+        'content' => '<p>Content to delete</p>',
+    ]);
+
+    // Render to populate the cache
+    $post->renderResponsiveRichContent();
+    $cacheKey = 'rich_content.'.Post::class.'.'.$post->getKey().'.content';
+
+    expect(Cache::get($cacheKey))->not->toBeNull();
+
+    // Delete the post, which should flush the cache via the observer
+    $post->delete();
+
+    expect(Cache::get($cacheKey))->toBeNull();
 });

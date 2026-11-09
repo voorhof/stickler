@@ -33,6 +33,8 @@ class ProjectController extends Controller
     {
         abort_unless($project->isPublished(), 404);
 
+        $project->load('media');
+
         Head::title($project->title)
             ->description($project->intro);
 

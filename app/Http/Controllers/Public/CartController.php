@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Public;
 
+use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
+use App\Exceptions\InsufficientStockException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Public\StoreOrderRequest;
 use App\Models\CartItem;
@@ -15,6 +17,7 @@ use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\URL;
 use Illuminate\View\View;
 use Laravel\Head\Facades\Head;
 use Throwable;
@@ -232,7 +235,19 @@ class CartController extends Controller
         $this->cartService->saveCustomerData($cart, $customerData);
 
         // Convert cart to order (transfers customer data)
-        $order = $this->cartService->convertToOrder($cart);
+        try {
+            $order = $this->cartService->convertToOrder($cart);
+        } catch (InsufficientStockException $e) {
+            return redirect()
+                ->route('cart.index')
+                ->with('error', $e->getMessage());
+        } catch (Throwable $e) {
+            report($e);
+
+            return redirect()
+                ->route('cart.index')
+                ->with('error', __('Unable to process order. Please check item availability.'));
+        }
 
         // Store the last guest order ID in the session for thank-you page access
         if ($cart->is_guest) {
@@ -259,19 +274,29 @@ class CartController extends Controller
     public function retryPayment(Request $request, Order $order): RedirectResponse
     {
         // Authenticated users can only pay for their own orders
-        if (Auth::check()) {
-            abort_unless($order->user_id === Auth::id(), 403);
+        if (! Auth::check()) {
+            // Guest users can access via session or signed URL
+            $hasSessionAccess = $request->session()->get('last_guest_order_id') === $order->id;
+            $hasValidSignature = $request->hasValidSignature();
+
+            abort_unless($hasSessionAccess || $hasValidSignature, 403);
         }
 
-        // Guest users can only pay for the last order they placed (stored in session)
-        if (! Auth::check()) {
-            abort_unless($request->session()->get('last_guest_order_id') === $order->id, 403);
+        // Authenticated users can only pay for their own orders
+        if (Auth::check()) {
+            abort_unless($order->user_id === Auth::id(), 403);
         }
 
         if ($order->payment_status === PaymentStatus::Paid) {
             return redirect()
                 ->route('order.confirmed', $order)
                 ->with('success', __('Order is already paid'));
+        }
+
+        if ($order->status === OrderStatus::Cancelled) {
+            return redirect()
+                ->route('order.confirmed', $order)
+                ->with('error', __('This order has been cancelled and cannot be paid. Please place a new order.'));
         }
 
         try {
@@ -296,19 +321,32 @@ class CartController extends Controller
             ->description(__('Your order has been placed successfully'));
 
         // Authenticated users can only view their own orders
+        if (! Auth::check()) {
+            // Guest users can access via session or signed URL
+            $hasSessionAccess = $request->session()->get('last_guest_order_id') === $order->id;
+            $hasValidSignature = $request->hasValidSignature();
+
+            abort_unless($hasSessionAccess || $hasValidSignature, 403);
+        }
+
+        // Authenticated users can only view their own orders
         if (Auth::check()) {
             abort_unless($order->user_id === Auth::id(), 403);
         }
 
-        // Guest users can only view the last order they placed (stored in session)
-        if (! Auth::check()) {
-            abort_unless($request->session()->get('last_guest_order_id') === $order->id, 403);
-        }
-
         $order->load('orderItems');
+
+        // Build the "Pay now" form action URL.
+        // Authenticated users and guests with session access use the regular route.
+        // Guests without session access get a temporary signed URL (30 days).
+        $payNowUrl = route('checkout.pay', $order);
+        if (! Auth::check() && $request->session()->get('last_guest_order_id') !== $order->id) {
+            $payNowUrl = URL::temporarySignedRoute('checkout.pay', now()->addDays(30), ['order' => $order]);
+        }
 
         return view('public.checkout.thankyou', [
             'order' => $order,
+            'payNowUrl' => $payNowUrl,
         ]);
     }
 }

@@ -22,11 +22,15 @@ class UserPolicy extends BasePolicy
 
     /**
      * Determine whether the user can delete the user.
-     * Admin users can only be deleted by Admin users.
+     * Admin users can only be deleted by Admin users, and the last remaining admin cannot be deleted.
      */
     public function delete(User $user, ?Model $model = null): bool
     {
         if ($model instanceof User && $model->hasRole('Admin')) {
+            if (! $model->trashed() && User::role('Admin')->withoutTrashed()->where('id', '!=', $model->id)->count() === 0) {
+                return false;
+            }
+
             return $user->hasAnyRole(['Admin']);
         }
 
@@ -38,7 +42,11 @@ class UserPolicy extends BasePolicy
      */
     public function restore(User $user, ?Model $model = null): bool
     {
-        return $this->delete($user, $model);
+        if ($model instanceof User && $model->hasRole('Admin')) {
+            return $user->hasAnyRole(['Admin']);
+        }
+
+        return parent::restore($user);
     }
 
     /**
@@ -46,6 +54,14 @@ class UserPolicy extends BasePolicy
      */
     public function forceDelete(User $user, ?Model $model = null): bool
     {
-        return $this->delete($user, $model);
+        if ($model instanceof User && $model->hasRole('Admin')) {
+            if (User::role('Admin')->where('id', '!=', $model->id)->count() === 0) {
+                return false;
+            }
+
+            return $user->hasAnyRole(['Admin']);
+        }
+
+        return parent::forceDelete($user);
     }
 }

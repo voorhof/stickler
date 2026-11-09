@@ -434,4 +434,35 @@ describe('profile deletion', function () {
             ->and($activity->event)->toBe('delete')
             ->and($activity->subject_id)->toBe($user->id);
     });
+
+    test('sole administrator cannot delete their account via profile destruction', function () {
+        $adminRole = App\Models\Role::firstOrCreate(['name' => 'Admin', 'guard_name' => 'web']);
+        $admin = User::factory()->create();
+        $admin->assignRole($adminRole);
+
+        $response = $this->actingAs($admin)->delete(route('account.profile.destroy'), [
+            'password' => 'password',
+        ]);
+
+        $response->assertSessionHasErrorsIn('userDeletion', ['deletion']);
+        expect(User::find($admin->id))->not->toBeNull();
+        $this->assertAuthenticatedAs($admin);
+    });
+
+    test('administrator can delete their account if another admin exists', function () {
+        $adminRole = App\Models\Role::firstOrCreate(['name' => 'Admin', 'guard_name' => 'web']);
+        $admin1 = User::factory()->create();
+        $admin1->assignRole($adminRole);
+
+        $admin2 = User::factory()->create();
+        $admin2->assignRole($adminRole);
+
+        $response = $this->actingAs($admin1)->delete(route('account.profile.destroy'), [
+            'password' => 'password',
+        ]);
+
+        $response->assertRedirect('/');
+        expect(User::find($admin1->id))->toBeNull();
+        $this->assertGuest();
+    });
 });

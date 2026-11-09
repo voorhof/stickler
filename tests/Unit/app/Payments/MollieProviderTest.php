@@ -117,6 +117,42 @@ test('it includes webhook url in production environment', function () {
     });
 });
 
+test('it uses a signed url for the redirect url', function () {
+    $order = Order::factory()->create(['total' => 2500, 'order_number' => 'ORD-001']);
+
+    $capturedRedirectUrl = null;
+
+    Mollie::fake([
+        CreatePaymentRequest::class => function (PendingRequest $pendingRequest) use ($order, &$capturedRedirectUrl) {
+            /** @var CreatePaymentRequest $request */
+            $request = $pendingRequest->getRequest();
+            $capturedRedirectUrl = $request->payload()->get('redirectUrl');
+
+            return MockResponse::created([
+                'id' => 'tr_Test123',
+                'mode' => 'test',
+                'amount' => Money::fromMinorUnits('EUR', 2500)->toArray(),
+                'description' => __('Order :order_number', ['order_number' => $order->order_number]),
+                'status' => 'open',
+                'profileId' => 'pfl_test123',
+                'createdAt' => now()->toIso8601String(),
+                '_links' => json_decode(json_encode([
+                    'checkout' => [
+                        'href' => 'https://mollie.com/checkout/test123',
+                    ],
+                ])),
+            ], Payment::class);
+        },
+    ]);
+
+    $provider = new MollieProvider;
+    $provider->createPayment($order);
+
+    expect($capturedRedirectUrl)->not->toBeNull()
+        ->and($capturedRedirectUrl)->toContain('order-confirmed/'.$order->id)
+        ->and($capturedRedirectUrl)->toContain('signature=');
+});
+
 test('it uses configured payment webhook url when provided', function () {
     config(['payment.webhook_url' => 'https://custom-webhook.example.com/payment']);
 
@@ -438,7 +474,7 @@ test('it skips signature verification when signature is empty (classic webhooks)
     ]);
 
     $provider = new MollieProvider;
-    $result = $provider->handleWebhook('id=tr_Test123', '');
+    $result = $provider->handleWebhook('id=tr_Test123');
 
     expect($result)->not->toBeNull()
         ->and($result->id)->toBe($order->id);

@@ -31,6 +31,9 @@ return new class extends Migration
             $table->nullableTimestamps();
             $table->foreignIdFor(User::class, 'created_by_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignIdFor(User::class, 'updated_by_user_id')->nullable()->constrained('users')->nullOnDelete();
+
+            // Performance indexes for polymorphic media lookups and orphan detection
+            $table->index(['model_type', 'model_id', 'collection_name'], 'media_model_collection_index');
         });
     }
 

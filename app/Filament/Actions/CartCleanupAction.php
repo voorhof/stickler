@@ -2,7 +2,6 @@
 
 namespace App\Filament\Actions;
 
-use App\Models\Cart;
 use App\Services\CartService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
@@ -29,8 +28,6 @@ class CartCleanupAction extends Action
         $this->outlined();
 
         $this->size('sm');
-
-        $this->hidden(fn (): bool => ! Cart::count());
 
         $this->authorize(fn (): bool => auth()->user()?->can('delete carts') ?? false);
 

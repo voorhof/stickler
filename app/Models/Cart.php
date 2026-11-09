@@ -19,8 +19,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Throwable;
 
 /**
  * @property int $id
@@ -261,30 +263,68 @@ class Cart extends Model
     }
 
     /**
-     * Merge another cart into this cart.
+     * Merge another cart into this cart with stock validation and clamping.
+     *
+     * @throws Throwable
      */
     public function merge(self $other): void
     {
-        $this->loadMissing('cartItems');
-        $other->loadMissing('cartItems');
-
-        foreach ($other->cartItems as $item) {
-            $existing = $this->cartItems
-                ->where('product_id', $item->product_id)
-                ->where('product_variant_id', $item->product_variant_id)
-                ->first();
-
-            if ($existing) {
-                $existing->quantity += $item->quantity;
-                $existing->total_price = $existing->unit_price * $existing->quantity;
-                $existing->save();
-            } else {
-                $item->cart_id = $this->id;
-                $item->save();
-            }
+        if ($this->id === $other->id) {
+            return;
         }
 
-        $other->cartItems()->delete();
+        DB::transaction(function () use ($other) {
+            $this->loadMissing('cartItems.product', 'cartItems.productVariant');
+            $other->loadMissing('cartItems.product', 'cartItems.productVariant');
+
+            foreach ($other->cartItems as $item) {
+                $product = $item->product;
+                $variant = $item->productVariant;
+
+                if (! $product) {
+                    $item->delete();
+
+                    continue;
+                }
+
+                $availableStock = $variant?->stock_quantity ?? $product->stock_quantity;
+
+                $existing = $this->cartItems
+                    ->where('product_id', $item->product_id)
+                    ->where('product_variant_id', $item->product_variant_id)
+                    ->first();
+
+                if ($existing) {
+                    if ($availableStock <= 0) {
+                        $existing->delete();
+                    } else {
+                        $newQuantity = min($existing->quantity + $item->quantity, $availableStock);
+                        if ($newQuantity > 0) {
+                            $existing->quantity = $newQuantity;
+                            $existing->total_price = $existing->unit_price * $existing->quantity;
+                            $existing->save();
+                        } else {
+                            $existing->delete();
+                        }
+                    }
+                    $item->delete();
+                } else {
+                    if ($availableStock > 0) {
+                        $newQuantity = min($item->quantity, $availableStock);
+                        $item->cart_id = $this->id;
+                        $item->quantity = $newQuantity;
+                        $item->total_price = $item->unit_price * $newQuantity;
+                        $item->save();
+                    } else {
+                        $item->delete();
+                    }
+                }
+            }
+
+            $other->cartItems()->delete();
+            $this->unsetRelation('cartItems');
+            $other->unsetRelation('cartItems');
+        });
     }
 
     /*

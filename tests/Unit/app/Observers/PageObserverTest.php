@@ -8,10 +8,10 @@ use App\Models\Page;
 use App\Models\User;
 use App\Observers\PageObserver;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
 
 use function Illuminate\Support\defer;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Queue;
 
 use function Pest\Laravel\actingAs;
@@ -61,14 +61,11 @@ it('does not overwrite user ids when no user is authenticated', function (): voi
         ->and($page->fresh()->updated_by_user_id)->toBe($originalUpdaterId);
 });
 
-it('appends timestamp suffix to excluded slug on create', function (): void {
-    Carbon::setTestNow('2026-10-16 12:00:00');
-
+it('appends numeric suffix to excluded slug on create', function (): void {
     $user = User::factory()->create();
     actingAs($user);
 
     $excludedSlug = config('sluggable.excluded_from_slug')[0] ?? 'contact';
-    $expectedSuffix = now()->format('-y-m-d-H-i-s');
 
     $page = Page::create([
         'title' => 'Contact Page',
@@ -76,15 +73,11 @@ it('appends timestamp suffix to excluded slug on create', function (): void {
         'intro' => 'Testing excluded slug.',
     ]);
 
-    expect($page->slug)->toBe($excludedSlug.$expectedSuffix)
-        ->and($page->fresh()->slug)->toBe($excludedSlug.$expectedSuffix);
-
-    Carbon::setTestNow();
+    expect($page->slug)->toBe($excludedSlug.'-1')
+        ->and($page->fresh()->slug)->toBe($excludedSlug.'-1');
 });
 
-it('appends timestamp suffix to excluded slug on update', function (): void {
-    Carbon::setTestNow('2026-10-16 12:00:00');
-
+it('appends numeric suffix to excluded slug on update', function (): void {
     $user = User::factory()->create();
     actingAs($user);
 
@@ -97,13 +90,10 @@ it('appends timestamp suffix to excluded slug on update', function (): void {
     expect($page->slug)->toBe('normal-page');
 
     $excludedSlug = config('sluggable.excluded_from_slug')[0] ?? 'contact';
-    $expectedSuffix = now()->format('-y-m-d-H-i-s');
 
     $page->update(['slug' => $excludedSlug]);
 
-    expect($page->fresh()->slug)->toBe($excludedSlug.$expectedSuffix);
-
-    Carbon::setTestNow();
+    expect($page->fresh()->slug)->toBe($excludedSlug.'-1');
 });
 
 it('does not alter non-excluded slug on create or update', function (): void {
@@ -123,45 +113,17 @@ it('does not alter non-excluded slug on create or update', function (): void {
     expect($page->fresh()->slug)->toBe('another-unique-slug');
 });
 
-it('appends timestamp to excluded slug via observer methods directly', function (): void {
-    Carbon::setTestNow('2026-10-16 12:00:00');
-
-    $observer = new PageObserver;
-    $excludedSlug = config('sluggable.excluded_from_slug')[0] ?? 'contact';
-    $expectedSuffix = now()->format('-y-m-d-H-i-s');
-
-    $page = new Page([
-        'title' => 'Direct Observer Test',
-        'slug' => $excludedSlug,
-    ]);
-
-    $observer->creating($page);
-    expect($page->slug)->toBe($excludedSlug.$expectedSuffix);
-
-    $page->slug = $excludedSlug;
-    $observer->updating($page);
-    expect($page->slug)->toBe($excludedSlug.$expectedSuffix);
-
-    Carbon::setTestNow();
-});
-
-it('does not append suffix when not authenticated but slug is excluded', function (): void {
-    Carbon::setTestNow('2026-10-16 12:00:00');
-
+it('generates numeric suffix for excluded slug when title matches reserved word', function (): void {
     auth()->logout();
 
     $excludedSlug = config('sluggable.excluded_from_slug')[0] ?? 'contact';
-    $expectedSuffix = now()->format('-y-m-d-H-i-s');
 
     $page = Page::create([
-        'title' => 'Unauth Excluded Slug',
-        'slug' => $excludedSlug,
+        'title' => ucfirst($excludedSlug),
         'intro' => 'Testing unauth excluded slug.',
     ]);
 
-    expect($page->slug)->toBe($excludedSlug.$expectedSuffix);
-
-    Carbon::setTestNow();
+    expect($page->slug)->toBe($excludedSlug.'-1');
 });
 
 it('syncs image alt text to media name when a page is saved', function (): void {
@@ -364,4 +326,48 @@ it('updates the created activity with content after the second save', function (
 
     expect($activity)->not->toBeNull()
         ->and($activity->properties['attributes']['content'])->toBe('<p>Rich editor content</p>');
+});
+
+it('flushes rich content cache when a page is saved', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $page = Page::create([
+        'title' => 'Rich Content Cache Test Page',
+        'intro' => 'Testing rich content cache flush.',
+        'content' => '<p>Original content</p>',
+    ]);
+
+    // Render to populate the cache
+    $page->renderResponsiveRichContent();
+    $cacheKey = 'rich_content.'.Page::class.'.'.$page->getKey().'.content';
+
+    expect(Cache::get($cacheKey))->not->toBeNull();
+
+    // Update the page, which should flush the cache via the observer
+    $page->update(['content' => '<p>Updated content</p>']);
+
+    expect(Cache::get($cacheKey))->toBeNull();
+});
+
+it('flushes rich content cache when a page is deleted', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $page = Page::create([
+        'title' => 'Rich Content Cache Delete Test Page',
+        'intro' => 'Testing rich content cache flush on delete.',
+        'content' => '<p>Content to delete</p>',
+    ]);
+
+    // Render to populate the cache
+    $page->renderResponsiveRichContent();
+    $cacheKey = 'rich_content.'.Page::class.'.'.$page->getKey().'.content';
+
+    expect(Cache::get($cacheKey))->not->toBeNull();
+
+    // Delete the page, which should flush the cache via the observer
+    $page->delete();
+
+    expect(Cache::get($cacheKey))->toBeNull();
 });

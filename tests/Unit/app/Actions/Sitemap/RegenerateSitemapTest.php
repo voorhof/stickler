@@ -4,17 +4,11 @@
 
 use App\Actions\Sitemap\RegenerateSitemap;
 use App\Models\Activity;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
-use Spatie\Sitemap\Sitemap;
-use Spatie\Sitemap\SitemapGenerator;
 
 test('it generates the sitemap file and logs the activity', function () {
     Storage::fake('public');
-
-    $sitemapGenerator = Mockery::mock(SitemapGenerator::class);
-    $sitemapGenerator->shouldReceive('setUrl')->andReturnSelf();
-    $sitemapGenerator->shouldReceive('getSitemap')->andReturn(new Sitemap);
-    $this->app->instance(SitemapGenerator::class, $sitemapGenerator);
 
     app(RegenerateSitemap::class)->handle();
 
@@ -23,10 +17,11 @@ test('it generates the sitemap file and logs the activity', function () {
 });
 
 test('it does not log the activity when sitemap generation fails', function () {
-    $sitemapGenerator = Mockery::mock(SitemapGenerator::class);
-    $sitemapGenerator->shouldReceive('setUrl')->andThrow(new RuntimeException('Crawl failed'));
-    $this->app->instance(SitemapGenerator::class, $sitemapGenerator);
+    Artisan::shouldReceive('call')
+        ->once()
+        ->with('sitemap:generate')
+        ->andThrow(new RuntimeException('Command failed'));
 
-    expect(fn () => app(RegenerateSitemap::class)->handle())->toThrow(RuntimeException::class, 'Crawl failed')
+    expect(fn () => app(RegenerateSitemap::class)->handle())->toThrow(RuntimeException::class, 'Command failed')
         ->and(Activity::where('description', 'Sitemap generated')->exists())->toBeFalse();
 });

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\InsufficientStockException;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Order;
@@ -9,10 +10,10 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\User;
-use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Throwable;
 
 class CartService
@@ -26,6 +27,13 @@ class CartService
      * Cache for cart lookups within a single request to avoid duplicate queries.
      */
     protected ?array $cartCache = null;
+
+    /**
+     * Cache for cart item counts within a single request to avoid duplicate queries.
+     *
+     * @var array<int, int>
+     */
+    protected array $itemCountCache = [];
 
     /**
      * Get or create a cart for the given user or a guest cart.
@@ -94,17 +102,33 @@ class CartService
     }
 
     /**
+     * Get the total item count for a cart, memoized within the request lifecycle.
+     */
+    public function getItemCount(Cart $cart): int
+    {
+        return $this->itemCountCache[$cart->id] ??= (int) $cart->cartItems()->sum('quantity');
+    }
+
+    /**
+     * Forget the memoized item count for a cart.
+     */
+    public function forgetItemCount(int $cartId): void
+    {
+        unset($this->itemCountCache[$cartId]);
+    }
+
+    /**
      * Add an item to the cart with stock validation.
      *
-     * @throws Exception If insufficient stock is available.
+     * @throws InsufficientStockException If insufficient stock is available.
      */
     public function addItem(Cart $cart, Product $product, ?ProductVariant $variant = null, int $quantity = 1): CartItem
     {
         $this->validateStock($product, $variant, $quantity, $cart);
 
-        if ($variant) {
-            $variant->loadMissing('options');
-        }
+        $this->forgetItemCount($cart->id);
+
+        $variant?->loadMissing('options');
 
         $existingItem = $cart->cartItems()
             ->where('product_id', $product->id)
@@ -139,7 +163,7 @@ class CartService
     /**
      * Update a cart item's quantity with stock validation.
      *
-     * @throws Exception If insufficient stock is available.
+     * @throws InsufficientStockException If insufficient stock is available.
      */
     public function updateItem(CartItem $item, int $quantity): CartItem
     {
@@ -148,6 +172,8 @@ class CartService
 
             return $item;
         }
+
+        $this->forgetItemCount($item->cart_id);
 
         $product = $item->product;
         $variant = $item->productVariant;
@@ -168,6 +194,8 @@ class CartService
      */
     public function removeItem(CartItem $item): void
     {
+        $this->forgetItemCount($item->cart_id);
+
         $item->delete();
     }
 
@@ -176,6 +204,8 @@ class CartService
      */
     public function clear(Cart $cart): void
     {
+        $this->forgetItemCount($cart->id);
+
         $cart->cartItems()->delete();
     }
 
@@ -184,6 +214,8 @@ class CartService
      */
     public function removeOutOfStockItems(Cart $cart): int
     {
+        $this->forgetItemCount($cart->id);
+
         $cart->loadMissing('cartItems.product', 'cartItems.productVariant');
 
         $removedCount = 0;
@@ -222,6 +254,8 @@ class CartService
      */
     public function adjustOverstockedItems(Cart $cart): int
     {
+        $this->forgetItemCount($cart->id);
+
         $cart->loadMissing('cartItems.product', 'cartItems.productVariant');
 
         $adjustedCount = 0;
@@ -267,9 +301,13 @@ class CartService
 
     /**
      * Merge two carts, combining quantities for matching items.
+     *
+     * @throws Throwable
      */
     public function merge(Cart $source, Cart $target): void
     {
+        $this->forgetItemCount($target->id);
+
         $target->merge($source);
     }
 
@@ -344,6 +382,11 @@ class CartService
 
             $order = Order::create(array_merge($orderData, $data));
 
+            // Generate and assign the order number using the auto-incrementing ID.
+            // This must happen inside the transaction so the activity log captures the real number.
+            $order->order_number = 'ORD-'.now()->format('Y').'-'.Str::padLeft((string) $order->id, 5, '0');
+            $order->save();
+
             foreach ($items as $cartItem) {
                 $attrs = $cartItem->getAttributes();
                 OrderItem::create([
@@ -368,15 +411,16 @@ class CartService
     /**
      * Atomically reserve (decrement) stock for all items in a cart at checkout time.
      *
-     * Uses atomic database updates to prevent race conditions: only rows where
-     * stock_quantity >= quantity are updated, preventing overselling.
+     * Uses pessimistic row locking and atomic database updates to prevent race conditions:
+     * only rows where stock_quantity >= quantity are updated, preventing overselling.
      *
-     * @throws Exception If insufficient stock is available for any item.
+     * @throws InsufficientStockException If insufficient stock is available for any item.
      */
     public function reserveStockForCart(Cart $cart): void
     {
         $cart->loadMissing('cartItems.product', 'cartItems.productVariant');
 
+        $itemsByModel = [];
         foreach ($cart->cartItems as $cartItem) {
             $product = $cartItem->product;
 
@@ -388,7 +432,28 @@ class CartService
 
             /** @var Product|ProductVariant $model */
             $model = $variant ?? $product;
-            $quantity = $cartItem->quantity;
+            $key = $model::class.':'.$model->id;
+
+            if (! isset($itemsByModel[$key])) {
+                $itemsByModel[$key] = [
+                    'model' => $model,
+                    'quantity' => 0,
+                ];
+            }
+
+            $itemsByModel[$key]['quantity'] += $cartItem->quantity;
+        }
+
+        foreach ($itemsByModel as $entry) {
+            /** @var Product|ProductVariant $model */
+            $model = $entry['model'];
+            $quantity = $entry['quantity'];
+
+            $lockedModel = $model->newQuery()->lockForUpdate()->find($model->id);
+
+            if (! $lockedModel || $lockedModel->stock_quantity < $quantity) {
+                throw new InsufficientStockException(__('Insufficient stock for this product'));
+            }
 
             // Atomic check-and-decrement: only rows where stock_quantity >= quantity are updated
             $updated = $model->newQuery()
@@ -397,14 +462,14 @@ class CartService
                 ->decrement('stock_quantity', $quantity);
 
             if ($updated === 0) {
-                throw new Exception(__('Insufficient stock for this product'));
+                throw new InsufficientStockException(__('Insufficient stock for this product'));
             }
 
             // Defense-in-depth: log if stock somehow went negative
             // The WHERE guard is authoritative, so this is a safety net for edge cases
             $stock = $model->fresh()->stock_quantity;
             if ($stock < 0) {
-                Log::warning("Stock went negative for model {$model->id}: {$stock}");
+                Log::warning("Stock went negative for model $model->id: $stock");
             }
         }
     }
@@ -412,12 +477,13 @@ class CartService
     /**
      * Decrement stock for all items in an order.
      *
-     * @throws Exception If insufficient stock is available for any item.
+     * @throws InsufficientStockException If insufficient stock is available for any item.
      */
     public function reserveStockForOrder(Order $order): void
     {
         $order->loadMissing('orderItems.product', 'orderItems.productVariant');
 
+        $itemsByModel = [];
         foreach ($order->orderItems as $item) {
             $product = $item->product;
 
@@ -429,7 +495,28 @@ class CartService
 
             /** @var Product|ProductVariant $model */
             $model = $variant ?? $product;
-            $quantity = $item->quantity;
+            $key = $model::class.':'.$model->id;
+
+            if (! isset($itemsByModel[$key])) {
+                $itemsByModel[$key] = [
+                    'model' => $model,
+                    'quantity' => 0,
+                ];
+            }
+
+            $itemsByModel[$key]['quantity'] += $item->quantity;
+        }
+
+        foreach ($itemsByModel as $entry) {
+            /** @var Product|ProductVariant $model */
+            $model = $entry['model'];
+            $quantity = $entry['quantity'];
+
+            $lockedModel = $model->newQuery()->lockForUpdate()->find($model->id);
+
+            if (! $lockedModel || $lockedModel->stock_quantity < $quantity) {
+                throw new InsufficientStockException(__('Insufficient stock for this product'));
+            }
 
             $updated = $model->newQuery()
                 ->where('id', $model->id)
@@ -437,14 +524,14 @@ class CartService
                 ->decrement('stock_quantity', $quantity);
 
             if ($updated === 0) {
-                throw new Exception(__('Insufficient stock for this product'));
+                throw new InsufficientStockException(__('Insufficient stock for this product'));
             }
 
             // Defense-in-depth: log if stock somehow went negative
             // The WHERE guard is authoritative, so this is a safety net for edge cases
             $stock = $model->fresh()->stock_quantity;
             if ($stock < 0) {
-                Log::warning("Stock went negative for model {$model->id}: {$stock}");
+                Log::warning("Stock went negative for model $model->id: $stock");
             }
         }
     }
@@ -452,10 +539,23 @@ class CartService
     /**
      * Restore (increment) stock for all items in an order.
      *
+     * This method is idempotent: it only restores stock once per order, guarded by the
+     * `stock_restored_at` column. If stock was already restored, this is a no-op.
+     *
      * Call this method when an order is cancelled, refunded, or payment fails.
      */
     public function restoreStockForOrder(Order $order): void
     {
+        // Idempotency guard: only restore stock once per order.
+        if ($order->stock_restored_at !== null) {
+            return;
+        }
+
+        $updated = $order->update(['stock_restored_at' => now()]);
+        if (! $updated) {
+            return;
+        }
+
         $order->loadMissing('orderItems.product', 'orderItems.productVariant');
 
         foreach ($order->orderItems as $item) {
@@ -490,7 +590,7 @@ class CartService
     /**
      * Validate that sufficient stock is available for the given quantity.
      *
-     * @throws Exception If insufficient stock is available.
+     * @throws InsufficientStockException If insufficient stock is available.
      */
     protected function validateStock(Product $product, ?ProductVariant $variant, int $quantity, ?Cart $cart = null, ?CartItem $excludeItem = null): void
     {
@@ -499,7 +599,7 @@ class CartService
         $reservedQuantity = $this->getReservedQuantity($product, $variant, $cart, $excludeItem);
 
         if ($stockQuantity - $reservedQuantity < $quantity) {
-            throw new Exception(__('Insufficient stock for this product'));
+            throw new InsufficientStockException(__('Insufficient stock for this product'));
         }
     }
 

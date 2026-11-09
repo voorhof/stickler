@@ -53,14 +53,39 @@ it('can list orders', function () {
         ->assertCountTableRecords(3);
 });
 
+it('shows order item count using eager loaded relationship count', function () {
+    $product = Product::factory()->create();
+
+    $orderWithItems = Order::factory()->create();
+    OrderItem::factory()->count(3)->create(['order_id' => $orderWithItems->id, 'product_id' => $product->id]);
+
+    $orderWithoutItems = Order::factory()->create();
+
+    livewire(ListOrders::class)
+        ->assertCanSeeTableRecords([$orderWithItems, $orderWithoutItems])
+        ->assertTableColumnStateSet('order_items_count', 3, $orderWithItems)
+        ->assertTableColumnStateSet('order_items_count', 0, $orderWithoutItems);
+});
+
+it('shows customer name for user orders and guest for anonymous orders', function () {
+    $user = User::factory()->create(['name' => 'John Doe']);
+    $userOrder = Order::factory()->create(['user_id' => $user->id]);
+    $guestOrder = Order::factory()->create(['user_id' => null]);
+
+    livewire(ListOrders::class)
+        ->assertCanSeeTableRecords([$userOrder, $guestOrder])
+        ->assertTableColumnStateSet('user.name', 'John Doe', $userOrder)
+        ->assertTableColumnStateSet('user.name', __('Guest'), $guestOrder);
+});
+
 it('has export action on list orders page', function () {
     livewire(ListOrders::class)
         ->assertActionExists('export');
 });
 
 it('can search orders by order number', function () {
-    $order = Order::factory()->create();
-    $otherOrder = Order::factory()->create();
+    $order = Order::factory()->create(['order_number' => 'ORD-2026-00001']);
+    $otherOrder = Order::factory()->create(['order_number' => 'ORD-2026-00002']);
 
     livewire(ListOrders::class)
         ->searchTable($order->order_number)

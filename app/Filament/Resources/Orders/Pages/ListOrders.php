@@ -12,6 +12,7 @@ use Filament\Actions\CreateAction;
 use Filament\Actions\ExportAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Database\Eloquent\Builder;
 
 class ListOrders extends ListRecords
 {
@@ -21,6 +22,11 @@ class ListOrders extends ListRecords
     use HasResizableColumn;
 
     protected static string $resource = OrderResource::class;
+
+    protected function getTableQuery(): Builder
+    {
+        return static::getResource()::getEloquentQuery()->with(['user'])->withCount(['orderItems']);
+    }
 
     protected function getHeaderActions(): array
     {

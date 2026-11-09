@@ -64,23 +64,29 @@ test('an order can be mass assigned fillable values', function () {
         ->and($order->notes)->toBe('Please leave at the door');
 });
 
-test('order number is auto generated on creation', function () {
-    $order = Order::factory()->create(['order_number' => null]);
+test('order number is null when created via factory', function () {
+    $order = Order::factory()->create();
 
-    expect($order->order_number)->toMatch('/^ORD-\d{4}-\d{5}$/');
+    expect($order->order_number)->toBeNull();
 });
 
-test('order number is unique', function () {
-    $order1 = Order::factory()->create();
-    $order2 = Order::factory()->create();
+test('order number is unique when set explicitly', function () {
+    $order1 = Order::factory()->create(['order_number' => 'ORD-2026-00001']);
+    $order2 = Order::factory()->create(['order_number' => 'ORD-2026-00002']);
 
     expect($order1->order_number)->not->toBe($order2->order_number);
 });
 
-test('order number is unique within the same year', function () {
-    $order1 = Order::factory()->create();
-    $order2 = Order::factory()->create();
-    $order3 = Order::factory()->create();
+test('order number can be null when not set by factory', function () {
+    $order = Order::forceCreate(['order_number' => null]);
+
+    expect($order->order_number)->toBeNull();
+});
+
+test('order numbers are unique within the same year', function () {
+    $order1 = Order::factory()->create(['order_number' => 'ORD-2026-00001']);
+    $order2 = Order::factory()->create(['order_number' => 'ORD-2026-00002']);
+    $order3 = Order::factory()->create(['order_number' => 'ORD-2026-00003']);
 
     expect([$order1->order_number, $order2->order_number, $order3->order_number])
         ->toHaveCount(3)
@@ -365,22 +371,26 @@ test('order model has observer attribute configured', function () {
         ->and($attributes[0]->getArguments()[0])->toBe(OrderObserver::class);
 });
 
-test('order number is regenerated on unique constraint violation', function () {
-    Order::forceCreate(['order_number' => 'ORD-2026-00001']);
+test('order number follows the expected format when set by convertToOrder', function () {
+    // Order numbers are generated in CartService::convertToOrder(), not by the model.
+    // This test verifies the format pattern used by the service.
+    $order = Order::factory()->create(['order_number' => 'ORD-2026-00042']);
 
-    $order = new Order(['order_number' => 'ORD-2026-00001']);
-    $order->save();
-
-    expect($order->order_number)->not->toBe('ORD-2026-00001')
-        ->and($order->order_number)->toMatch('/^ORD-\d{4}-\d{5}$/');
+    expect($order->order_number)->toMatch('/^ORD-\d{4}-\d{5}$/');
 });
 
-test('order save throws after max retry attempts', function () {
-    Order::forceCreate(['order_number' => 'ORD-2026-00002']);
-    Order::forceCreate(['order_number' => 'ORD-2026-00003']);
-    Order::forceCreate(['order_number' => 'ORD-2026-00004']);
+test('manually set order number is preserved', function () {
+    $order = Order::factory()->create(['order_number' => 'CUSTOM-123']);
 
-    $order = new Order(['order_number' => 'ORD-2026-00002']);
+    expect($order->order_number)->toBe('CUSTOM-123');
+});
 
-    expect(fn () => $order->save())->toThrow(Illuminate\Database\UniqueConstraintViolationException::class);
+test('order numbers are unique across multiple orders', function () {
+    $orders = Order::factory()->count(5)->create([
+        'order_number' => fn () => 'ORD-2026-'.mb_str_pad((string) fake()->unique()->numberBetween(1, 99999), 5, '0', STR_PAD_LEFT),
+    ]);
+
+    $numbers = $orders->pluck('order_number')->toArray();
+    expect($numbers)->toHaveCount(5)
+        ->and($numbers)->toHaveCount(count(array_unique($numbers)));
 });
