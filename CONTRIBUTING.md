@@ -27,7 +27,7 @@ npm run build
 2. Keep each pull request focused on a single change.
 3. Follow the existing code style and conventions. Check sibling files before creating new ones.
 4. Add or update tests for behaviour changes.
-5. Update `README.md`, `FILAMENT.md`, or `CHANGELOG.md` when relevant.
+5. Update `STICKLER.md`, `FILAMENT.md`, or `CHANGELOG.md` when relevant.
 
 ## Quality Checks
 
