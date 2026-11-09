@@ -119,6 +119,6 @@ class PaymentService
 
         $order->loadMissing('orderItems');
 
-        Mail::to($customerEmail)->send(new PaymentConfirmation($order));
+        Mail::to($customerEmail)->queue(new PaymentConfirmation($order));
     }
 }
