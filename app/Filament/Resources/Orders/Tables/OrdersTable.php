@@ -11,6 +11,7 @@ use App\Filament\Schemas\Columns\CreatedColumn;
 use App\Filament\Schemas\Columns\DeletedColumn;
 use App\Filament\Schemas\Columns\IdColumn;
 use App\Filament\Schemas\Columns\UpdatedColumn;
+use App\Models\Order;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -55,10 +56,10 @@ class OrdersTable
                 TextColumn::make('total')
                     ->label(__('Total'))
                     ->money('EUR'),
-                TextColumn::make('items_count')
+                TextColumn::make('orderItems_count')
                     ->label(__('Items'))
                     ->badge()
-                    ->state(fn ($record): int => $record->items_count ?? $record->orderItems()->count())
+                    ->state(fn (Order $record): int => $record->relationLoaded('orderItems') ? $record->orderItems->count() : $record->orderItems()->count())
                     ->toggleable(isToggledHiddenByDefault: true),
                 CreatedColumn::make(),
                 UpdatedColumn::make(),

@@ -51,6 +51,20 @@ it('can list carts', function () {
         ->assertCountTableRecords(3);
 });
 
+it('shows cart item count using eager loaded relationship count', function () {
+    $product = Product::factory()->create();
+
+    $cartWithItems = Cart::factory()->create();
+    CartItem::factory()->count(2)->create(['cart_id' => $cartWithItems->id, 'product_id' => $product->id]);
+
+    $cartWithoutItems = Cart::factory()->create();
+
+    livewire(ListCarts::class)
+        ->assertCanSeeTableRecords([$cartWithItems, $cartWithoutItems])
+        ->assertTableColumnStateSet('cartItems_count', 2, $cartWithItems)
+        ->assertTableColumnStateSet('cartItems_count', 0, $cartWithoutItems);
+});
+
 it('can search carts by cart token', function () {
     $cart = Cart::factory()->create();
     $otherCart = Cart::factory()->create();

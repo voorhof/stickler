@@ -53,6 +53,20 @@ it('can list orders', function () {
         ->assertCountTableRecords(3);
 });
 
+it('shows order item count using eager loaded relationship count', function () {
+    $product = Product::factory()->create();
+
+    $orderWithItems = Order::factory()->create();
+    OrderItem::factory()->count(3)->create(['order_id' => $orderWithItems->id, 'product_id' => $product->id]);
+
+    $orderWithoutItems = Order::factory()->create();
+
+    livewire(ListOrders::class)
+        ->assertCanSeeTableRecords([$orderWithItems, $orderWithoutItems])
+        ->assertTableColumnStateSet('orderItems_count', 3, $orderWithItems)
+        ->assertTableColumnStateSet('orderItems_count', 0, $orderWithoutItems);
+});
+
 it('has export action on list orders page', function () {
     livewire(ListOrders::class)
         ->assertActionExists('export');
