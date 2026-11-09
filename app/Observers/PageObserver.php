@@ -58,6 +58,7 @@ class PageObserver
         $this->flushResponseCache();
         $this->dispatchSitemapGeneration();
         $this->syncImageAltToMediaName($page); // defaults to ['content']
+        $page->flushRichContentCache();
 
         // e.g. a model with two rich-content fields:
         // $this->syncImageAltToMediaName($page, ['content', 'method']);
@@ -67,5 +68,6 @@ class PageObserver
     {
         $this->flushResponseCache();
         $this->dispatchSitemapGeneration();
+        $page->flushRichContentCache();
     }
 }

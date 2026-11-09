@@ -6,6 +6,7 @@ namespace App\Traits;
 
 use DOMDocument;
 use Filament\Forms\Components\RichEditor\RichContentRenderer;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
@@ -13,8 +14,43 @@ trait RenderResponsiveRichContent
 {
     /**
      * Render rich content with responsive image support.
+     * The rendered HTML is cached to avoid DOM parsing on every request.
      */
     public function renderResponsiveRichContent(string $attributeName = 'content'): string
+    {
+        $cacheKey = sprintf(
+            'rich_content.%s.%s.%s',
+            static::class,
+            $this->getKey(),
+            $attributeName,
+        );
+
+        return Cache::remember(
+            $cacheKey,
+            now()->addHour(),
+            fn () => $this->renderRichContentFromSource($attributeName),
+        );
+    }
+
+    /**
+     * Clear the cached rendered rich content for a specific attribute.
+     */
+    public function flushRichContentCache(string $attributeName = 'content'): void
+    {
+        $cacheKey = sprintf(
+            'rich_content.%s.%s.%s',
+            static::class,
+            $this->getKey(),
+            $attributeName,
+        );
+
+        Cache::forget($cacheKey);
+    }
+
+    /**
+     * Render rich content from the source without caching.
+     */
+    protected function renderRichContentFromSource(string $attributeName = 'content'): string
     {
         $attribute = $this->getRichContentAttribute($attributeName);
         $renderer = $attribute ? $attribute->getRenderer() : RichContentRenderer::make($this->getAttribute($attributeName));

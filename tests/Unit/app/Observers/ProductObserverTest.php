@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 
 use function Illuminate\Support\defer;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Queue;
 
 use function Pest\Laravel\actingAs;
@@ -258,4 +259,52 @@ it('updates the created activity with content after the second save', function (
 
     expect($activity)->not->toBeNull()
         ->and($activity->properties['attributes']['content'])->toBe('<p>Rich editor content</p>');
+});
+
+it('flushes rich content cache when a product is saved', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $product = Product::create([
+        'title' => 'Rich Content Cache Test Product',
+        'intro' => 'Testing rich content cache flush.',
+        'content' => '<p>Original content</p>',
+        'price' => 19.99,
+        'discount_price' => null,
+    ]);
+
+    // Render to populate the cache
+    $product->renderResponsiveRichContent();
+    $cacheKey = 'rich_content.'.Product::class.'.'.$product->getKey().'.content';
+
+    expect(Cache::get($cacheKey))->not->toBeNull();
+
+    // Update the product, which should flush the cache via the observer
+    $product->update(['content' => '<p>Updated content</p>']);
+
+    expect(Cache::get($cacheKey))->toBeNull();
+});
+
+it('flushes rich content cache when a product is deleted', function (): void {
+    $user = User::factory()->create();
+    actingAs($user);
+
+    $product = Product::create([
+        'title' => 'Rich Content Cache Delete Test Product',
+        'intro' => 'Testing rich content cache flush on delete.',
+        'content' => '<p>Content to delete</p>',
+        'price' => 19.99,
+        'discount_price' => null,
+    ]);
+
+    // Render to populate the cache
+    $product->renderResponsiveRichContent();
+    $cacheKey = 'rich_content.'.Product::class.'.'.$product->getKey().'.content';
+
+    expect(Cache::get($cacheKey))->not->toBeNull();
+
+    // Delete the product, which should flush the cache via the observer
+    $product->delete();
+
+    expect(Cache::get($cacheKey))->toBeNull();
 });

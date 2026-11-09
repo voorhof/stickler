@@ -32,6 +32,7 @@ class PostObserver
         $this->flushResponseCache();
         $this->dispatchSitemapGeneration();
         $this->syncImageAltToMediaName($post); // defaults to ['content']
+        $post->flushRichContentCache();
 
         // e.g. a model with two rich-content fields:
         // $this->syncImageAltToMediaName($post, ['content', 'method']);
@@ -41,5 +42,6 @@ class PostObserver
     {
         $this->flushResponseCache();
         $this->dispatchSitemapGeneration();
+        $post->flushRichContentCache();
     }
 }

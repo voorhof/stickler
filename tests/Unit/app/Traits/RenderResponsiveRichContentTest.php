@@ -6,11 +6,13 @@ use App\Models\Page;
 use App\Models\User;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     Storage::fake('public');
+    Cache::flush();
     User::factory()->create();
 });
 
@@ -121,11 +123,11 @@ describe('responsive images', function () {
 
         expect($mediaQueries)
             ->toHaveCount(1)
-            ->and($mediaQueries[0]->sql)->toContain(' in ');
-
-        expect($rendered)
+            ->and($mediaQueries[0]->sql)->toContain(' in ')
+            ->and($rendered)
             ->toContain($firstMedia->getUrl())
             ->toContain($secondMedia->getUrl());
+
     });
 });
 
@@ -222,5 +224,69 @@ describe('edge cases', function () {
         expect($rendered)
             ->toContain('src="https://example.com/external.jpg"')
             ->toContain('alt="External Image"');
+    });
+});
+
+describe('caching', function () {
+    test('it caches the rendered rich content HTML', function () {
+        $page = Page::factory()->create([
+            'content' => '<p>Hello <strong>World</strong></p>',
+        ]);
+
+        $firstRender = $page->renderResponsiveRichContent();
+        $cacheKey = 'rich_content.'.Page::class.'.'.$page->getKey().'.content';
+
+        expect(Cache::get($cacheKey))->toBe($firstRender);
+    });
+
+    test('it returns cached HTML on subsequent calls without DOM parsing', function () {
+        $page = Page::factory()->create([
+            'content' => '<p>Cache test content</p>',
+        ]);
+
+        $firstRender = $page->renderResponsiveRichContent();
+        $secondRender = $page->renderResponsiveRichContent();
+
+        expect($firstRender)->toBe($secondRender);
+    });
+
+    test('it flushes cache when content is updated', function () {
+        $page = Page::factory()->create([
+            'content' => '<p>Original content</p>',
+        ]);
+
+        $page->renderResponsiveRichContent();
+
+        $page->update(['content' => '<p>Updated content</p>']);
+        $page->flushRichContentCache();
+
+        $rendered = $page->renderResponsiveRichContent();
+
+        expect($rendered)->toContain('Updated content');
+    });
+
+    test('it uses separate cache keys for different attribute names', function () {
+        $page = Page::factory()->create([
+            'content' => '<p>Main content</p>',
+            'intro' => '<p>Intro text</p>',
+        ]);
+
+        $contentRendered = $page->renderResponsiveRichContent();
+        $introRendered = $page->renderResponsiveRichContent('intro');
+
+        expect($contentRendered)->toContain('Main content')
+            ->and($introRendered)->toContain('Intro text')
+            ->and($contentRendered)->not->toBe($introRendered);
+    });
+
+    test('it uses separate cache keys for different models', function () {
+        $page1 = Page::factory()->create(['content' => '<p>Page 1</p>']);
+        $page2 = Page::factory()->create(['content' => '<p>Page 2</p>']);
+
+        $rendered1 = $page1->renderResponsiveRichContent();
+        $rendered2 = $page2->renderResponsiveRichContent();
+
+        expect($rendered1)->toContain('Page 1')
+            ->and($rendered2)->toContain('Page 2');
     });
 });
