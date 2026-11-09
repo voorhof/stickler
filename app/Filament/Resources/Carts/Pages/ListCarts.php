@@ -9,6 +9,7 @@ use App\Filament\Traits\HasCreateAction;
 use Asmit\ResizedColumn\HasResizableColumn;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Database\Eloquent\Builder;
 
 class ListCarts extends ListRecords
 {
@@ -17,6 +18,11 @@ class ListCarts extends ListRecords
     use HasResizableColumn;
 
     protected static string $resource = CartResource::class;
+
+    protected function getTableQuery(): Builder
+    {
+        return static::getResource()::getEloquentQuery()->with(['cartItems'])->withCount(['cartItems']);
+    }
 
     protected function getHeaderActions(): array
     {

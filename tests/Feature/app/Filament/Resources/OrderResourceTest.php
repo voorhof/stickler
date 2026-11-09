@@ -63,8 +63,19 @@ it('shows order item count using eager loaded relationship count', function () {
 
     livewire(ListOrders::class)
         ->assertCanSeeTableRecords([$orderWithItems, $orderWithoutItems])
-        ->assertTableColumnStateSet('orderItems_count', 3, $orderWithItems)
-        ->assertTableColumnStateSet('orderItems_count', 0, $orderWithoutItems);
+        ->assertTableColumnStateSet('order_items_count', 3, $orderWithItems)
+        ->assertTableColumnStateSet('order_items_count', 0, $orderWithoutItems);
+});
+
+it('shows customer name for user orders and guest for anonymous orders', function () {
+    $user = User::factory()->create(['name' => 'John Doe']);
+    $userOrder = Order::factory()->create(['user_id' => $user->id]);
+    $guestOrder = Order::factory()->create(['user_id' => null]);
+
+    livewire(ListOrders::class)
+        ->assertCanSeeTableRecords([$userOrder, $guestOrder])
+        ->assertTableColumnStateSet('user.name', 'John Doe', $userOrder)
+        ->assertTableColumnStateSet('user.name', __('Guest'), $guestOrder);
 });
 
 it('has export action on list orders page', function () {

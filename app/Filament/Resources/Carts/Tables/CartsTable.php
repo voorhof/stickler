@@ -6,7 +6,6 @@ use App\Filament\Actions\HardDeleteBulkAction;
 use App\Filament\Schemas\Columns\CreatedColumn;
 use App\Filament\Schemas\Columns\IdColumn;
 use App\Filament\Schemas\Columns\UpdatedColumn;
-use App\Models\Cart;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
@@ -35,10 +34,10 @@ class CartsTable
                     ->boolean()
                     ->trueColor('warning')
                     ->falseColor('success'),
-                TextColumn::make('cartItems_count')
+                TextColumn::make('cart_items_count')
                     ->label(__('Items'))
                     ->badge()
-                    ->state(fn (Cart $record): int => $record->relationLoaded('cartItems') ? $record->cartItems->count() : $record->cartItems()->count()),
+                    ->state(fn ($record): int => (int) ($record->cart_items_count ?? 0)),
                 TextColumn::make('total')
                     ->label(__('Total'))
                     ->money('EUR'),

@@ -11,7 +11,6 @@ use App\Filament\Schemas\Columns\CreatedColumn;
 use App\Filament\Schemas\Columns\DeletedColumn;
 use App\Filament\Schemas\Columns\IdColumn;
 use App\Filament\Schemas\Columns\UpdatedColumn;
-use App\Models\Order;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -33,7 +32,7 @@ class OrdersTable
                     ->weight('medium'),
                 TextColumn::make('user.name')
                     ->label(__('Customer'))
-                    ->getStateUsing(fn ($record): string => $record->customerName())
+                    ->default(__('Guest'))
                     ->toggleable(),
                 TextColumn::make('status')
                     ->label(__('Status'))
@@ -56,10 +55,10 @@ class OrdersTable
                 TextColumn::make('total')
                     ->label(__('Total'))
                     ->money('EUR'),
-                TextColumn::make('orderItems_count')
+                TextColumn::make('order_items_count')
                     ->label(__('Items'))
                     ->badge()
-                    ->state(fn (Order $record): int => $record->relationLoaded('orderItems') ? $record->orderItems->count() : $record->orderItems()->count())
+                    ->state(fn ($record): int => (int) ($record->order_items_count ?? 0))
                     ->toggleable(isToggledHiddenByDefault: true),
                 CreatedColumn::make(),
                 UpdatedColumn::make(),
