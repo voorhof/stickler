@@ -15,4 +15,23 @@ describe('section creation', function () {
         );
         expect($section)->toBeInstanceOf(Section::class);
     });
+
+    it('uses a unique key for each linked relation', function () {
+        $pagesSection = LinkedModelsSection::make(
+            MediaResource::class,
+            'pages',
+            'Pages',
+            Heroicon::OutlinedPhoto,
+        );
+        $postsSection = LinkedModelsSection::make(
+            MediaResource::class,
+            'posts',
+            'Posts',
+            Heroicon::OutlinedPhoto,
+        );
+
+        expect($pagesSection->getKey(isAbsolute: false))->toBe('linked-pages-section')
+            ->and($postsSection->getKey(isAbsolute: false))->toBe('linked-posts-section')
+            ->and($pagesSection->getKey(isAbsolute: false))->not->toBe($postsSection->getKey(isAbsolute: false));
+    });
 });

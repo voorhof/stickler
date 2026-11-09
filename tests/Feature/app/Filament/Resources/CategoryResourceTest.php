@@ -9,7 +9,9 @@ use App\Filament\Resources\Categories\Pages\CreateCategory;
 use App\Filament\Resources\Categories\Pages\EditCategory;
 use App\Filament\Resources\Categories\Pages\ListCategories;
 use App\Models\Category;
+use App\Models\Page;
 use App\Models\Permission;
+use App\Models\Post;
 use App\Models\Role;
 use App\Models\User;
 use Filament\Facades\Filament;
@@ -200,6 +202,19 @@ it('validates required fields when editing a category', function () {
             'title' => 'required',
         ])
         ->assertNotNotified();
+});
+
+it('renders linked model sections when category has a page and a post', function () {
+    $category = Category::factory()->create();
+    $page = Page::factory()->create();
+    $post = Post::factory()->create();
+
+    $category->pages()->attach($page);
+    $category->posts()->attach($post);
+
+    livewire(EditCategory::class, ['record' => $category->getRouteKey()])
+        ->assertSee(__('Linked :model', ['model' => __('Pages')]))
+        ->assertSee(__('Linked :model', ['model' => __('Blogposts')]));
 });
 
 it('can edit a category', function () {

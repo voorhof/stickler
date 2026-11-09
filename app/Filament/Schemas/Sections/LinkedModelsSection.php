@@ -55,6 +55,6 @@ class LinkedModelsSection
                     ])
                     ->lazyLoaded(),
             )
-            ->key('linked-models-section');
+            ->key("linked-$relationName-section");
     }
 }
