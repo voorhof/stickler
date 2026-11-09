@@ -21,8 +21,8 @@ return new class extends Migration
             $table->string('subject');
             $table->text('message');
             $table->string('source')->nullable();
-            $table->boolean('read')->default(0);
-            $table->boolean('replied')->default(0);
+            $table->boolean('read')->default(0)->index();
+            $table->boolean('replied')->default(0)->index();
             $table->text('reply')->nullable();
             $table->timestamp('replied_at')->nullable();
             $table->timestamp('archived_at')->nullable();
@@ -31,6 +31,9 @@ return new class extends Migration
             $table->softDeletes();
             $table->foreignIdFor(User::class, 'created_by_user_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignIdFor(User::class, 'updated_by_user_id')->nullable()->constrained()->nullOnDelete();
+
+            // Performance indexes for frequently queried columns
+            $table->index(['email', 'subject', 'created_at'], 'messages_email_subject_created_at_index');
         });
     }
 

@@ -29,6 +29,7 @@ return new class extends Migration
             $table->foreignId('tag_id')->constrained()->cascadeOnDelete();
             $table->morphs('taggable');
             $table->unique(['tag_id', 'taggable_id', 'taggable_type']);
+            $table->index(['taggable_type', 'taggable_id'], 'taggables_type_id_index');
         });
     }
 

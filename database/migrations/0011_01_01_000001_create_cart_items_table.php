@@ -37,7 +37,7 @@ return new class extends Migration
             $table->foreignIdFor(User::class, 'updated_by_user_id')->nullable()->constrained('users')->nullOnDelete();
 
             $table->index('cart_id');
-            $table->index('product_id');
+            $table->index(['product_id', 'product_variant_id'], 'cart_items_product_variant_index');
         });
     }
 
