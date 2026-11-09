@@ -6,6 +6,7 @@ use App\Filament\Actions\SendMessageReplyMailAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Support\Enums\Operation;
 use Filament\Support\Icons\Heroicon;
 
 class ReplySection
@@ -13,7 +14,7 @@ class ReplySection
     public static function make(): Section
     {
         return Section::make(__('Reply'))
-            ->hiddenOn('create')
+            ->hiddenOn(Operation::Create)
             ->icon(Heroicon::OutlinedChatBubbleBottomCenterText)
             ->collapsible()
             ->persistCollapsed()

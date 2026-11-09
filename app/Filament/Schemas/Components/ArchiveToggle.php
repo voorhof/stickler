@@ -7,6 +7,7 @@ namespace App\Filament\Schemas\Components;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
+use Filament\Support\Enums\Operation;
 use Illuminate\Database\Eloquent\Model;
 
 class ArchiveToggle
@@ -31,7 +32,7 @@ class ArchiveToggle
                     $set('archived_at', $record?->getAttributes()['archived_at'] ?? null);
                 }
             })
-            ->hiddenOn('create')
+            ->hiddenOn(Operation::Create)
             ->columnSpanFull();
     }
 }

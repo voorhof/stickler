@@ -9,6 +9,7 @@ use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Operation;
 use Filament\Support\Icons\Heroicon;
 
 class LinkedModelsSection
@@ -24,7 +25,7 @@ class LinkedModelsSection
     ): Section {
         return Section::make(__('Linked :model', ['model' => __($modelLabel)]))
             ->icon($icon)
-            ->hiddenOn('create')
+            ->hiddenOn(Operation::Create)
             ->hidden(fn ($record) => ! $record?->$relationName->count())
             ->collapsible()
             ->collapsed()

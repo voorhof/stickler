@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Users\Schemas\Components;
 
 use Filament\Forms\Components\TextInput;
+use Filament\Support\Enums\Operation;
 
 class PasswordInput
 {
@@ -14,7 +15,7 @@ class PasswordInput
             ->required()
             ->maxLength(255)
             ->trim()
-            ->hiddenOn('edit')
+            ->hiddenOn(Operation::Edit)
             ->autocomplete('new-password');
         // ->belowContent(__('Choose a temporary password. The user will be prompted to change it after the first login.'))
     }

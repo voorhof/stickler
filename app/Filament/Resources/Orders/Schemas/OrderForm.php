@@ -18,6 +18,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Operation;
 use Filament\Support\Icons\Heroicon;
 
 class OrderForm
@@ -38,7 +39,7 @@ class OrderForm
                                         ->label(__('Order number'))
                                         ->nullable()
                                         ->disabled()
-                                        ->visibleOn('edit'),
+                                        ->visibleOn(Operation::Edit),
                                     Select::make('user_id')
                                         ->label(__('Customer'))
                                         ->relationship('user', 'name')
