@@ -84,8 +84,8 @@ it('has export action on list orders page', function () {
 });
 
 it('can search orders by order number', function () {
-    $order = Order::factory()->create();
-    $otherOrder = Order::factory()->create();
+    $order = Order::factory()->create(['order_number' => 'ORD-2026-00001']);
+    $otherOrder = Order::factory()->create(['order_number' => 'ORD-2026-00002']);
 
     livewire(ListOrders::class)
         ->searchTable($order->order_number)

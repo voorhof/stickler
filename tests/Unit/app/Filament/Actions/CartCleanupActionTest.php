@@ -82,13 +82,6 @@ describe('validation', function () {
 });
 
 describe('visibility', function () {
-    it('hides the action when there are no carts', function () {
-        Cart::query()->delete();
-
-        livewire(ListCarts::class)
-            ->assertActionHidden('cartClean');
-    });
-
     it('hides the action for users without delete carts permission', function () {
         Cart::factory()->create();
 

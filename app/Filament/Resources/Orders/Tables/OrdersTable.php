@@ -28,6 +28,7 @@ class OrdersTable
                 IdColumn::make(),
                 TextColumn::make('order_number')
                     ->label(__('Order number'))
+                    ->default(__('Not assigned'))
                     ->searchable()
                     ->weight('medium'),
                 TextColumn::make('user.name')
