@@ -954,6 +954,21 @@ describe('retry payment', function () {
             ->assertSessionHas('success', __('Order is already paid'));
     });
 
+    test('redirects with error if order is cancelled', function () {
+        $user = User::factory()->create();
+        $order = Order::factory()->create([
+            'user_id' => $user->id,
+            'payment_status' => PaymentStatus::Unpaid,
+            'status' => App\Enums\OrderStatus::Cancelled,
+        ]);
+
+        $response = $this->actingAs($user)
+            ->post(route('checkout.pay', $order));
+
+        $response->assertRedirect(route('order.confirmed', $order))
+            ->assertSessionHas('error', __('This order has been cancelled and cannot be paid. Please place a new order.'));
+    });
+
     test('returns 403 when authenticated user retries another users order', function () {
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();

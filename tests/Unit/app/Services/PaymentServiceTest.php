@@ -277,6 +277,53 @@ test('it does not restore stock during webhook processing when order remains pen
     Mail::assertNothingQueued();
 });
 
+test('it restores stock when webhook cancels the order on failed payment', function () {
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+
+    // Simulate stock already reserved at checkout
+    $product->update(['stock_quantity' => 7]);
+
+    $order = Order::factory()->create([
+        'payment_status' => PaymentStatus::Unpaid,
+        'status' => OrderStatus::Pending,
+    ]);
+    OrderItem::factory()->create([
+        'order_id' => $order->id,
+        'product_id' => $product->id,
+        'product_variant_id' => null,
+        'quantity' => 3,
+    ]);
+
+    $payload = 'id=tr_Test123';
+
+    // Simulate the provider cancelling the order on failed payment
+    $mockProvider = mock(PaymentProvider::class);
+    $mockProvider->shouldReceive('handleWebhook')
+        ->once()
+        ->andReturnUsing(function () use ($order) {
+            $order->update([
+                'payment_status' => PaymentStatus::Unpaid->value,
+                'status' => OrderStatus::Cancelled->value,
+            ]);
+
+            return $order->fresh();
+        });
+
+    Mail::fake();
+
+    config(['payment.default' => 'mollie', 'payment.providers.mollie' => PaymentProvider::class]);
+    $service = app(PaymentService::class);
+    app()->instance(PaymentProvider::class, $mockProvider);
+
+    $result = $service->handleWebhook($payload, 'valid-signature');
+
+    expect($result)->toBe(WebhookResult::Success)
+        ->and($order->fresh()->status)->toBe(OrderStatus::Cancelled)
+        ->and($product->fresh()->stock_quantity)->toBe(10);
+
+    Mail::assertNothingQueued();
+});
+
 test('it does not restore stock when payment is successful', function () {
     $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 7]);
 

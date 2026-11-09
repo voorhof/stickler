@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Public;
 
+use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Public\StoreOrderRequest;
@@ -284,6 +285,12 @@ class CartController extends Controller
             return redirect()
                 ->route('order.confirmed', $order)
                 ->with('success', __('Order is already paid'));
+        }
+
+        if ($order->status === OrderStatus::Cancelled) {
+            return redirect()
+                ->route('order.confirmed', $order)
+                ->with('error', __('This order has been cancelled and cannot be paid. Please place a new order.'));
         }
 
         try {

@@ -118,6 +118,7 @@ class MollieProvider implements PaymentProvider
         } elseif ($payment->isCanceled() || $payment->isFailed() || $payment->isExpired() || $payment->status === 'canceled' || $payment->status === 'failed' || $payment->status === 'expired') {
             $order->update([
                 'payment_status' => PaymentStatus::Unpaid->value,
+                'status' => OrderStatus::Cancelled->value,
             ]);
         }
 
