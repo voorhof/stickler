@@ -22,7 +22,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Str;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 
@@ -187,53 +186,27 @@ class Order extends Model
 
         static::creating(function (Order $order) {
             if (! $order->order_number) {
-                $order->order_number = self::generateOrderNumber();
+                $order->order_number = 'PENDING';
+            }
+        });
+
+        static::saved(function (Order $order) {
+            if ($order->order_number === 'PENDING') {
+                $order->order_number = self::generateOrderNumber($order->id);
+                $order->saveQuietly();
             }
         });
     }
 
     /**
-     * Generate a unique order number like ORD-2026-00001.
+     * Generate a unique order number like ORD-2026-00001 using the auto-incrementing ID.
      */
-    protected static function generateOrderNumber(): string
+    protected static function generateOrderNumber(int $id): string
     {
         $year = now()->format('Y');
-        $prefix = 'ORD-'.$year.'-';
+        $sequence = Str::padLeft((string) $id, 5, '0');
 
-        $count = self::withTrashed()->where('order_number', 'like', $prefix.'%')->count();
-        $nextNumber = $count + 1;
-        $sequence = Str::padLeft((string) $nextNumber, 5, '0');
-
-        return $prefix.$sequence;
-    }
-
-    /**
-     * Save the model instance, retrying with a new order number if a unique constraint violation occurs.
-     *
-     * Under high concurrency, two requests may generate the same order number. The database
-     * unique constraint catches the collision, and we retry with a fresh number (up to 3 attempts).
-     *
-     * @param  array<string, mixed>  $options
-     */
-    public function save(array $options = []): bool
-    {
-        $maxAttempts = 3;
-        $attempt = 0;
-
-        while ($attempt < $maxAttempts) {
-            try {
-                return parent::save($options);
-            } catch (UniqueConstraintViolationException $exception) {
-                if ($attempt + 1 >= $maxAttempts) {
-                    throw $exception;
-                }
-
-                $this->order_number = self::generateOrderNumber();
-                $attempt++;
-            }
-        }
-
-        return false;
+        return 'ORD-'.$year.'-'.$sequence;
     }
 
     /*

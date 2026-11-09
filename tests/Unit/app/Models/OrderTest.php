@@ -365,22 +365,23 @@ test('order model has observer attribute configured', function () {
         ->and($attributes[0]->getArguments()[0])->toBe(OrderObserver::class);
 });
 
-test('order number is regenerated on unique constraint violation', function () {
-    Order::forceCreate(['order_number' => 'ORD-2026-00001']);
+test('order number is generated using the auto-incrementing id', function () {
+    $order = Order::factory()->create();
 
-    $order = new Order(['order_number' => 'ORD-2026-00001']);
-    $order->save();
-
-    expect($order->order_number)->not->toBe('ORD-2026-00001')
-        ->and($order->order_number)->toMatch('/^ORD-\d{4}-\d{5}$/');
+    expect($order->order_number)->toMatch('/^ORD-\d{4}-\d{5}$/')
+        ->and($order->order_number)->toBe('ORD-'.now()->format('Y').'-'.mb_str_pad((string) $order->id, 5, '0', STR_PAD_LEFT));
 });
 
-test('order save throws after max retry attempts', function () {
-    Order::forceCreate(['order_number' => 'ORD-2026-00002']);
-    Order::forceCreate(['order_number' => 'ORD-2026-00003']);
-    Order::forceCreate(['order_number' => 'ORD-2026-00004']);
+test('manually set order number is preserved', function () {
+    $order = Order::factory()->create(['order_number' => 'CUSTOM-123']);
 
-    $order = new Order(['order_number' => 'ORD-2026-00002']);
+    expect($order->order_number)->toBe('CUSTOM-123');
+});
 
-    expect(fn () => $order->save())->toThrow(Illuminate\Database\UniqueConstraintViolationException::class);
+test('order numbers are unique across multiple orders', function () {
+    $orders = Order::factory()->count(5)->create();
+
+    $numbers = $orders->pluck('order_number')->toArray();
+    expect($numbers)->toHaveCount(5)
+        ->and($numbers)->toHaveCount(count(array_unique($numbers)));
 });
