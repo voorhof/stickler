@@ -5,7 +5,7 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/voorhof/stickler/compare/v1.8.4...HEAD)
+## [Unreleased](https://github.com/voorhof/stickler/compare/v1.9.0...HEAD)
 
 ### Security
 
@@ -56,6 +56,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved webhook error responses with proper HTTP status codes
 - Added `boost:install` to post-install scripts
 - Added composer cooldown policy
+
+## [v1.9.0](https://github.com/voorhof/stickler/compare/v1.8.4...v1.9.0) - 2026-11-09
+
+### What's Changed
+
+* Optimizations and Updates by @voorhof in https://github.com/voorhof/stickler/pull/33
+
+1. Implemented concurrency control and stock validation for checkout and cart merging to prevent race conditions
+2. Fix cache security issue of public CDN / HTTP cache poisoning on dynamic user-facing routes
+3. Improved slug generation and excluded_from_slug for Pages
+4. Added delete failsafe and role demotion protection for last admin
+5. Offloaded synchronous heavy operations to queues
+6. Implemented state-driven, idempotent stock restoration and webhook handling
+7. Fixed the scheduled carts:cleanup command signature mismatch
+8. Eliminated view composer per-component query amplification by scoping to only navbar and adding memoized cart item count caching
+9. Updated guest checkout to use Laravel signed URLs, with the session check remaining as a fallback
+10. Created PruneOrphanedMediaCommand for orphaned media and temporary file cleanup
+11. Queued the PaymentConfirmation mail in the webhook handler
+12. Added db indexes to tables on frequently queried columns
+13. Fixed N+1 queries in Filament OrdersTable and CartsTable item counts
+14. Fixed N+1 queries in Filament ListCarts and ListOrders for user relation
+15. Optimized RenderResponsiveRichContent by caching HTML to eliminate DOM parsing on every page view
+16. Optimized order number generation to eliminate the expensive LIKE prefix COUNT query and retry loop
+17. Eager-loaded media relation in public show controllers
+18. Fixed the stock restoration regression when a Mollie payment fails, is canceled, or expires
+19. Made stock restoration fully idempotent to prevent double-restoring stock and incorrectly inflating inventory
+20. Fixed the checkout error handler to stop exposing raw exception messages to customers
+21. Fixed guest 'Pay now' fail
+22. Order Number Generation — Made order_number nullable in the migration
+23. Fixed OrderResource nullable order_number after removing the placeholder approach
+24. Updated lang files
+25. Composer & NPM updates
+26. Updated README
+
+**Full Changelog**: https://github.com/voorhof/stickler/compare/v1.8.4...v1.9.0
 
 ## [v1.8.4](https://github.com/voorhof/stickler/compare/v1.8.3...v1.8.4) - 2026-11-06
 
