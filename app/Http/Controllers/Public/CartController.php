@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Public;
 
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
+use App\Exceptions\InsufficientStockException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Public\StoreOrderRequest;
 use App\Models\CartItem;
@@ -235,12 +236,16 @@ class CartController extends Controller
         // Convert cart to order (transfers customer data)
         try {
             $order = $this->cartService->convertToOrder($cart);
+        } catch (InsufficientStockException $e) {
+            return redirect()
+                ->route('cart.index')
+                ->with('error', $e->getMessage());
         } catch (Throwable $e) {
             report($e);
 
             return redirect()
                 ->route('cart.index')
-                ->with('error', $e->getMessage() ?: __('Unable to process order. Please check item availability.'));
+                ->with('error', __('Unable to process order. Please check item availability.'));
         }
 
         // Store the last guest order ID in the session for thank-you page access

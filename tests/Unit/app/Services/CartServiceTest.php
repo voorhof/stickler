@@ -2,6 +2,7 @@
 
 /** @noinspection PhpUnhandledExceptionInspection */
 
+use App\Exceptions\InsufficientStockException;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\OrderItem;
@@ -57,7 +58,7 @@ test('it validates stock when adding item', function () {
     $service = app(CartService::class);
 
     expect(fn () => $service->addItem($cart, $product, null, 5))
-        ->toThrow(Exception::class, __('Insufficient stock for this product'));
+        ->toThrow(InsufficientStockException::class, __('Insufficient stock for this product'));
 });
 
 test('it updates item quantity', function () {
@@ -96,7 +97,7 @@ test('it validates stock when updating item quantity', function () {
 
     // Updating to 5 when only 3 in stock should fail
     expect(fn () => $service->updateItem($item, 5))
-        ->toThrow(Exception::class, __('Insufficient stock for this product'));
+        ->toThrow(InsufficientStockException::class, __('Insufficient stock for this product'));
 });
 
 test('it validates stock when updating item with other cart items reserved', function () {
@@ -240,7 +241,7 @@ test('it validates variant stock when adding item', function () {
     $service = app(CartService::class);
 
     expect(fn () => $service->addItem($cart, $product, $variant, 5))
-        ->toThrow(Exception::class, __('Insufficient stock for this product'));
+        ->toThrow(InsufficientStockException::class, __('Insufficient stock for this product'));
 });
 
 test('it considers reserved quantity when validating stock', function () {
@@ -251,7 +252,7 @@ test('it considers reserved quantity when validating stock', function () {
     $service->addItem($cart, $product, null, 3);
 
     expect(fn () => $service->addItem($cart, $product, null, 3))
-        ->toThrow(Exception::class, __('Insufficient stock for this product'));
+        ->toThrow(InsufficientStockException::class, __('Insufficient stock for this product'));
 });
 
 test('it creates a new guest cart when cookie token is missing', function () {
@@ -565,7 +566,7 @@ test('it fails to convert cart to order when stock is insufficient for quantity 
     $product->update(['stock_quantity' => 1]);
 
     expect(fn () => $service->convertToOrder($cart))
-        ->toThrow(Exception::class, __('Insufficient stock for this product'))
+        ->toThrow(InsufficientStockException::class, __('Insufficient stock for this product'))
         ->and($product->fresh()->stock_quantity)->toBe(1)
         ->and($cart->fresh()->cartItems)->toHaveCount(1);
 
@@ -992,7 +993,7 @@ test('it fails to reserve stock for cart when insufficient stock', function () {
     $service = app(CartService::class);
 
     expect(fn () => $service->reserveStockForCart($cart))
-        ->toThrow(Exception::class, __('Insufficient stock for this product'))
+        ->toThrow(InsufficientStockException::class, __('Insufficient stock for this product'))
         ->and($product->fresh()->stock_quantity)->toBe(1);
 });
 
@@ -1020,7 +1021,7 @@ test('it aggregates stock requirements for duplicate product items in cart', fun
     $service = app(CartService::class);
 
     expect(fn () => $service->reserveStockForCart($cart))
-        ->toThrow(Exception::class, __('Insufficient stock for this product'))
+        ->toThrow(InsufficientStockException::class, __('Insufficient stock for this product'))
         ->and($product->fresh()->stock_quantity)->toBe(5);
 });
 
@@ -1071,7 +1072,7 @@ test('it aggregates stock requirements for duplicate product items in order', fu
     $service = app(CartService::class);
 
     expect(fn () => $service->reserveStockForOrder($order))
-        ->toThrow(Exception::class, __('Insufficient stock for this product'))
+        ->toThrow(InsufficientStockException::class, __('Insufficient stock for this product'))
         ->and($product->fresh()->stock_quantity)->toBe(5);
 });
 
@@ -1113,7 +1114,7 @@ test('it fails to reserve stock for order when insufficient stock', function () 
     $service = app(CartService::class);
 
     expect(fn () => $service->reserveStockForOrder($order))
-        ->toThrow(Exception::class, __('Insufficient stock for this product'))
+        ->toThrow(InsufficientStockException::class, __('Insufficient stock for this product'))
         ->and($product->fresh()->stock_quantity)->toBe(1);
 
 });

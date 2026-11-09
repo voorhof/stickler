@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\InsufficientStockException;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Order;
@@ -9,7 +10,6 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\User;
-use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -119,7 +119,7 @@ class CartService
     /**
      * Add an item to the cart with stock validation.
      *
-     * @throws Exception If insufficient stock is available.
+     * @throws InsufficientStockException If insufficient stock is available.
      */
     public function addItem(Cart $cart, Product $product, ?ProductVariant $variant = null, int $quantity = 1): CartItem
     {
@@ -162,7 +162,7 @@ class CartService
     /**
      * Update a cart item's quantity with stock validation.
      *
-     * @throws Exception If insufficient stock is available.
+     * @throws InsufficientStockException If insufficient stock is available.
      */
     public function updateItem(CartItem $item, int $quantity): CartItem
     {
@@ -408,7 +408,7 @@ class CartService
      * Uses pessimistic row locking and atomic database updates to prevent race conditions:
      * only rows where stock_quantity >= quantity are updated, preventing overselling.
      *
-     * @throws Exception If insufficient stock is available for any item.
+     * @throws InsufficientStockException If insufficient stock is available for any item.
      */
     public function reserveStockForCart(Cart $cart): void
     {
@@ -446,7 +446,7 @@ class CartService
             $lockedModel = $model->newQuery()->lockForUpdate()->find($model->id);
 
             if (! $lockedModel || $lockedModel->stock_quantity < $quantity) {
-                throw new Exception(__('Insufficient stock for this product'));
+                throw new InsufficientStockException(__('Insufficient stock for this product'));
             }
 
             // Atomic check-and-decrement: only rows where stock_quantity >= quantity are updated
@@ -456,7 +456,7 @@ class CartService
                 ->decrement('stock_quantity', $quantity);
 
             if ($updated === 0) {
-                throw new Exception(__('Insufficient stock for this product'));
+                throw new InsufficientStockException(__('Insufficient stock for this product'));
             }
 
             // Defense-in-depth: log if stock somehow went negative
@@ -471,7 +471,7 @@ class CartService
     /**
      * Decrement stock for all items in an order.
      *
-     * @throws Exception If insufficient stock is available for any item.
+     * @throws InsufficientStockException If insufficient stock is available for any item.
      */
     public function reserveStockForOrder(Order $order): void
     {
@@ -509,7 +509,7 @@ class CartService
             $lockedModel = $model->newQuery()->lockForUpdate()->find($model->id);
 
             if (! $lockedModel || $lockedModel->stock_quantity < $quantity) {
-                throw new Exception(__('Insufficient stock for this product'));
+                throw new InsufficientStockException(__('Insufficient stock for this product'));
             }
 
             $updated = $model->newQuery()
@@ -518,7 +518,7 @@ class CartService
                 ->decrement('stock_quantity', $quantity);
 
             if ($updated === 0) {
-                throw new Exception(__('Insufficient stock for this product'));
+                throw new InsufficientStockException(__('Insufficient stock for this product'));
             }
 
             // Defense-in-depth: log if stock somehow went negative
@@ -584,7 +584,7 @@ class CartService
     /**
      * Validate that sufficient stock is available for the given quantity.
      *
-     * @throws Exception If insufficient stock is available.
+     * @throws InsufficientStockException If insufficient stock is available.
      */
     protected function validateStock(Product $product, ?ProductVariant $variant, int $quantity, ?Cart $cart = null, ?CartItem $excludeItem = null): void
     {
@@ -593,7 +593,7 @@ class CartService
         $reservedQuantity = $this->getReservedQuantity($product, $variant, $cart, $excludeItem);
 
         if ($stockQuantity - $reservedQuantity < $quantity) {
-            throw new Exception(__('Insufficient stock for this product'));
+            throw new InsufficientStockException(__('Insufficient stock for this product'));
         }
     }
 

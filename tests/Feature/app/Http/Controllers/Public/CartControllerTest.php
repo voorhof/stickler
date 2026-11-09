@@ -747,6 +747,43 @@ describe('order creation', function () {
         expect(Order::count())->toBe(0);
     });
 
+    test('it shows generic error message for non-stock conversion failures', function () {
+        $product = Product::factory()->create(['price' => 2999, 'stock_quantity' => 10]);
+        $cart = Cart::factory()->create();
+        CartItem::factory()->create([
+            'cart_id' => $cart->id,
+            'product_id' => $product->id,
+            'product_name' => $product->title,
+            'quantity' => 1,
+            'unit_price' => 2999,
+            'total_price' => 2999,
+        ]);
+
+        $cartService = mock(App\Services\CartService::class);
+        $cartService->shouldReceive('getOrCreateCart')->once()->andReturn($cart);
+        $cartService->shouldReceive('saveCustomerData')->once();
+        $cartService->shouldReceive('convertToOrder')
+            ->once()
+            ->andThrow(new RuntimeException('SQLSTATE[23505] duplicate key value violates unique constraint'));
+        app()->instance(App\Services\CartService::class, $cartService);
+
+        $response = $this->withCookie('cart_token', $cart->cart_token)
+            ->post(route('checkout.store'), [
+                'name' => 'Jane Doe',
+                'email' => 'jane@example.com',
+                'phone' => '+32470123456',
+                'shipping_street' => 'Main St 1',
+                'shipping_city' => 'Brussels',
+                'shipping_postal_code' => '1000',
+                'shipping_country' => 'Belgium',
+                'billing_same_as_shipping' => 1,
+            ]);
+
+        $response->assertRedirect(route('cart.index'))
+            ->assertSessionHas('error', __('Unable to process order. Please check item availability.'));
+        expect(Order::count())->toBe(0);
+    });
+
     test('it handles payment initiation failure gracefully by redirecting to thank you page with error message', function () {
         $product = Product::factory()->create(['price' => 2999, 'stock_quantity' => 10]);
         $cart = Cart::factory()->create();
