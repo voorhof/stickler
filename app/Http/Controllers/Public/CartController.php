@@ -17,6 +17,7 @@ use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\URL;
 use Illuminate\View\View;
 use Laravel\Head\Facades\Head;
 use Throwable;
@@ -335,8 +336,17 @@ class CartController extends Controller
 
         $order->load('orderItems');
 
+        // Build the "Pay now" form action URL.
+        // Authenticated users and guests with session access use the regular route.
+        // Guests without session access get a temporary signed URL (30 days).
+        $payNowUrl = route('checkout.pay', $order);
+        if (! Auth::check() && $request->session()->get('last_guest_order_id') !== $order->id) {
+            $payNowUrl = URL::temporarySignedRoute('checkout.pay', now()->addDays(30), ['order' => $order]);
+        }
+
         return view('public.checkout.thankyou', [
             'order' => $order,
+            'payNowUrl' => $payNowUrl,
         ]);
     }
 }

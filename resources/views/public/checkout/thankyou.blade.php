@@ -27,7 +27,7 @@
                         <div class="alert alert-info text-center" role="alert">
                             <strong>{{ __('Payment pending') }}</strong>
                             <p class="mb-3">{{ __('Your order will be processed once payment is confirmed.') }}</p>
-                            <form action="{{ route('checkout.pay', $order) }}" method="POST" class="d-inline">
+                            <form action="{{ $payNowUrl }}" method="POST" class="d-inline">
                                 @csrf
                                 <button type="submit" class="btn btn-primary btn-sm">{{ __('Pay now') }}</button>
                             </form>

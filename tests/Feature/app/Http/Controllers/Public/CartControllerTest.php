@@ -917,6 +917,56 @@ describe('thank you page', function () {
             ->assertSeeText($order->order_number);
     });
 
+    test('it passes a regular route as payNowUrl when guest has session access', function () {
+        $order = Order::factory()->create(['user_id' => null, 'payment_status' => PaymentStatus::Unpaid]);
+
+        $response = $this->withSession(['last_guest_order_id' => $order->id])
+            ->get(route('order.confirmed', $order));
+
+        $response->assertViewHas('payNowUrl', function ($value) use ($order) {
+            $expectedUrl = route('checkout.pay', $order);
+            // The URL should NOT contain a signature parameter
+            return str_contains($value, 'signature=') === false
+                && str_contains($value, 'expires=') === false
+                && str_contains($value, (string) $order->id);
+        });
+    });
+
+    test('it passes a temporary signed url as payNowUrl when guest has no session access', function () {
+        $order = Order::factory()->create(['user_id' => null, 'payment_status' => PaymentStatus::Unpaid]);
+
+        $signedUrl = Illuminate\Support\Facades\URL::signedRoute('order.confirmed', ['order' => $order]);
+        $response = $this->get($signedUrl);
+
+        $response->assertViewHas('payNowUrl', function ($value) use ($order) {
+            // The URL should contain both signature and expires parameters
+            return str_contains($value, 'signature=')
+                && str_contains($value, 'expires=')
+                && str_contains($value, (string) $order->id);
+        });
+    });
+
+    test('it allows guest without session to submit pay now form via signed url', function () {
+        $order = Order::factory()->create(['user_id' => null, 'payment_status' => PaymentStatus::Unpaid]);
+
+        // Simulate the guest arriving via signed URL (no session)
+        $signedUrl = Illuminate\Support\Facades\URL::signedRoute('order.confirmed', ['order' => $order]);
+        $response = $this->get($signedUrl);
+
+        // Extract the payNowUrl from the view
+        $payNowUrl = $response->viewData('payNowUrl');
+
+        // The Pay now form should be accessible via the signed URL
+        $paymentService = mock(App\Services\PaymentService::class);
+        $paymentService->shouldReceive('initiatePayment')
+            ->once()
+            ->andReturn(['checkout_url' => 'https://mollie.com/checkout']);
+        app()->instance(App\Services\PaymentService::class, $paymentService);
+
+        $this->post($payNowUrl)
+            ->assertRedirect('https://mollie.com/checkout');
+    });
+
     test('it sets head metadata on thank you page', function () {
         $user = User::factory()->create();
         $order = Order::factory()->create(['user_id' => $user->id]);
