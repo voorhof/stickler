@@ -12,21 +12,11 @@ class OrderObserver
     use TracksCreatorAndUpdaterObserver;
 
     /**
-     * Handle the Order "created" event.
-     */
-    public function created(Order $order): void
-    {
-        if ($order->status === OrderStatus::Cancelled) {
-            app(CartService::class)->restoreStockForOrder($order);
-        }
-    }
-
-    /**
      * Handle the Order "updated" event.
      */
     public function updated(Order $order): void
     {
-        if ($order->wasChanged('status') && $order->status === OrderStatus::Cancelled && $order->getOriginal('status') !== OrderStatus::Cancelled) {
+        if ($order->wasChanged('status') && $order->status === OrderStatus::Cancelled) {
             app(CartService::class)->restoreStockForOrder($order);
         }
     }

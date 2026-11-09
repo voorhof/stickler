@@ -41,6 +41,7 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
  * @property string|null $payment_provider
  * @property string|null $payment_provider_id
  * @property string|null $notes
+ * @property DateTime|null $stock_restored_at
  * @property DateTime $created_at
  * @property DateTime $updated_at
  * @property BelongsTo<User>|null $user
@@ -60,6 +61,7 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
     'user_id',
     'status',
     'payment_status',
+    'stock_restored_at',
     'subtotal',
     'tax_amount',
     'shipping_amount',
@@ -106,6 +108,7 @@ class Order extends Model
             'payment_status' => PaymentStatus::class,
             'shipping_address' => 'array',
             'billing_address' => 'array',
+            'stock_restored_at' => 'datetime',
         ];
     }
 

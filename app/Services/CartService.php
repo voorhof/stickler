@@ -533,10 +533,23 @@ class CartService
     /**
      * Restore (increment) stock for all items in an order.
      *
+     * This method is idempotent: it only restores stock once per order, guarded by the
+     * `stock_restored_at` column. If stock was already restored, this is a no-op.
+     *
      * Call this method when an order is cancelled, refunded, or payment fails.
      */
     public function restoreStockForOrder(Order $order): void
     {
+        // Idempotency guard: only restore stock once per order.
+        if ($order->stock_restored_at !== null) {
+            return;
+        }
+
+        $updated = $order->update(['stock_restored_at' => now()]);
+        if (! $updated) {
+            return;
+        }
+
         $order->loadMissing('orderItems.product', 'orderItems.productVariant');
 
         foreach ($order->orderItems as $item) {

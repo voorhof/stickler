@@ -6,7 +6,6 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\User;
-use App\Observers\OrderObserver;
 
 use function Pest\Laravel\actingAs;
 
@@ -66,7 +65,8 @@ it('restores product and variant stock when order status transitions to cancelle
     $order->update(['status' => OrderStatus::Cancelled]);
 
     expect($product->fresh()->stock_quantity)->toBe(8)
-        ->and($variant->fresh()->stock_quantity)->toBe(6);
+        ->and($variant->fresh()->stock_quantity)->toBe(6)
+        ->and($order->fresh()->stock_restored_at)->not->toBeNull();
 });
 
 it('is idempotent and does not restore stock repeatedly when updating an already cancelled order', function (): void {
@@ -95,7 +95,34 @@ it('is idempotent and does not restore stock repeatedly when updating an already
     expect($product->fresh()->stock_quantity)->toBe(8);
 });
 
-it('restores stock when order is created directly with cancelled status', function (): void {
+it('does not restore stock twice when order cycles cancelled-pending-cancelled', function (): void {
+    $product = Product::factory()->create(['stock_quantity' => 5]);
+
+    $order = Order::factory()->create([
+        'status' => OrderStatus::Pending,
+    ]);
+
+    OrderItem::factory()->create([
+        'order_id' => $order->id,
+        'product_id' => $product->id,
+        'product_variant_id' => null,
+        'quantity' => 3,
+    ]);
+
+    // First cancellation restores stock
+    $order->update(['status' => OrderStatus::Cancelled]);
+    expect($product->fresh()->stock_quantity)->toBe(8);
+
+    // Reopen the order to Pending
+    $order->update(['status' => OrderStatus::Pending]);
+    expect($product->fresh()->stock_quantity)->toBe(8);
+
+    // Second cancellation should NOT restore stock again because stock_restored_at is already set
+    $order->update(['status' => OrderStatus::Cancelled]);
+    expect($product->fresh()->stock_quantity)->toBe(8);
+});
+
+it('does not restore stock when order is created directly with cancelled status', function (): void {
     $product = Product::factory()->create(['stock_quantity' => 10]);
 
     $order = Order::factory()->create([
@@ -109,11 +136,9 @@ it('restores stock when order is created directly with cancelled status', functi
         'quantity' => 5,
     ]);
 
-    // If order was created directly as Cancelled and items loaded, calling restoreStockForOrder restores
-    $orderObserver = new OrderObserver;
-    $orderObserver->created($order);
-
-    expect($product->fresh()->stock_quantity)->toBe(15);
+    // Stock was never reserved for an order created directly as Cancelled,
+    // so the observer should NOT restore stock.
+    expect($product->fresh()->stock_quantity)->toBe(10);
 });
 
 it('does not restore stock for non-cancelled status transitions', function (): void {
