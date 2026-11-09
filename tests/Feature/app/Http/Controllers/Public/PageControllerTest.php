@@ -79,7 +79,8 @@ describe('pages show', function () {
         $response->assertSuccessful()
             ->assertViewIs('public.pages.show')
             ->assertViewHas('page', function (Page $viewPage) use ($page) {
-                return $viewPage->id === $page->id;
+                return $viewPage->id === $page->id
+                    && $viewPage->relationLoaded('media');
             })
             ->assertSeeText($page->title)
             ->assertSeeText($page->intro);
@@ -151,7 +152,8 @@ describe('controller methods', function () {
         $view = $controller->show($publishedPage);
 
         expect($view->name())->toBe('public.pages.show')
-            ->and($view->getData()['page']->id)->toBe($publishedPage->id);
+            ->and($view->getData()['page']->id)->toBe($publishedPage->id)
+            ->and($view->getData()['page']->relationLoaded('media'))->toBeTrue();
 
     });
 });

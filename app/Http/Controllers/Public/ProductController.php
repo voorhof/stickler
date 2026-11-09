@@ -35,7 +35,7 @@ class ProductController extends Controller
     {
         abort_unless($product->isPublished(), 404);
 
-        $product->load(['variants.options', 'categories']);
+        $product->load(['media', 'variants.options', 'categories']);
 
         Head::title($product->title)
             ->description($product->intro);
