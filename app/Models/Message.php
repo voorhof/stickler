@@ -56,6 +56,7 @@ use Spatie\Sluggable\Attributes\Sluggable;
  * @method static create(mixed $validated)
  * @method static where(string $string, false $false)
  * @method static forceCreate(array $array)
+ * @method static find(mixed $id)
  */
 #[Fillable([
     'slug',

@@ -87,7 +87,7 @@ class ForModelsFilter extends BaseFilter
      */
     public function getResetState(): array
     {
-        if ($this->hasSchema()) {
+        if ($this->hasForm()) {
             return parent::getResetState();
         }
 

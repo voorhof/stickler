@@ -19,6 +19,7 @@
         "ext-imagick": "*",
         "ext-json": "*",
         "ext-libxml": "*",
+        "ext-pdo": "*",
         "ext-zip": "*",
         "asmit/resized-column": "^4.0",
         "filament/filament": "^5.11",

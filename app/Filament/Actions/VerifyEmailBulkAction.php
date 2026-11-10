@@ -2,12 +2,12 @@
 
 namespace App\Filament\Actions;
 
+use App\Models\User;
 use Filament\Actions\BulkAction;
 use Filament\Actions\Concerns\CanCustomizeProcess;
 use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
 use Illuminate\Support\Number;
@@ -98,7 +98,7 @@ class VerifyEmailBulkAction extends BulkAction
 
                 $isFirstException = true;
 
-                $records->each(static function (Model $record) use ($action, &$isFirstException): void {
+                $records->each(static function (User $record) use ($action, &$isFirstException): void {
                     try {
                         // Update the record
                         $record->email_verified_at = now();

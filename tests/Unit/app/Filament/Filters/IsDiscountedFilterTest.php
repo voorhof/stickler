@@ -41,7 +41,7 @@ it('has the correct label', function () {
     expect($filter->getLabel())->toBe(__('Is discounted'));
 });
 
-it('exists in the coaching plans table', function () {
+it('exists in the products table', function () {
     livewire(ListProducts::class)
         ->assertTableFilterExists('isDiscounted');
 });

@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @method static create(array $array)
  * @method static count()
- * @method static where(string $string, string $today)
+ * @method static where(string $string, mixed $operator, mixed $value = null)
  */
 #[Fillable([
     'path',
