@@ -43,6 +43,16 @@ class CategoryFactory extends Factory
     }
 
     /**
+     * Indicate that the category is a child of the given parent.
+     */
+    public function childOf(Category $parent): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'parent_id' => $parent->id,
+        ]);
+    }
+
+    /**
      * Configure the model factory.
      */
     public function configure(): static

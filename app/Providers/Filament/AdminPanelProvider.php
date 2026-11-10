@@ -36,7 +36,7 @@ class AdminPanelProvider extends PanelProvider
             ->unsavedChangesAlerts()
             ->databaseTransactions()
             ->databaseNotifications()
-            ->databaseNotificationsPolling('10s')
+            ->databaseNotificationsPollingInterval('10s')
             ->strictAuthorization() // Throws an exception if a resource model policy or policy method does not exist.
             ->login()
             ->passwordReset()

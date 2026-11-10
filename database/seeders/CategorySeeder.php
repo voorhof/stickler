@@ -16,7 +16,11 @@ class CategorySeeder extends Seeder
      */
     public function run(): void
     {
-        Category::factory()->count(15)->create();
+        $parents = Category::factory()->count(15)->create();
+        foreach ($parents as $parent) {
+            Category::factory()->count(2)->childOf($parent)->create();
+        }
+
         Category::factory()->count(3)->softDeleted()->create();
 
         $pages = Page::all();

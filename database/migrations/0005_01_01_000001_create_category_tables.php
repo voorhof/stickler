@@ -18,6 +18,7 @@ return new class extends Migration
             $table->boolean('for_products')->nullable()->default(false);
             $table->boolean('for_projects')->nullable()->default(false);
             $table->unsignedInteger('order_column')->nullable()->index();
+            $table->foreignId('parent_id')->nullable()->constrained('categories')->nullOnDelete();
             $table->timestamps();
             $table->softDeletes();
             $table->foreignIdFor(User::class, 'created_by_user_id')->nullable()->constrained('users')->nullOnDelete();

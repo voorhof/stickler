@@ -9,6 +9,7 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\Operation;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Model;
 
@@ -20,7 +21,7 @@ class DatabaseInfoSection
     {
         return Section::make(__('Database Info'))
             ->icon(Heroicon::OutlinedInformationCircle)
-            ->hiddenOn('create')
+            ->hiddenOn(Operation::Create)
             ->collapsible()
             ->collapsed()
             ->persistCollapsed()

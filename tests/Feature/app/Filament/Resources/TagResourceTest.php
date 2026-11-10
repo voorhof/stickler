@@ -327,6 +327,19 @@ it('displays linked projects section when tag has projects', function () {
     expect($tag->projects)->contains($project);
 });
 
+it('renders linked model sections when tag has a post and a project', function () {
+    $tag = Tag::factory()->create();
+    $post = Post::factory()->create();
+    $project = Project::factory()->create();
+
+    $tag->posts()->attach($post);
+    $tag->projects()->attach($project);
+
+    livewire(EditTag::class, ['record' => $tag->getRouteKey()])
+        ->assertSee(__('Linked :model', ['model' => __('Blogposts')]))
+        ->assertSee(__('Linked :model', ['model' => __('Projects')]));
+});
+
 it('displays linked media section when tag has media', function () {
     $tag = Tag::factory()->create();
     $user = User::factory()->create();

@@ -18,8 +18,10 @@ use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 use Illuminate\Support\HigherOrderCollectionProxy;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\EloquentSortable\Sortable;
@@ -35,6 +37,7 @@ use Spatie\Sluggable\Attributes\Sluggable;
  * @property bool $for_products
  * @property bool $for_projects
  * @property int $order_column
+ * @property int|null $parent_id
  * @property DateTime $created_at
  * @property DateTime $updated_at
  * @property DateTime|null $deleted_at
@@ -46,6 +49,8 @@ use Spatie\Sluggable\Attributes\Sluggable;
  * @property HigherOrderCollectionProxy|mixed $posts
  * @property HigherOrderCollectionProxy|mixed $products
  * @property HigherOrderCollectionProxy|mixed $projects
+ * @property Category|null $parent
+ * @property Collection|Category[] $children
  *
  * @method static creator()
  * @method static updater()
@@ -60,6 +65,7 @@ use Spatie\Sluggable\Attributes\Sluggable;
     'for_products',
     'for_projects',
     'order_column',
+    'parent_id',
 ])]
 #[Hidden([])]
 #[RouteKey('slug')]
@@ -168,5 +174,43 @@ class Category extends Model implements Sortable
         return $this->morphedByMany(Project::class, 'categorizable')
             ->orderBy('order_column')
             ->withTimestamps();
+    }
+
+    /**
+     * Get the parent category.
+     */
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(self::class);
+    }
+
+    /**
+     * Get all child categories.
+     */
+    public function children(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_id');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Helper Methods
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Check if the category is a root (top-level) category.
+     */
+    public function isRoot(): bool
+    {
+        return $this->parent_id === null;
+    }
+
+    /**
+     * Check if the category is a child category.
+     */
+    public function isChild(): bool
+    {
+        return $this->parent_id !== null;
     }
 }

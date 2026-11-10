@@ -249,3 +249,62 @@ test('category model has category policy attribute configured', function () {
     expect($attributes)->toHaveCount(1)
         ->and($attributes[0]->getArguments()[0])->toBe(CategoryPolicy::class);
 });
+
+test('a child category belongs to its parent', function () {
+    User::factory()->create();
+    $parent = Category::factory()->create();
+    $child = Category::factory()->childOf($parent)->create();
+
+    expect($child->parent)->toBeInstanceOf(Category::class)
+        ->and($child->parent->id)->toBe($parent->id);
+});
+
+test('a parent category has children', function () {
+    User::factory()->create();
+    $parent = Category::factory()->create();
+    $children = Category::factory()->count(3)->childOf($parent)->create();
+
+    expect($parent->children)->toHaveCount(3)
+        ->and($parent->children->pluck('id')->sort()->values()->toArray())
+        ->toBe($children->pluck('id')->sort()->values()->toArray());
+});
+
+test('isRoot returns true when parent_id is null', function () {
+    User::factory()->create();
+    $category = Category::factory()->create();
+
+    expect($category->isRoot())->toBeTrue();
+});
+
+test('isRoot returns false when parent_id is set', function () {
+    User::factory()->create();
+    $parent = Category::factory()->create();
+    $child = Category::factory()->childOf($parent)->create();
+
+    expect($child->isRoot())->toBeFalse();
+});
+
+test('isChild returns true when parent_id is set', function () {
+    User::factory()->create();
+    $parent = Category::factory()->create();
+    $child = Category::factory()->childOf($parent)->create();
+
+    expect($child->isChild())->toBeTrue();
+});
+
+test('isChild returns false when parent_id is null', function () {
+    User::factory()->create();
+    $category = Category::factory()->create();
+
+    expect($category->isChild())->toBeFalse();
+});
+
+test('deleting a parent sets children parent_id to null', function () {
+    User::factory()->create();
+    $parent = Category::factory()->create();
+    $child = Category::factory()->childOf($parent)->create();
+
+    $parent->forceDelete();
+
+    expect($child->fresh()->parent_id)->toBeNull();
+});
