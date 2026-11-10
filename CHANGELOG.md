@@ -5,7 +5,18 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/voorhof/stickler/compare/v1.9.1...HEAD)
+## [Unreleased](https://github.com/voorhof/stickler/compare/v1.9.2...HEAD)
+
+## [v1.9.2](https://github.com/voorhof/stickler/compare/v1.9.1...v1.9.2) - 2026-11-10
+
+### What's Changed
+
+* Fixes and updates by @voorhof in https://github.com/voorhof/stickler/pull/35
+  
+* Stickler Light fork: https://github.com/voorhof/stickler-light
+  
+
+**Full Changelog**: https://github.com/voorhof/stickler/compare/v1.9.1...v1.9.2
 
 ## [v1.9.1](https://github.com/voorhof/stickler/compare/v1.9.0...v1.9.1) - 2026-11-10
 
