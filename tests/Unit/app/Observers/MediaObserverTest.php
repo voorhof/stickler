@@ -17,7 +17,7 @@ it('tracks creator and updater on media create and update', function (): void {
 
     $media = Media::create([
         'name' => 'Observer Test Media',
-        'model_type' => 'App\Models\Media',
+        'model_type' => 'App\Models\Post',
         'model_id' => 1,
         'collection_name' => 'default',
         'file_name' => 'test.jpg',
@@ -146,7 +146,7 @@ it('flushes response cache when media is saved', function (): void {
 
     Media::create([
         'name' => 'Cache Flush Test Media',
-        'model_type' => 'App\Models\Media',
+        'model_type' => 'App\Models\Post',
         'model_id' => 1,
         'collection_name' => 'default',
         'file_name' => 'test.jpg',
@@ -173,7 +173,7 @@ it('flushes response cache when media is deleted', function (): void {
 
     $media = Media::create([
         'name' => 'Cache Flush Delete Test Media',
-        'model_type' => 'App\Models\Media',
+        'model_type' => 'App\Models\Post',
         'model_id' => 1,
         'collection_name' => 'default',
         'file_name' => 'test.jpg',

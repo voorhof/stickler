@@ -9,6 +9,9 @@ Ideal for content-focused websites and bespoke web shops, with a focus on suppor
 [![Packagist](https://img.shields.io/packagist/v/voorhof/stickler.svg)](https://packagist.org/packages/voorhof/stickler)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
+A lightweight version of this starter kit, without the e-commerce building blocks is also available at:  
+[https://github.com/voorhof/stickler-light](https://github.com/voorhof/stickler-light)  
+
 ## Features
 
 Stickler is a production-ready Laravel starter kit for building content-driven websites and bespoke web applications. It combines a well-designed front-end framework with a powerful Filament CMS, enabling a new project to get off the ground quickly whilst all the essential components are already in place.

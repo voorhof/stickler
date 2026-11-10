@@ -10,6 +10,10 @@ use LaBoiteACode\FilamentBusinessHours\Support\Weekdays;
 use Spatie\Honeypot\Events\SpamDetectedEvent;
 use Spatie\OpeningHours\OpeningHours;
 
+beforeEach(function () {
+    config(['logging.channels.single.path' => storage_path('logs/testing.log')]);
+});
+
 test('it can view the contact page without business hours', function () {
     $response = $this->get(route('contact.index'));
 
