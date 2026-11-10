@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -273,6 +274,14 @@ class User extends Authenticatable implements FilamentUser, HasMedia, HasName, M
     | Eloquent Relationships
     |--------------------------------------------------------------------------
     */
+
+    /**
+     * Get the orders this user has placed.
+     */
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
 
     /**
      * Get the class name for the creator/updater relationship.
