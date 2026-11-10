@@ -5,7 +5,7 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/voorhof/stickler/compare/v1.9.0...HEAD)
+## [Unreleased](https://github.com/voorhof/stickler/compare/v1.9.1...HEAD)
 
 ### Security
 
@@ -56,6 +56,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved webhook error responses with proper HTTP status codes
 - Added `boost:install` to post-install scripts
 - Added composer cooldown policy
+
+## [v1.9.1](https://github.com/voorhof/stickler/compare/v1.9.0...v1.9.1) - 2026-11-10
+
+### What's Changed
+
+* Fixes and updates by @voorhof in https://github.com/voorhof/stickler/pull/34
+
+1. Updated deprecated method databaseNotificationsPolling to databaseNotificationsPollingInterval
+2. Fixed duplicate deferred-schema key error by giving each linked-model section a key derived from its relation name
+3. Restricted PendingOrdersWidget visibility to users with the "view orders" permission
+4. Refactored  instances of hiddenOn/visibleOn string usage to use Operation enum values
+5. Added sub-category support to the Category model
+6. Updated README
+
+**Full Changelog**: https://github.com/voorhof/stickler/compare/v1.9.0...v1.9.1
 
 ## [v1.9.0](https://github.com/voorhof/stickler/compare/v1.8.4...v1.9.0) - 2026-11-09
 
