@@ -12,19 +12,19 @@ readonly class BusinessHoursObserver
 
     public function __construct(private BusinessHoursCacheService $businessHoursCache) {}
 
-    public function saved(BusinessHours $businessHours): void
+    public function saved(BusinessHours $model): void
     {
         $this->flushResponseCache();
-        $this->businessHoursCache->forget($businessHours->key);
+        $this->businessHoursCache->forget($model->key);
 
-        if ($businessHours->wasChanged('key')) {
-            $this->businessHoursCache->forget((string) $businessHours->getOriginal('key'));
+        if ($model->wasChanged('key')) {
+            $this->businessHoursCache->forget((string) $model->getOriginal('key'));
         }
     }
 
-    public function deleted(BusinessHours $businessHours): void
+    public function deleted(BusinessHours $model): void
     {
         $this->flushResponseCache();
-        $this->businessHoursCache->forget($businessHours->key);
+        $this->businessHoursCache->forget($model->key);
     }
 }

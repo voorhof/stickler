@@ -39,7 +39,7 @@ class StoreContactMessage
             $message = Message::create($data);
 
             // Send mail to the admin after transaction commits
-            Mail::queue((new ContactMessageReceived($message))->afterCommit());
+            Mail::queue(new ContactMessageReceived($message)->afterCommit());
 
             return $message;
         });

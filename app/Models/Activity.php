@@ -23,6 +23,7 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
  * @method static forSubject(Model $model)
  * @method static forEvent(string|ActivityEvent $string)
  * @method static factory()
+ * @method static count()
  */
 #[UsePolicy(ActivityPolicy::class)]
 class Activity extends SpatieActivity

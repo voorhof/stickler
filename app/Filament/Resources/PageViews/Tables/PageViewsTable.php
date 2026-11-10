@@ -17,8 +17,8 @@ class PageViewsTable
             ->defaultKeySort(false)
             ->searchUsing(function (Builder $query, string $search): void {
                 $query->where(function (Builder $query) use ($search): void {
-                    $query->where('path', 'like', "%{$search}%")
-                        ->orWhere('route_name', 'like', "%{$search}%");
+                    $query->where('path', 'like', "%$search%")
+                        ->orWhere('route_name', 'like', "%$search%");
                 });
             })
             ->columns([
@@ -46,7 +46,7 @@ class PageViewsTable
             ->filters([
                 Filter::make('viewed_on')
                     ->label(__('Viewed on'))
-                    ->schema([
+                    ->form([
                         DatePicker::make('viewed_from')
                             ->label(__('From')),
                         DatePicker::make('viewed_until')

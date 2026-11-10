@@ -25,13 +25,13 @@ class CleanPageViewsCommand extends Command
             return self::FAILURE;
         }
 
-        if (! $this->option('force') && ! $this->confirm("Delete all page views older than {$maxAgeInDays} days?")) {
+        if (! $this->option('force') && ! $this->confirm("Delete all page views older than $maxAgeInDays days?")) {
             return self::SUCCESS;
         }
 
         $deletedCount = PageView::where('viewed_on', '<', Carbon::today()->subDays($maxAgeInDays)->toDateString())->delete();
 
-        $this->info("{$deletedCount} page views deleted.");
+        $this->info("$deletedCount page views deleted.");
 
         return self::SUCCESS;
     }
