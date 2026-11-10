@@ -20,6 +20,8 @@ class PermissionFactory extends Factory
         return [
             'name' => fake()->unique()->word(),
             'guard_name' => 'web',
+            'created_by_user_id' => 1,
+            'updated_by_user_id' => 1,
         ];
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-/** @noinspection PhpUnhandledExceptionInspection */
+/** @noinspection PhpUnhandledExceptionInspection, LaravelUnknownConfigKeyInspection */
 
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
@@ -31,6 +31,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('guard_name');
             $table->timestamps();
+            $table->foreignIdFor(User::class, 'created_by_user_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignIdFor(User::class, 'updated_by_user_id')->nullable()->constrained()->nullOnDelete();
 
             $table->unique(['name', 'guard_name']);
         });

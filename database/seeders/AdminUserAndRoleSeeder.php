@@ -43,86 +43,86 @@ class AdminUserAndRoleSeeder extends Seeder
         ]);
 
         // Create permissions
-        Permission::create(['name' => 'access admin']);
-        Permission::create(['name' => 'access telescope']);
-        Permission::create(['name' => 'access health page']);
+        Permission::create(['name' => 'access admin', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'access telescope', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'access health page', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
 
-        Permission::create(['name' => 'access settings']);
-        Permission::create(['name' => 'edit settings']);
+        Permission::create(['name' => 'access settings', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'edit settings', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
 
-        Permission::create(['name' => 'access logs']);
-        Permission::create(['name' => 'download logs']);
-        Permission::create(['name' => 'delete logs']);
+        Permission::create(['name' => 'access logs', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'download logs', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'delete logs', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
 
-        Permission::create(['name' => 'create backups']);
-        Permission::create(['name' => 'view backups']);
-        Permission::create(['name' => 'download backups']);
-        Permission::create(['name' => 'delete backups']);
+        Permission::create(['name' => 'create backups', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'view backups', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'download backups', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'delete backups', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
 
-        Permission::create(['name' => 'create users']);
-        Permission::create(['name' => 'view users']);
-        Permission::create(['name' => 'update users']);
-        Permission::create(['name' => 'delete users']);
+        Permission::create(['name' => 'create users', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'view users', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'update users', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'delete users', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
 
-        Permission::create(['name' => 'create roles']);
-        Permission::create(['name' => 'view roles']);
-        Permission::create(['name' => 'update roles']);
-        Permission::create(['name' => 'delete roles']);
+        Permission::create(['name' => 'create roles', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'view roles', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'update roles', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'delete roles', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
 
-        Permission::create(['name' => 'create media']);
-        Permission::create(['name' => 'view media']);
-        Permission::create(['name' => 'update media']);
-        Permission::create(['name' => 'delete media']);
+        Permission::create(['name' => 'create media', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'view media', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'update media', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'delete media', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
 
-        Permission::create(['name' => 'create pages']);
-        Permission::create(['name' => 'view pages']);
-        Permission::create(['name' => 'update pages']);
-        Permission::create(['name' => 'delete pages']);
+        Permission::create(['name' => 'create pages', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'view pages', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'update pages', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'delete pages', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
 
-        Permission::create(['name' => 'create posts']);
-        Permission::create(['name' => 'view posts']);
-        Permission::create(['name' => 'update posts']);
-        Permission::create(['name' => 'delete posts']);
+        Permission::create(['name' => 'create posts', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'view posts', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'update posts', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'delete posts', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
 
-        Permission::create(['name' => 'create products']);
-        Permission::create(['name' => 'view products']);
-        Permission::create(['name' => 'update products']);
-        Permission::create(['name' => 'delete products']);
+        Permission::create(['name' => 'create products', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'view products', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'update products', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'delete products', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
 
-        Permission::create(['name' => 'create projects']);
-        Permission::create(['name' => 'view projects']);
-        Permission::create(['name' => 'update projects']);
-        Permission::create(['name' => 'delete projects']);
+        Permission::create(['name' => 'create projects', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'view projects', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'update projects', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'delete projects', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
 
-        Permission::create(['name' => 'create categories']);
-        Permission::create(['name' => 'view categories']);
-        Permission::create(['name' => 'update categories']);
-        Permission::create(['name' => 'delete categories']);
+        Permission::create(['name' => 'create categories', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'view categories', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'update categories', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'delete categories', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
 
-        Permission::create(['name' => 'create orders']);
-        Permission::create(['name' => 'view orders']);
-        Permission::create(['name' => 'update orders']);
-        Permission::create(['name' => 'delete orders']);
+        Permission::create(['name' => 'create orders', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'view orders', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'update orders', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'delete orders', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
 
-        Permission::create(['name' => 'create carts']);
-        Permission::create(['name' => 'view carts']);
-        Permission::create(['name' => 'update carts']);
-        Permission::create(['name' => 'delete carts']);
+        Permission::create(['name' => 'create carts', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'view carts', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'update carts', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'delete carts', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
 
-        Permission::create(['name' => 'create tags']);
-        Permission::create(['name' => 'view tags']);
-        Permission::create(['name' => 'update tags']);
-        Permission::create(['name' => 'delete tags']);
+        Permission::create(['name' => 'create tags', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'view tags', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'update tags', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'delete tags', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
 
-        Permission::create(['name' => 'view messages']);
-        Permission::create(['name' => 'update messages']);
-        Permission::create(['name' => 'delete messages']);
+        Permission::create(['name' => 'view messages', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'update messages', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'delete messages', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
 
-        Permission::create(['name' => 'view activities']);
-        Permission::create(['name' => 'delete activities']);
+        Permission::create(['name' => 'view activities', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'delete activities', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
 
-        Permission::create(['name' => 'view pageviews']);
-        Permission::create(['name' => 'delete pageviews']);
+        Permission::create(['name' => 'view pageviews', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
+        Permission::create(['name' => 'delete pageviews', 'created_by_user_id' => $ceo->id, 'updated_by_user_id' => $ceo->id]);
 
         // Update the cache to know about the newly created permissions (required if using WithoutModelEvents in seeders)
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
@@ -131,8 +131,8 @@ class AdminUserAndRoleSeeder extends Seeder
         Role::create([
             'name' => 'Admin',
             'order_column' => 1,
-            'created_by_user_id' => $admin->id,
-            'updated_by_user_id' => $admin->id,
+            'created_by_user_id' => $ceo->id,
+            'updated_by_user_id' => $ceo->id,
         ])->givePermissionTo(Permission::all()); // All permissions for the Admin role
 
         // Assign the Admin role to the admin users
