@@ -5,7 +5,20 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/voorhof/stickler/compare/v1.9.2...HEAD)
+## [Unreleased](https://github.com/voorhof/stickler/compare/v1.10.0...HEAD)
+
+## [v1.10.0](https://github.com/voorhof/stickler/compare/v1.9.2...v1.10.0) - 2026-11-18
+
+### What's Changed
+
+* PermissionResource by @voorhof in https://github.com/voorhof/stickler/pull/39
+
+1. Added PermissionResource for creating permissions in Filament
+2. Added Order overview to UserForm
+3. Fixed guest order not saving name and phone
+4. Composer & NPM updates
+
+**Full Changelog**: https://github.com/voorhof/stickler/compare/v1.9.2...v1.10.0
 
 ## [v1.9.2](https://github.com/voorhof/stickler/compare/v1.9.1...v1.9.2) - 2026-11-10
 
