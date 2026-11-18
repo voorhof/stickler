@@ -395,8 +395,24 @@ test('it transfers customer data from cart to order on conversion', function () 
 
     $order = $service->convertToOrder($cart);
 
-    expect($order->shipping_address)->toBe(['street' => 'Main St 1', 'city' => 'Brussels', 'postal_code' => '1000', 'country' => 'Belgium', 'email' => 'john@example.com'])
-        ->and($order->billing_address)->toBe(['street' => 'Other St 2', 'city' => 'Antwerp', 'postal_code' => '2000', 'country' => 'Belgium'])
+    expect($order->shipping_address)->toBe([
+        'street' => 'Main St 1',
+        'city' => 'Brussels',
+        'postal_code' => '1000',
+        'country' => 'Belgium',
+        'email' => 'john@example.com',
+        'name' => 'John Doe',
+        'phone' => null,
+    ])
+        ->and($order->billing_address)->toBe([
+            'street' => 'Other St 2',
+            'city' => 'Antwerp',
+            'postal_code' => '2000',
+            'country' => 'Belgium',
+            'email' => 'john@example.com',
+            'name' => 'John Doe',
+            'phone' => null,
+        ])
         ->and($order->notes)->toBe('Please leave at the door');
 });
 
@@ -427,9 +443,57 @@ test('it handles partial customer data on conversion', function () {
 
     $order = $service->convertToOrder($cart);
 
-    expect($order->shipping_address)->toBe(['street' => 'Main St 1', 'city' => 'Brussels', 'postal_code' => '1000', 'country' => 'Belgium'])
+    expect($order->shipping_address)->toBe([
+        'street' => 'Main St 1',
+        'city' => 'Brussels',
+        'postal_code' => '1000',
+        'country' => 'Belgium',
+        'phone' => null,
+    ])
         ->and($order->billing_address)->toBeNull()
         ->and($order->notes)->toBeNull();
+});
+
+test('it includes name and phone in shipping and billing address on conversion', function () {
+    $cart = Cart::factory()->create([
+        'customer_data' => [
+            'name' => 'Jane Doe',
+            'email' => 'jane@example.com',
+            'phone' => '+32470123456',
+            'shipping_address' => ['street' => 'Main St 1', 'city' => 'Brussels', 'postal_code' => '1000', 'country' => 'Belgium'],
+            'billing_address' => ['street' => 'Other St 2', 'city' => 'Antwerp', 'postal_code' => '2000', 'country' => 'Belgium'],
+        ],
+    ]);
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+
+    $service = app(CartService::class);
+    $service->addItem($cart, $product);
+
+    $order = $service->convertToOrder($cart);
+
+    expect($order->shipping_address['name'])->toBe('Jane Doe')
+        ->and($order->shipping_address['phone'])->toBe('+32470123456')
+        ->and($order->billing_address['name'])->toBe('Jane Doe')
+        ->and($order->billing_address['phone'])->toBe('+32470123456');
+});
+
+test('it includes phone as null when not provided in customer data', function () {
+    $cart = Cart::factory()->create([
+        'customer_data' => [
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+            'shipping_address' => ['street' => 'Main St 1', 'city' => 'Brussels', 'postal_code' => '1000', 'country' => 'Belgium'],
+        ],
+    ]);
+    $product = Product::factory()->create(['price' => 1000, 'is_discounted' => false, 'stock_quantity' => 10]);
+
+    $service = app(CartService::class);
+    $service->addItem($cart, $product);
+
+    $order = $service->convertToOrder($cart);
+
+    expect($order->shipping_address['name'])->toBe('John Doe')
+        ->and($order->shipping_address['phone'])->toBeNull();
 });
 
 test('it uses discount price when product is discounted', function () {

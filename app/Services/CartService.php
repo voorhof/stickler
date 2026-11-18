@@ -369,11 +369,29 @@ class CartService
                     $shippingAddress['email'] = $customerData['email'];
                 }
 
+                if (isset($customerData['name'])) {
+                    $shippingAddress['name'] = $customerData['name'];
+                }
+
+                $shippingAddress['phone'] = $customerData['phone'] ?? null;
+
                 $orderData['shipping_address'] = $shippingAddress;
             }
 
             if (isset($customerData['billing_address'])) {
-                $orderData['billing_address'] = $customerData['billing_address'];
+                $billingAddress = $customerData['billing_address'];
+
+                if (isset($customerData['email'])) {
+                    $billingAddress['email'] = $customerData['email'];
+                }
+
+                if (isset($customerData['name'])) {
+                    $billingAddress['name'] = $customerData['name'];
+                }
+
+                $billingAddress['phone'] = $customerData['phone'] ?? null;
+
+                $orderData['billing_address'] = $billingAddress;
             }
 
             if (isset($customerData['notes'])) {

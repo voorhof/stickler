@@ -240,6 +240,16 @@ class OrderForm
                             ->icon(Heroicon::OutlinedMapPin)
                             ->collapsible()
                             ->schema([
+                                Grid::make(3)->schema([
+                                    TextInput::make('shipping_address.name')
+                                        ->label(__('Name')),
+                                    TextInput::make('shipping_address.email')
+                                        ->label(__('Email address'))
+                                        ->nullable(),
+                                    TextInput::make('shipping_address.phone')
+                                        ->label(__('Phone'))
+                                        ->nullable(),
+                                ]),
                                 TextInput::make('shipping_address.street')
                                     ->label(__('Street'))
                                     ->nullable(),
@@ -259,6 +269,16 @@ class OrderForm
                             ->icon(Heroicon::OutlinedCreditCard)
                             ->collapsible()
                             ->schema([
+                                Grid::make(3)->schema([
+                                    TextInput::make('billing_address.name')
+                                        ->label(__('Name')),
+                                    TextInput::make('billing_address.email')
+                                        ->label(__('Email address'))
+                                        ->nullable(),
+                                    TextInput::make('billing_address.phone')
+                                        ->label(__('Phone'))
+                                        ->nullable(),
+                                ]),
                                 TextInput::make('billing_address.street')
                                     ->label(__('Street'))
                                     ->nullable(),
