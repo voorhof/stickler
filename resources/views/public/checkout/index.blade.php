@@ -55,8 +55,8 @@
                                         <td>
                                             <strong>{{ $item->product_name }}</strong>
                                             @if ($item->product_variant_label)
-                                                <br
-                                                /><small class="text-muted">{{ $item->product_variant_label }}</small>
+                                                <br />
+                                                <small class="text-muted">{{ $item->product_variant_label }}</small>
                                             @endif
                                         </td>
                                         <td>{{ $item->quantity }}</td>
@@ -258,7 +258,6 @@
                                     name="billing_street"
                                     :value="old('billing_street', optional($cart->customerBillingAddress())['street'] ?? '')"
                                     placeholder="{{ __('Street') }}"
-                                    required
                                     maxlength="255"
                                     autocomplete="billing street-address"
                                     class="{{ $errors->has('billing_street') ? 'is-invalid' : '' }}"
@@ -280,7 +279,6 @@
                                             name="billing_city"
                                             :value="old('billing_city', optional($cart->customerBillingAddress())['city'] ?? '')"
                                             placeholder="{{ __('City') }}"
-                                            required
                                             maxlength="255"
                                             autocomplete="billing address-level2"
                                             class="{{ $errors->has('billing_city') ? 'is-invalid' : '' }}"
@@ -302,7 +300,6 @@
                                             name="billing_postal_code"
                                             :value="old('billing_postal_code', optional($cart->customerBillingAddress())['postal_code'] ?? '')"
                                             placeholder="{{ __('Postal code') }}"
-                                            required
                                             maxlength="255"
                                             autocomplete="billing postal-code"
                                             class="{{ $errors->has('billing_postal_code') ? 'is-invalid' : '' }}"
@@ -327,7 +324,6 @@
                                             name="billing_country"
                                             :value="old('billing_country', optional($cart->customerBillingAddress())['country'] ?? '')"
                                             placeholder="{{ __('Country') }}"
-                                            required
                                             maxlength="255"
                                             autocomplete="billing country-name"
                                             class="{{ $errors->has('billing_country') ? 'is-invalid' : '' }}"
@@ -374,18 +370,25 @@
     @push('scripts-body-bottom')
         <script>
             document.addEventListener('DOMContentLoaded', function () {
-                const checkbox = document.getElementById('billingSameAsShippingCheckbox');
-                const fields = document.getElementById('billingAddressFields');
+                const billingSameAsShippingCheckbox = document.getElementById('billingSameAsShippingCheckbox');
+                const billingAddressFields = document.getElementById('billingAddressFields');
+                const billingAddressInputs = billingAddressFields.querySelectorAll('input');
 
                 function toggleBillingFields() {
-                    if (checkbox.checked) {
-                        fields.classList.add('d-none');
+                    if (billingSameAsShippingCheckbox.checked) {
+                        billingAddressFields.classList.add('d-none');
+                        billingAddressInputs.forEach((billingAddressInput) => {
+                            billingAddressInput.required = false;
+                        });
                     } else {
-                        fields.classList.remove('d-none');
+                        billingAddressFields.classList.remove('d-none');
+                        billingAddressInputs.forEach((billingAddressInput) => {
+                            billingAddressInput.required = true;
+                        });
                     }
                 }
 
-                checkbox.addEventListener('change', toggleBillingFields);
+                billingSameAsShippingCheckbox.addEventListener('change', toggleBillingFields);
                 toggleBillingFields();
             });
         </script>

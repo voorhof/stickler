@@ -2,13 +2,16 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use App\Filament\Resources\Orders\OrderResource;
 use App\Filament\Resources\Users\Schemas\Sections\DetailsSection;
 use App\Filament\Resources\Users\Schemas\Sections\RoleSection;
 use App\Filament\Schemas\Sections\ActivityHistorySection;
 use App\Filament\Schemas\Sections\DatabaseInfoSection;
+use App\Filament\Schemas\Sections\LinkedModelsSection;
 use App\Filament\Schemas\Sections\SettingsSection;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 
 class UserForm
 {
@@ -24,6 +27,11 @@ class UserForm
                         SettingsSection::make(
                             hasPublished: false,
                         ),
+                        LinkedModelsSection::make(
+                            resource: OrderResource::class,
+                            relationName: 'orders',
+                            modelLabel: 'Orders',
+                            icon: Heroicon::OutlinedShoppingCart),
                         DatabaseInfoSection::make(),
                         ActivityHistorySection::make(),
                     ]),

@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Permission;
+use App\Models\User;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 
@@ -37,6 +38,7 @@ describe('update activity logging', function () {
 
 describe('delete activity logging', function () {
     test('it logs deleted event for force delete', function () {
+        User::factory()->create();
         $permission = Permission::factory()->create();
 
         $deletedPermissionId = $permission->id;

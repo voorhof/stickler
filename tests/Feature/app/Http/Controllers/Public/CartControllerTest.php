@@ -597,8 +597,24 @@ describe('order creation', function () {
         $response->assertRedirect('https://mollie.com/checkout/test123');
 
         expect($order->orderItems)->toHaveCount(1)
-            ->and($order->shipping_address)->toBe(['street' => 'Main St 1', 'city' => 'Brussels', 'postal_code' => '1000', 'country' => 'Belgium', 'email' => 'jane@example.com'])
-            ->and($order->billing_address)->toBe(['street' => 'Main St 1', 'city' => 'Brussels', 'postal_code' => '1000', 'country' => 'Belgium'])
+            ->and($order->shipping_address)->toBe([
+                'street' => 'Main St 1',
+                'city' => 'Brussels',
+                'postal_code' => '1000',
+                'country' => 'Belgium',
+                'email' => 'jane@example.com',
+                'name' => 'Jane Doe',
+                'phone' => '+32470123456',
+            ])
+            ->and($order->billing_address)->toBe([
+                'street' => 'Main St 1',
+                'city' => 'Brussels',
+                'postal_code' => '1000',
+                'country' => 'Belgium',
+                'email' => 'jane@example.com',
+                'name' => 'Jane Doe',
+                'phone' => '+32470123456',
+            ])
             ->and($order->notes)->toBe('Please leave at the door')
             ->and($order->payment_provider)->toBe('mollie')
             ->and($order->payment_provider_id)->toBe('tr_test123')

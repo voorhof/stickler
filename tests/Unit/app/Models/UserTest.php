@@ -2,6 +2,7 @@
 
 /** @noinspection PhpPossiblePolymorphicInvocationInspection, PhpUnhandledExceptionInspection */
 
+use App\Models\Order;
 use App\Models\Permission;
 use App\Models\Post;
 use App\Models\Role;
@@ -396,6 +397,20 @@ test('it has relations for created and updated users', function () {
 
     expect($user->createdUsers())->toBeInstanceOf(HasMany::class)
         ->and($user->updatedUsers())->toBeInstanceOf(HasMany::class);
+});
+
+test('it has many orders', function () {
+    $user = User::factory()->create();
+    Order::factory()->count(3)->create(['user_id' => $user->id]);
+
+    expect($user->orders)->toHaveCount(3)
+        ->and($user->orders->first())->toBeInstanceOf(Order::class);
+});
+
+test('it has orders relationship', function () {
+    $user = new User;
+
+    expect($user->orders())->toBeInstanceOf(HasMany::class);
 });
 
 test('it configures activity log options correctly', function () {
