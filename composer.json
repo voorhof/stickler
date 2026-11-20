@@ -48,7 +48,7 @@
         "spatie/laravel-responsecache": "^8.7",
         "spatie/laravel-settings": "^3.10",
         "spatie/laravel-sitemap": "^8.2",
-        "spatie/laravel-sluggable": "^4.0",
+        "spatie/laravel-sluggable": "^6.0",
         "spatie/laravel-tags": "^4.12",
         "spatie/opening-hours": "^4.2",
         "spatie/pdf-to-image": "^3.5",
