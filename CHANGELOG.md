@@ -5,7 +5,11 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/voorhof/stickler/compare/v1.10.0...HEAD)
+## [Unreleased](https://github.com/voorhof/stickler/compare/v1.10.2...HEAD)
+
+## [v1.10.2](https://github.com/voorhof/stickler/compare/v1.10.0...v1.10.2) - 2026-11-20
+
+**Full Changelog**: https://github.com/voorhof/stickler/compare/v1.10.1...v1.10.2
 
 ## [v1.10.0](https://github.com/voorhof/stickler/compare/v1.9.2...v1.10.0) - 2026-11-18
 
