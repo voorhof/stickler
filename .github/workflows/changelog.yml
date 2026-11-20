@@ -19,16 +19,13 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.release.target_commitish }}
 
-      - name: Install PHP mbstring extension
-        run: sudo apt-get update && sudo apt-get install -y php-mbstring
-
       - name: Extract release date from git tag
         id: release_date
         run: |
           echo "date=$(git log -1 --date=short --format=%ad '${{ github.event.release.tag_name }}')" >> $GITHUB_OUTPUT
 
       - name: Update Changelog
-        uses: stefanzweifel/changelog-updater-action@a938690fad7edf25368f37e43a1ed1b34303eb36 # v1
+        uses: stefanzweifel/changelog-updater-action@f7c43fed0c8760b25199be6eae5c28fc22830ec6 # v1.13.3
         with:
           release-date: ${{ steps.release_date.outputs.date }}
           release-notes: ${{ github.event.release.body }}
