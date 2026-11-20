@@ -29,7 +29,7 @@
         "jaybizzle/crawler-detect": "^1.4",
         "laboiteacode/filament-business-hours": "^1.0",
         "laravel/framework": "^13.42",
-        "laravel/head": "^0.2.2",
+        "laravel/head": "^0.3.0",
         "laravel/telescope": "^5.28",
         "laravel/tinker": "^3.1",
         "league/flysystem-aws-s3-v3": "^3.35",
