@@ -7,9 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased](https://github.com/voorhof/stickler/compare/v1.10.2...HEAD)
 
-## [v1.10.2](https://github.com/voorhof/stickler/compare/v1.10.0...v1.10.2) - 2026-11-20
+## [v1.10.2](https://github.com/voorhof/stickler/compare/v1.10.1...v1.10.2) - 2026-11-20
+
+### What's Changed
+
+* Update changelog workflow to include PHP setup
 
 **Full Changelog**: https://github.com/voorhof/stickler/compare/v1.10.1...v1.10.2
+
+## [v1.10.1](https://github.com/voorhof/stickler/compare/v1.10.0...v1.10.1) - 2026-11-20
+
+### What's Changed
+
+* Composer & NPM updates
+
+**Full Changelog**: https://github.com/voorhof/stickler/compare/v1.10.0...v1.10.1
 
 ## [v1.10.0](https://github.com/voorhof/stickler/compare/v1.9.2...v1.10.0) - 2026-11-18
 
