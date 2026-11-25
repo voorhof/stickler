@@ -42,7 +42,7 @@ Stickler is a production-ready Laravel starter kit for building content-driven w
 ## Quick Install
 
 ```bash
-laravel new my-app --using=voorhof/stickler:v1.10.1 --phpunit --no-boost
+laravel new my-app --using=voorhof/stickler:v1.11.1 --phpunit --no-boost
 ```
 
 Configure `.env` with your database, mail driver, and application settings. For detailed installation steps and production deployment, see [STICKLER.md](STICKLER.md).
